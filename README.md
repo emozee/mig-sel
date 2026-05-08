@@ -2,12 +2,12 @@
 
 A scaffolded **React + Vite + TypeScript** starter for trainees, using TailwindCSS, shadcn/ui, TanStack Query, React Hook Form, Zod, React Router, and Supabase.
 
-The app lives in [`my-app/`](./my-app). Conventions and architecture decisions are documented in [`STRUCTURE.md`](./STRUCTURE.md) — read it before adding code.
+The app lives in [`react-template/`](./react-template). For you, go to desktop and clone this repo there. Make sure after you clone it, rename it to your specific project name. Conventions and architecture decisions are documented in [`STRUCTURE.md`](./STRUCTURE.md) — read it before adding code.
 
 ## Getting started
 
 ```bash
-git clone <this-repo> my-project
+git clone <this-repo>
 cd my-project/my-app
 npm install
 cp .env.example .env
