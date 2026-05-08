@@ -8,7 +8,8 @@ The app lives in [`react-template/`](./react-template). For you, go to desktop a
 
 ```bash
 git clone <this-repo>
-cd my-project/my-app
+-- Rename the cloned repo to your project name --
+cd <your-project-name>
 npm install
 cp .env.example .env
 # fill in your Supabase keys (see below)
