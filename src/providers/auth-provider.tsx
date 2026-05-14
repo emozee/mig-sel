@@ -9,8 +9,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(() => {
-      queryClient.invalidateQueries({ queryKey: sessionKeys.current });
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      queryClient.setQueryData(sessionKeys.current, session);
+    });
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      queryClient.setQueryData(sessionKeys.current, session);
     });
 
     return () => subscription.unsubscribe();

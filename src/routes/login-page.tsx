@@ -50,14 +50,18 @@ export const LoginPage = () => {
   };
 
   return (
-    <div className="bg-background relative flex min-h-svh items-center justify-center p-6">
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="bg-primary/5 absolute -top-48 -left-48 size-[36rem] rounded-full blur-3xl" />
-        <div className="bg-secondary/20 absolute -right-48 -bottom-48 size-[36rem] rounded-full blur-3xl" />
-      </div>
+    <div
+      className="relative flex min-h-svh items-center justify-center p-6"
+      style={{
+        backgroundImage: 'url(/GMC.png)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
+    >
+      <div className="absolute inset-0 bg-blue-950/40" />
 
       <div className="relative w-full max-w-sm">
-        <div className="mb-16 text-center">
+        <div className="mb-8 text-center">
           <div className="mb-4 inline-flex items-center justify-center">
             <LeafIcon />
           </div>
@@ -67,10 +71,12 @@ export const LoginPage = () => {
           </p>
         </div>
 
-        <Card>
+        <Card className="border-white/20 bg-white/20 shadow-xl backdrop-blur-xl">
           <CardHeader className="mb-2">
-            <CardTitle>Welcome back</CardTitle>
-            <CardDescription>Sign in to your account to continue.</CardDescription>
+            <CardTitle className="text-white">Welcome back</CardTitle>
+            <CardDescription className="text-white/70">
+              Sign in to your account to continue.
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <Form {...form}>
@@ -80,12 +86,13 @@ export const LoginPage = () => {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel className="text-white/80">Email</FormLabel>
                       <FormControl>
                         <Input
                           type="email"
                           autoComplete="email"
                           placeholder="you@example.com"
+                          className="border-white/30 bg-white/10 text-white placeholder:text-white/40"
                           {...field}
                         />
                       </FormControl>
@@ -98,12 +105,13 @@ export const LoginPage = () => {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Password</FormLabel>
+                      <FormLabel className="text-white/80">Password</FormLabel>
                       <FormControl>
                         <Input
                           type="password"
                           autoComplete="current-password"
                           placeholder="Enter your password"
+                          className="border-white/30 bg-white/10 text-white placeholder:text-white/40"
                           {...field}
                         />
                       </FormControl>
@@ -113,7 +121,7 @@ export const LoginPage = () => {
                 />
 
                 {signIn.isError ? (
-                  <div className="bg-destructive/10 rounded-sm px-3 py-2">
+                  <div className="bg-destructive/20 rounded-sm px-3 py-2">
                     <p className="text-destructive text-sm">{signIn.error.message}</p>
                   </div>
                 ) : null}
@@ -130,10 +138,12 @@ export const LoginPage = () => {
 
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
+                <span className="w-full border-t border-white/20" />
               </div>
               <div className="relative flex justify-center text-xs tracking-wide uppercase">
-                <span className="bg-card text-muted-foreground px-3">or continue with</span>
+                <span className="bg-white/20 px-3 text-white/60 backdrop-blur-sm">
+                  or continue with
+                </span>
               </div>
             </div>
 
@@ -141,7 +151,7 @@ export const LoginPage = () => {
               <Button
                 type="button"
                 variant="outline"
-                className="w-full hover:scale-105 hover:shadow-lg"
+                className="w-full border-white/30 bg-white/10 text-white hover:scale-105 hover:bg-white/20 hover:shadow-lg"
                 disabled={signInWithGoogle.isPending}
                 onClick={() => signInWithGoogle.mutate()}
               >
@@ -171,23 +181,32 @@ export const LoginPage = () => {
                 </svg>
                 {signInWithGoogle.isPending ? 'Redirecting\u2026' : 'Google'}
               </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full border-white/30 bg-white/10 text-white hover:scale-105 hover:bg-white/20 hover:shadow-lg"
+                onClick={() => navigate('/')}
+              >
+                Continue as Guest
+              </Button>
             </div>
             {signInWithGoogle.isError ? (
               <p className="text-destructive text-sm">{signInWithGoogle.error.message}</p>
             ) : null}
 
-            <p className="text-muted-foreground text-center text-sm">
+            <p className="text-center text-sm text-white/70">
               No account yet?{' '}
               <Link
                 to="/sign-up"
-                className="text-primary hover:text-primary/80 font-semibold underline underline-offset-4"
+                className="font-semibold text-white underline underline-offset-4 hover:text-white/80"
               >
                 Create one
               </Link>
             </p>
 
-            <p className="text-muted-foreground/40 text-center text-xs">
-              <Link to="/" className="hover:text-muted-foreground/70">
+            <p className="text-center text-xs text-white/40">
+              <Link to="/" className="hover:text-white/70">
                 &larr; Back to home
               </Link>
             </p>

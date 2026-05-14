@@ -3,6 +3,7 @@ import { RootLayout } from '@/components/layout/root-layout';
 import { ProtectedRoute } from '@/components/layout/protected-route';
 import { HomePage } from './home-page';
 import { LoginPage } from './login-page';
+import { SignUpPage } from './sign-up-page';
 import { PostsListPage } from './posts-list-page';
 import { PostDetailPage } from './post-detail-page';
 import { NotFoundPage } from './not-found-page';
@@ -13,6 +14,7 @@ export const router = createBrowserRouter([
     children: [
       { path: '/', element: <HomePage /> },
       { path: '/login', element: <LoginPage /> },
+      { path: '/sign-up', element: <SignUpPage /> },
       { path: '/posts', element: <PostsListPage /> },
       { path: '/posts/:id', element: <PostDetailPage /> },
 
