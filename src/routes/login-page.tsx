@@ -120,7 +120,7 @@ export const LoginPage = () => {
                   </div>
                 ) : null}
 
-                <Button type="submit" className="w-full" disabled={signIn.isPending}>
+                <Button type="submit" className="w-full hover:scale-105 hover:shadow-lg" disabled={signIn.isPending}>
                   {signIn.isPending ? 'Signing in\u2026' : 'Sign in'}
                 </Button>
               </form>
@@ -139,7 +139,7 @@ export const LoginPage = () => {
               <Button
                 type="button"
                 variant="outline"
-                className="w-full"
+                className="w-full hover:scale-105 hover:shadow-lg"
                 disabled={signInWithGoogle.isPending}
                 onClick={() => signInWithGoogle.mutate()}
               >

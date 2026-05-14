@@ -1,4 +1,4 @@
-# mig-sel (my-app)
+# mig-sel (mig-sel)
 
 React 19 + Vite + TypeScript + TailwindCSS v4 + shadcn/ui + TanStack Query + React Router v7 + Supabase.
 

@@ -29,8 +29,8 @@ The guiding rule: **organize by feature, not by file type**. Most code lives ins
 
 ```bash
 # 1. Scaffold Vite + React + TS
-npm create vite@latest my-app -- --template react-ts
-cd my-app
+npm create vite@latest mig-sel -- --template react-ts
+cd mig-sel
 npm install
 
 # 2. Core libraries
