@@ -105,15 +105,7 @@ export const LoginPage = () => {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <div className="flex items-center justify-between">
-                        <FormLabel className="text-white/80">Password</FormLabel>
-                        <Link
-                          to="/forgot-password"
-                          className="text-xs text-white/60 underline underline-offset-4 hover:text-white/80"
-                        >
-                          Forgot password?
-                        </Link>
-                      </div>
+                      <FormLabel className="text-white/80">Password</FormLabel>
                       <FormControl>
                         <Input
                           type="password"
