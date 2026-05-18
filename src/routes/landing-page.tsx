@@ -1,4 +1,3 @@
-import { useNavigate } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useSignInWithGoogle } from '@/features/auth/api/use-sign-in-with-google';
@@ -20,8 +19,7 @@ const LeafIcon = () => (
   </svg>
 );
 
-export const LoginPage = () => {
-  const navigate = useNavigate();
+export const LandingPage = () => {
   const signInWithGoogle = useSignInWithGoogle();
 
   return (
@@ -85,16 +83,6 @@ export const LoginPage = () => {
             {signInWithGoogle.isError ? (
               <p className="text-destructive text-sm">{signInWithGoogle.error.message}</p>
             ) : null}
-
-            <p className="text-center text-xs text-white/40">
-              <button
-                type="button"
-                onClick={() => navigate('/')}
-                className="underline underline-offset-4 hover:text-white/70"
-              >
-                &larr; Back to home
-              </button>
-            </p>
           </CardContent>
         </Card>
       </div>

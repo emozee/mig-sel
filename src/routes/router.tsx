@@ -1,32 +1,43 @@
-import { createBrowserRouter } from 'react-router';
-import { RootLayout } from '@/components/layout/root-layout';
-import { ProtectedRoute } from '@/components/layout/protected-route';
+import { createBrowserRouter } from 'react-router-dom';
+import { LandingPage } from './landing-page';
 import { HomePage } from './home-page';
 import { LoginPage } from './login-page';
-import { SignUpPage } from './sign-up-page';
-import { PostsListPage } from './posts-list-page';
-import { PostDetailPage } from './post-detail-page';
 import { NotFoundPage } from './not-found-page';
+import { AuthCallbackPage } from './auth-callback-page';
+import { MapPage } from './map-page';
+import { ProtectedRoute } from '@/components/layout/protected-route';
+import { AdminRoute } from '@/components/layout/admin-route';
 
 export const router = createBrowserRouter([
   {
-    element: <RootLayout />,
+    path: '/',
+    element: <LandingPage />,
+  },
+  {
+    path: '/login',
+    element: <LoginPage />,
+  },
+  {
+    path: '/auth/callback',
+    element: <AuthCallbackPage />,
+  },
+  {
+    path: '/map',
+    element: <ProtectedRoute />,
+    children: [{ index: true, element: <MapPage /> }],
+  },
+  {
+    path: '/dashboard',
+    element: <ProtectedRoute />,
     children: [
-      { path: '/', element: <HomePage /> },
-      { path: '/login', element: <LoginPage /> },
-      { path: '/sign-up', element: <SignUpPage /> },
-      { path: '/posts', element: <PostsListPage /> },
-      { path: '/posts/:id', element: <PostDetailPage /> },
-
-      // Routes that require an authenticated user go inside this block
       {
-        element: <ProtectedRoute />,
-        children: [
-          // e.g. { path: '/dashboard', element: <DashboardPage /> },
-        ],
+        element: <AdminRoute />,
+        children: [{ index: true, element: <HomePage /> }],
       },
-
-      { path: '*', element: <NotFoundPage /> },
     ],
+  },
+  {
+    path: '*',
+    element: <NotFoundPage />,
   },
 ]);
