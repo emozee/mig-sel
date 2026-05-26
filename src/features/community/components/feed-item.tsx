@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { Heart, MoreHorizontal } from 'lucide-react';
 import { useCurrentUser } from '@/features/auth/api/use-current-user';
 import { useToggleUpvote } from '../api/use-toggle-upvote';
@@ -28,11 +29,26 @@ interface FeedItemProps {
 export const FeedItem = ({ item }: FeedItemProps) => {
   const { user } = useCurrentUser();
   const { mutate, isPending } = useToggleUpvote();
+  const clickLock = useRef(false);
 
   const handleUpvote = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!user) return;
-    mutate({ feedId: item.id, isCurrentlyUpvoted: item.isUpvoted });
+    console.log('[handleUpvote] click', {
+      feedId: item.id,
+      isUpvoted: item.isUpvoted,
+      clickLock: clickLock.current,
+      isPending,
+    });
+    if (!user || clickLock.current) return;
+    clickLock.current = true;
+    mutate(
+      { feedId: item.id, isCurrentlyUpvoted: item.isUpvoted },
+      {
+        onSettled: () => {
+          clickLock.current = false;
+        },
+      },
+    );
   };
 
   return (

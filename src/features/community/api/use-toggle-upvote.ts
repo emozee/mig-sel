@@ -4,8 +4,6 @@ import { useCurrentUser } from '@/features/auth/api/use-current-user';
 import { communityKeys } from './use-community-feed';
 import type { ActivityItem } from '../types';
 
-const inflightFeedIds = new Set<number>();
-
 interface ToggleUpvoteInput {
   feedId: number;
   isCurrentlyUpvoted: boolean;
@@ -21,16 +19,14 @@ export const useToggleUpvote = () => {
       const { data, error } = await supabase.rpc('toggle_feed_upvote', {
         p_feed_id: feedId,
       });
-      if (error) throw error;
+      if (error) {
+        console.error('[toggle_feed_upvote] RPC error:', error);
+        throw error;
+      }
       if (!data?.length) throw new Error('No data returned from toggle_feed_upvote');
-      return data[0];
+      return data[0] as { new_upvote_count: number; is_upvoted: boolean };
     },
     onMutate: async ({ feedId, isCurrentlyUpvoted }) => {
-      if (inflightFeedIds.has(feedId)) {
-        return { prev: undefined, skipped: true as const };
-      }
-      inflightFeedIds.add(feedId);
-
       await queryClient.cancelQueries({ queryKey });
 
       const prev = queryClient.getQueryData<ActivityItem[]>(queryKey);
@@ -50,15 +46,10 @@ export const useToggleUpvote = () => {
       return { prev };
     },
     onError: (error, _vars, ctx) => {
-      if (ctx?.skipped) return;
       console.error('Toggle upvote failed:', error);
       if (ctx?.prev) {
         queryClient.setQueryData(queryKey, ctx.prev);
       }
-    },
-    onSettled: (_data, _error, { feedId }) => {
-      inflightFeedIds.delete(feedId);
-      queryClient.invalidateQueries({ queryKey });
     },
   });
 };
