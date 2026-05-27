@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { Trophy, Layers, Users, Camera, LocateFixed, ShoppingBag, Settings } from 'lucide-react';
 import { useIsAdmin } from '@/features/auth/api/use-is-admin';
+import { useIsInspector } from '@/features/auth/api/use-is-inspector';
 import { UserSettingsDialog } from '@/features/auth/components/user-settings-dialog';
 
 interface NavItemProps {
@@ -34,6 +35,7 @@ interface MapDockProps {
 export const MapDock = ({ onOpenLayers, onLocate, isLocating, locationError }: MapDockProps) => {
   const navigate = useNavigate();
   const { data: isAdmin } = useIsAdmin();
+  const { data: isInspector } = useIsInspector();
   const [activeTab, setActiveTab] = useState('');
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [visibleError, setVisibleError] = useState<string | null>(null);
@@ -138,15 +140,17 @@ export const MapDock = ({ onOpenLayers, onLocate, isLocating, locationError }: M
               }}
             />
 
-            {/* Settings / Admin */}
+            {/* Settings / Admin / Inspector */}
             <NavItem
               icon={Settings}
-              label={isAdmin ? 'Admin' : 'Settings'}
+              label={isAdmin ? 'Admin' : isInspector ? 'Dashboard' : 'Settings'}
               isActive={activeTab === 'settings'}
               onClick={() => {
                 setActiveTab('settings');
                 if (isAdmin) {
                   navigate('/dashboard');
+                } else if (isInspector) {
+                  navigate('/inspector');
                 } else {
                   setSettingsOpen(true);
                 }
