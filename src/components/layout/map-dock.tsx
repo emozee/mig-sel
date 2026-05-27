@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { Trophy, Layers, Users, Camera, LocateFixed, ShoppingBag, Settings } from 'lucide-react';
 import { useIsAdmin } from '@/features/auth/api/use-is-admin';
+import { UserSettingsDialog } from '@/features/auth/components/user-settings-dialog';
 
 interface NavItemProps {
   icon: typeof Trophy;
@@ -34,6 +35,7 @@ export const MapDock = ({ onOpenLayers, onLocate, isLocating, locationError }: M
   const navigate = useNavigate();
   const { data: isAdmin } = useIsAdmin();
   const [activeTab, setActiveTab] = useState('');
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [visibleError, setVisibleError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -146,13 +148,14 @@ export const MapDock = ({ onOpenLayers, onLocate, isLocating, locationError }: M
                 if (isAdmin) {
                   navigate('/dashboard');
                 } else {
-                  // TODO: Open settings / profile modal
+                  setSettingsOpen(true);
                 }
               }}
             />
           </div>
         </div>
       </div>
+      <UserSettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
     </div>
   );
 };

@@ -94,7 +94,7 @@ export const FeedItem = ({ item }: FeedItemProps) => {
           <Heart
             className="h-[18px] w-[18px]"
             fill={item.isUpvoted ? 'currentColor' : 'none'}
-            strokeWidth={item.isUpvoted ? 0 : 2}
+            strokeWidth={item.isUpvoted ? 0 : 1}
           />
           <span className="text-sm font-medium">{item.upvoteCount}</span>
         </button>
