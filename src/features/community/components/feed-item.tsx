@@ -54,9 +54,17 @@ export const FeedItem = ({ item }: FeedItemProps) => {
   return (
     <div className="rounded-xl bg-white shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
       <div className="flex items-center gap-2.5 px-3 pt-3 pb-2">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-700">
-          {item.userInitials}
-        </div>
+        {item.avatarUrl ? (
+          <img
+            src={item.avatarUrl}
+            alt={item.userName}
+            className="h-9 w-9 shrink-0 rounded-full object-cover"
+          />
+        ) : (
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-700">
+            {item.userInitials}
+          </div>
+        )}
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between">
             <div className="flex min-w-0 items-baseline gap-2">

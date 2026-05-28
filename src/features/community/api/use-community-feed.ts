@@ -42,6 +42,20 @@ export const useCommunityFeed = () => {
         throw error;
       }
 
+      const avatarMap = new Map<string, string>();
+      const userIds = (data || []).map((r) => r.user_id).filter((id): id is string => !!id);
+      if (userIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id, avatar_url')
+          .in('id', userIds);
+        if (profiles) {
+          for (const p of profiles) {
+            if (p.avatar_url) avatarMap.set(p.id, p.avatar_url);
+          }
+        }
+      }
+
       let upvotedIds = new Set<number>();
       if (user?.id && data?.length) {
         const ids = data.map((r) => r.id);
@@ -70,6 +84,7 @@ export const useCommunityFeed = () => {
         isUpvoted: upvotedIds.has(row.id),
         image_url: row.image_url ?? undefined,
         userId: row.user_id ?? undefined,
+        avatarUrl: row.user_id ? avatarMap.get(row.user_id) : undefined,
         status:
           (row.grievance as { status?: FeedStatus } | null)?.status ??
           (row.status as FeedStatus | null) ??

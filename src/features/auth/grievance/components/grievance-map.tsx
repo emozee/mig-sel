@@ -15,6 +15,8 @@ import {
   Minimize2,
   ArrowRight,
   Link2,
+  MapPin,
+  Layers,
 } from 'lucide-react';
 import { useMapFilters, type MapFilters } from '../hooks/use-map-filters';
 import { DirectionsControl } from './directions-control';
@@ -695,6 +697,64 @@ function ScaleControl() {
   return null;
 }
 
+const CATEGORY_CHIPS: { key: keyof MapFilters['categories']; label: string; color: string }[] = [
+  { key: 'road', label: 'Road', color: '#d97706' },
+  { key: 'garbage', label: 'Waste', color: '#2563eb' },
+  { key: 'lighting', label: 'Lighting', color: '#ca8a04' },
+  { key: 'drainage', label: 'Drainage', color: '#0891b2' },
+  { key: 'other', label: 'Other', color: '#154212' },
+];
+
+function CategoryFilterChips({
+  filters,
+  onToggleCategory,
+  onToggleDropOffPoints,
+}: {
+  filters: MapFilters;
+  onToggleCategory: (category: keyof MapFilters['categories']) => void;
+  onToggleDropOffPoints: () => void;
+}) {
+  return (
+    <div className="absolute top-16 left-3 z-[1000] overflow-x-auto">
+      <div className="flex items-center gap-1.5">
+        {CATEGORY_CHIPS.map(({ key, label, color }) => {
+          const isActive = filters.categories[key];
+          return (
+            <button
+              key={key}
+              onClick={() => onToggleCategory(key)}
+              className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm ring-1 transition-all active:scale-95 ${
+                isActive
+                  ? 'text-white ring-transparent'
+                  : 'bg-white text-gray-600 ring-gray-200/60 hover:bg-gray-50'
+              }`}
+              style={isActive ? { backgroundColor: color, borderColor: 'transparent' } : undefined}
+            >
+              <span
+                className={`h-2 w-2 rounded-full ${isActive ? 'bg-white/80' : ''}`}
+                style={!isActive ? { backgroundColor: color } : undefined}
+              />
+              {label}
+            </button>
+          );
+        })}
+        <div className="mx-1 h-5 w-px shrink-0 bg-gray-300" />
+        <button
+          onClick={onToggleDropOffPoints}
+          className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm ring-1 transition-all active:scale-95 ${
+            filters.showDropOffPoints
+              ? 'bg-emerald-600 text-white ring-transparent'
+              : 'bg-white text-gray-600 ring-gray-200/60 hover:bg-gray-50'
+          }`}
+        >
+          <MapPin className="h-3 w-3" />
+          Drop Off
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function GrievanceMarkers({
   grievances,
   allGrievances,
@@ -730,7 +790,12 @@ function GrievanceMarkers({
     };
   }, [map]);
 
-  const precision = zoom >= 17 ? 5 : zoom >= 15 ? 4 : zoom >= 13 ? 3 : 2;
+  const precision = useMemo(() => {
+    const lat = 26.9312;
+    const mpp = (156543.03 * Math.cos((lat * Math.PI) / 180)) / Math.pow(2, zoom);
+    const clusterMeters = mpp * 30;
+    return Math.max(1, Math.min(6, Math.round(Math.log10(111320 / clusterMeters))));
+  }, [zoom]);
 
   const childrenMap = useMemo(() => {
     const map = new Map<string, typeof allGrievances>();
@@ -930,11 +995,22 @@ function GrievanceMarkers({
 interface GrievanceMapProps {
   filters?: MapFilters;
   userLocation?: { lat: number; lng: number } | null;
+  onToggleCategory?: (category: keyof MapFilters['categories']) => void;
+  onToggleDropOffPoints?: () => void;
+  onOpenLayers?: () => void;
 }
 
-export const GrievanceMap = ({ filters: filtersProp, userLocation = null }: GrievanceMapProps) => {
+export const GrievanceMap = ({
+  filters: filtersProp,
+  userLocation = null,
+  onToggleCategory: onToggleCategoryProp,
+  onToggleDropOffPoints: onToggleDropOffPointsProp,
+  onOpenLayers,
+}: GrievanceMapProps) => {
   const defaultFilters = useMapFilters();
   const filters = filtersProp ?? defaultFilters.filters;
+  const onToggleCategory = onToggleCategoryProp ?? defaultFilters.toggleCategory;
+  const onToggleDropOffPoints = onToggleDropOffPointsProp ?? defaultFilters.toggleDropOffPoints;
   const [directionsTarget, setDirectionsTarget] = useState<{
     lat: number;
     lng: number;
@@ -1021,21 +1097,21 @@ export const GrievanceMap = ({ filters: filtersProp, userLocation = null }: Grie
 
           {filters.mapStyle === 'standard' ? (
             <TileLayer
-              url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>'
-              maxZoom={20}
+              url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
+              attribution='&copy; <a href="https://www.google.com/maps">Google</a>'
+              maxZoom={22}
             />
           ) : filters.mapStyle === 'satellite' ? (
             <TileLayer
-              url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/World_Imagery_with_Labels/MapServer/tile/{z}/{y}/{x}"
-              attribution="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
-              maxZoom={20}
+              url="https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"
+              attribution='&copy; <a href="https://www.google.com/maps">Google</a>'
+              maxZoom={22}
             />
           ) : (
             <TileLayer
-              url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>'
-              maxZoom={20}
+              url="https://mt1.google.com/vt/lyrs=p&x={x}&y={y}&z={z}"
+              attribution='&copy; <a href="https://www.google.com/maps">Google</a>'
+              maxZoom={22}
             />
           )}
 
@@ -1045,11 +1121,30 @@ export const GrievanceMap = ({ filters: filtersProp, userLocation = null }: Grie
             <SearchBox />
           </div>
 
+          <CategoryFilterChips
+            filters={filters}
+            onToggleCategory={onToggleCategory}
+            onToggleDropOffPoints={onToggleDropOffPoints}
+          />
+
           <UserLocationDot coords={detectedCoords} accuracy={accuracy} />
 
           <UserMarker userLocation={userLocation} />
 
           <LocateButton coords={detectedCoords} />
+
+          {onOpenLayers && (
+            <div className="absolute right-4 bottom-40 z-[1000]">
+              <button
+                onClick={onOpenLayers}
+                title="Map Layers"
+                aria-label="Map Layers"
+                className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg bg-white shadow-md ring-1 ring-gray-200/60 transition-all hover:bg-gray-50 active:scale-95 md:h-9 md:w-9"
+              >
+                <Layers className="h-3.5 w-3.5 text-gray-700 md:h-4 md:w-4" />
+              </button>
+            </div>
+          )}
 
           {directionsTarget && (
             <DirectionsControl

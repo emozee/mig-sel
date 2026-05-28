@@ -103,9 +103,9 @@ export const useGeoLocation = () => {
     };
 
     const watchId = navigator.geolocation.watchPosition(success, error, {
-      enableHighAccuracy: false,
-      timeout: 10000,
-      maximumAge: 120000,
+      enableHighAccuracy: true,
+      timeout: 15000,
+      maximumAge: 30000,
     });
     watchIdRef.current = watchId;
 

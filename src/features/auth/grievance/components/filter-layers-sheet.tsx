@@ -1,5 +1,5 @@
 import { Dialog as DialogPrimitive } from 'radix-ui';
-import { X, Map, Satellite, Grid3x3, Check } from 'lucide-react';
+import { X, Map, Satellite, Grid3x3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { MapFilters, MapStyleOption, TimeframeOption } from '../hooks/use-map-filters';
 
@@ -8,7 +8,6 @@ interface FilterLayersSheetProps {
   onOpenChange: (open: boolean) => void;
   filters: MapFilters;
   onMapStyleChange: (style: MapStyleOption) => void;
-  onToggleCategory: (category: keyof MapFilters['categories']) => void;
   onShowResolvedChange: (show: boolean) => void;
   onTimeframeChange: (timeframe: TimeframeOption) => void;
 }
@@ -17,14 +16,6 @@ const MAP_STYLE_OPTIONS: { key: MapStyleOption; label: string; icon: typeof Map 
   { key: 'standard', label: 'Standard View', icon: Map },
   { key: 'satellite', label: 'Satellite View', icon: Satellite },
   { key: 'infrastructure', label: 'Infrastructure View', icon: Grid3x3 },
-];
-
-const CATEGORIES: { key: keyof MapFilters['categories']; label: string; color: string }[] = [
-  { key: 'road', label: 'Road Issues', color: '#d97706' },
-  { key: 'garbage', label: 'Waste Management', color: '#2563eb' },
-  { key: 'lighting', label: 'Broken Lighting', color: '#ca8a04' },
-  { key: 'drainage', label: 'Drainage', color: '#0891b2' },
-  { key: 'other', label: 'Other', color: '#154212' },
 ];
 
 const TIMEFRAMES: { key: TimeframeOption; label: string }[] = [
@@ -38,7 +29,6 @@ export function FilterLayersSheet({
   onOpenChange,
   filters,
   onMapStyleChange,
-  onToggleCategory,
   onShowResolvedChange,
   onTimeframeChange,
 }: FilterLayersSheetProps) {
@@ -99,43 +89,6 @@ export function FilterLayersSheet({
                       )}
                     />
                     <span className="text-center leading-tight">{label}</span>
-                  </button>
-                ))}
-              </div>
-            </section>
-
-            <div className="border-border mb-5 border-t" />
-
-            <section className="mb-5">
-              <h3 className="text-muted-foreground mb-3 text-xs font-bold tracking-wider uppercase">
-                Filter by Category
-              </h3>
-              <div className="space-y-1">
-                {CATEGORIES.map(({ key, label, color }) => (
-                  <button
-                    key={key}
-                    onClick={() => onToggleCategory(key)}
-                    className={cn(
-                      'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all',
-                      filters.categories[key]
-                        ? 'bg-accent text-accent-foreground'
-                        : 'text-muted-foreground hover:text-foreground/80',
-                    )}
-                  >
-                    <div
-                      className={cn(
-                        'flex h-5 w-5 items-center justify-center rounded-md border transition-all',
-                        filters.categories[key] ? 'border-transparent' : 'border-input',
-                      )}
-                      style={{
-                        backgroundColor: filters.categories[key] ? color : 'transparent',
-                      }}
-                    >
-                      {filters.categories[key] && (
-                        <Check className="text-primary-foreground h-3 w-3" />
-                      )}
-                    </div>
-                    <span>{label}</span>
                   </button>
                 ))}
               </div>

@@ -12,6 +12,7 @@ export interface ActivityItem {
   isUpvoted: boolean;
   image_url?: string;
   userId?: string;
+  avatarUrl?: string;
   status?: FeedStatus;
 }
 

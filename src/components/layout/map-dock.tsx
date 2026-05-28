@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Trophy, Layers, Users, Camera, LocateFixed, ShoppingBag, Settings } from 'lucide-react';
+import { Trophy, Users, Camera, ShoppingBag, Settings } from 'lucide-react';
 import { useIsAdmin } from '@/features/auth/api/use-is-admin';
 import { useIsInspector } from '@/features/auth/api/use-is-inspector';
 import { UserSettingsDialog } from '@/features/auth/components/user-settings-dialog';
@@ -25,43 +25,15 @@ const NavItem = ({ icon: Icon, label, isActive, onClick, className = '' }: NavIt
   </button>
 );
 
-interface MapDockProps {
-  onOpenLayers?: () => void;
-  onLocate?: () => void;
-  isLocating?: boolean;
-  locationError?: string | null;
-}
-
-export const MapDock = ({ onOpenLayers, onLocate, isLocating, locationError }: MapDockProps) => {
+export const MapDock = () => {
   const navigate = useNavigate();
   const { data: isAdmin } = useIsAdmin();
   const { data: isInspector } = useIsInspector();
   const [activeTab, setActiveTab] = useState('');
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [visibleError, setVisibleError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!locationError) {
-      requestAnimationFrame(() => setVisibleError(null));
-      return;
-    }
-    requestAnimationFrame(() => setVisibleError(locationError));
-    const timer = setTimeout(() => requestAnimationFrame(() => setVisibleError(null)), 5000);
-    return () => clearTimeout(timer);
-  }, [locationError]);
 
   return (
     <div className="fixed bottom-6 left-1/2 z-50 w-[95%] max-w-xl -translate-x-1/2">
-      {/* Error toast */}
-      {visibleError && (
-        <div
-          onClick={() => setVisibleError(null)}
-          className="absolute bottom-full left-1/2 z-50 mb-3 w-[90%] -translate-x-1/2 cursor-pointer rounded-xl bg-red-50 px-4 py-2.5 text-center text-xs font-semibold text-red-700 shadow-lg ring-1 ring-red-200 backdrop-blur-md"
-        >
-          {visibleError}
-        </div>
-      )}
-
       <div className="relative rounded-2xl border border-slate-200 bg-white px-4 py-2 shadow-xl">
         {/* Elevated FAB – floats above the dock center */}
         <div className="absolute -top-8 left-1/2 z-10 -translate-x-1/2">
@@ -91,17 +63,6 @@ export const MapDock = ({ onOpenLayers, onLocate, isLocating, locationError }: M
               }}
             />
 
-            {/* Filter / Layers */}
-            <NavItem
-              icon={Layers}
-              label="Layers"
-              isActive={activeTab === 'layers'}
-              onClick={() => {
-                setActiveTab('layers');
-                onOpenLayers?.();
-              }}
-            />
-
             {/* Community */}
             <NavItem
               icon={Users}
@@ -116,19 +77,6 @@ export const MapDock = ({ onOpenLayers, onLocate, isLocating, locationError }: M
 
           {/* Right group */}
           <div className="flex flex-1 items-center justify-around">
-            {/* My Location */}
-            <NavItem
-              icon={LocateFixed}
-              label="Location"
-              isActive={activeTab === 'location'}
-              onClick={() => {
-                if (isLocating) return;
-                setActiveTab('location');
-                onLocate?.();
-              }}
-              className={isLocating ? 'animate-pulse text-blue-400' : ''}
-            />
-
             {/* Shop */}
             <NavItem
               icon={ShoppingBag}
