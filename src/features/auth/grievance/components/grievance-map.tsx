@@ -9,16 +9,18 @@ import {
   Search,
   Loader2,
   Navigation,
-  Plus,
-  Minus,
   Maximize2,
   Minimize2,
   ArrowRight,
   Link2,
   MapPin,
   Layers,
+  Map as MapIcon,
+  Satellite,
+  Grid3x3,
 } from 'lucide-react';
-import { useMapFilters, type MapFilters } from '../hooks/use-map-filters';
+import { cn } from '@/lib/utils';
+import { useMapFilters, type MapFilters, type MapStyleOption } from '../hooks/use-map-filters';
 import { DirectionsControl } from './directions-control';
 import { ImageLightbox } from './image-lightbox';
 import {
@@ -286,31 +288,6 @@ function categoryLabel(category: string): string {
   return CATEGORY_LABELS[category] ?? category;
 }
 
-function ZoomControls() {
-  const map = useMap();
-
-  return (
-    <div className="absolute right-4 bottom-28 z-[1000] flex flex-col gap-px">
-      <button
-        onClick={() => map.zoomIn()}
-        title="Zoom in"
-        aria-label="Zoom in"
-        className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-t-xl bg-white shadow-md ring-1 ring-gray-200/60 transition-all hover:bg-gray-50 active:scale-95 md:h-10 md:w-10"
-      >
-        <Plus className="h-4 w-4 text-gray-700 md:h-5 md:w-5" />
-      </button>
-      <button
-        onClick={() => map.zoomOut()}
-        title="Zoom out"
-        aria-label="Zoom out"
-        className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-b-xl bg-white shadow-md ring-1 ring-gray-200/60 transition-all hover:bg-gray-50 active:scale-95 md:h-10 md:w-10"
-      >
-        <Minus className="h-4 w-4 text-gray-700 md:h-5 md:w-5" />
-      </button>
-    </div>
-  );
-}
-
 function SearchBox() {
   const map = useMap();
   return <MapSearch map={map} />;
@@ -461,7 +438,7 @@ function LocateButton({ coords: detectedCoords }: { coords: { lat: number; lng: 
   }, []);
 
   return (
-    <div className="absolute right-4 bottom-52 z-[1000]">
+    <div className="absolute right-4 bottom-24 z-[1000]">
       {error && (
         <div
           onClick={() => setError(null)}
@@ -595,7 +572,7 @@ function MapSearch({ map }: { map: L.Map }) {
   };
 
   return (
-    <div ref={containerRef} className="min-w-0 flex-1">
+    <div ref={containerRef} className="relative min-w-0 flex-1">
       <div className="flex items-center gap-2 rounded-xl bg-white px-3 py-2.5 shadow-lg ring-1 ring-gray-200/60 backdrop-blur-md">
         <Search className="h-4 w-4 shrink-0 text-gray-400" />
         <input
@@ -613,7 +590,7 @@ function MapSearch({ map }: { map: L.Map }) {
         {isSearching && <Loader2 className="h-4 w-4 animate-spin text-gray-400" />}
       </div>
       {isOpen && results.length > 0 && (
-        <div className="mt-1 max-h-60 overflow-y-auto rounded-xl bg-white shadow-lg ring-1 ring-gray-200/60">
+        <div className="absolute right-0 left-0 z-[1001] mt-1 max-h-60 overflow-y-auto rounded-xl bg-white shadow-lg ring-1 ring-gray-200/60">
           {results.map((result, i) => (
             <button
               key={i}
@@ -714,9 +691,51 @@ function CategoryFilterChips({
   onToggleCategory: (category: keyof MapFilters['categories']) => void;
   onToggleDropOffPoints: () => void;
 }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+
+  const onDragStart = (e: React.MouseEvent) => {
+    setIsDragging(true);
+    setStartX(e.pageX - (scrollRef.current?.offsetLeft ?? 0));
+    setScrollLeft(scrollRef.current?.scrollLeft ?? 0);
+  };
+
+  const onDragEnd = () => {
+    setIsDragging(false);
+  };
+
+  const onDragMove = (e: React.MouseEvent) => {
+    if (!isDragging || !scrollRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - scrollRef.current.offsetLeft;
+    const walk = (x - startX) * 1.5;
+    scrollRef.current.scrollLeft = scrollLeft - walk;
+  };
+
   return (
-    <div className="absolute top-16 left-3 z-[1000] overflow-x-auto">
-      <div className="flex items-center gap-1.5">
+    <div
+      ref={scrollRef}
+      onMouseDown={onDragStart}
+      onMouseUp={onDragEnd}
+      onMouseLeave={onDragEnd}
+      onMouseMove={onDragMove}
+      className="absolute top-16 right-0 left-0 z-[1000] cursor-grab touch-pan-x [scrollbar-width:none] overflow-x-auto px-3 [-ms-overflow-style:none] active:cursor-grabbing [&::-webkit-scrollbar]:hidden"
+    >
+      <div className="flex w-max items-center gap-1.5">
+        <button
+          onClick={onToggleDropOffPoints}
+          className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm ring-1 transition-all active:scale-95 ${
+            filters.showDropOffPoints
+              ? 'bg-emerald-600 text-white ring-transparent'
+              : 'bg-white text-gray-600 ring-gray-200/60 hover:bg-gray-50'
+          }`}
+        >
+          <MapPin className="h-3 w-3" />
+          Drop Off
+        </button>
+        <div className="mx-1 h-5 w-px shrink-0 bg-gray-300" />
         {CATEGORY_CHIPS.map(({ key, label, color }) => {
           const isActive = filters.categories[key];
           return (
@@ -738,18 +757,6 @@ function CategoryFilterChips({
             </button>
           );
         })}
-        <div className="mx-1 h-5 w-px shrink-0 bg-gray-300" />
-        <button
-          onClick={onToggleDropOffPoints}
-          className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm ring-1 transition-all active:scale-95 ${
-            filters.showDropOffPoints
-              ? 'bg-emerald-600 text-white ring-transparent'
-              : 'bg-white text-gray-600 ring-gray-200/60 hover:bg-gray-50'
-          }`}
-        >
-          <MapPin className="h-3 w-3" />
-          Drop Off
-        </button>
       </div>
     </div>
   );
@@ -997,7 +1004,6 @@ interface GrievanceMapProps {
   userLocation?: { lat: number; lng: number } | null;
   onToggleCategory?: (category: keyof MapFilters['categories']) => void;
   onToggleDropOffPoints?: () => void;
-  onOpenLayers?: () => void;
 }
 
 export const GrievanceMap = ({
@@ -1005,7 +1011,6 @@ export const GrievanceMap = ({
   userLocation = null,
   onToggleCategory: onToggleCategoryProp,
   onToggleDropOffPoints: onToggleDropOffPointsProp,
-  onOpenLayers,
 }: GrievanceMapProps) => {
   const defaultFilters = useMapFilters();
   const filters = filtersProp ?? defaultFilters.filters;
@@ -1016,6 +1021,8 @@ export const GrievanceMap = ({
     lng: number;
     title: string;
   } | null>(null);
+  const [showLayers, setShowLayers] = useState(false);
+  const layerRef = useRef<HTMLDivElement>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const { coords: detectedCoords, accuracy } = useGeoLocation();
   const { data: session } = useSession();
@@ -1062,6 +1069,23 @@ export const GrievanceMap = ({
 
     return true;
   });
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (layerRef.current && !layerRef.current.contains(e.target as Node)) {
+        setShowLayers(false);
+      }
+    };
+    if (showLayers) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showLayers]);
+
+  const handleMapStyleChange = (style: MapStyleOption) => {
+    defaultFilters.setMapStyle(style);
+    setShowLayers(false);
+  };
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -1115,9 +1139,7 @@ export const GrievanceMap = ({
             />
           )}
 
-          <ZoomControls />
-
-          <div className="absolute top-4 left-3 z-[1000] w-[calc(100%-5rem)] max-w-xs sm:left-4 sm:max-w-sm">
+          <div className="absolute top-4 left-3 z-[1002] w-[calc(100%-5rem)] max-w-xs sm:left-4 sm:max-w-sm">
             <SearchBox />
           </div>
 
@@ -1133,18 +1155,50 @@ export const GrievanceMap = ({
 
           <LocateButton coords={detectedCoords} />
 
-          {onOpenLayers && (
-            <div className="absolute right-4 bottom-40 z-[1000]">
-              <button
-                onClick={onOpenLayers}
-                title="Map Layers"
-                aria-label="Map Layers"
-                className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg bg-white shadow-md ring-1 ring-gray-200/60 transition-all hover:bg-gray-50 active:scale-95 md:h-9 md:w-9"
-              >
-                <Layers className="h-3.5 w-3.5 text-gray-700 md:h-4 md:w-4" />
-              </button>
-            </div>
-          )}
+          <div ref={layerRef} className="absolute top-36 right-4 z-[1000]">
+            <button
+              onClick={() => setShowLayers((v) => !v)}
+              title="Map Layers"
+              aria-label="Map Layers"
+              className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg bg-white shadow-md ring-1 ring-gray-200/60 transition-all hover:bg-gray-50 active:scale-95 md:h-9 md:w-9"
+            >
+              <Layers className="h-3.5 w-3.5 text-gray-700 md:h-4 md:w-4" />
+            </button>
+            {showLayers && (
+              <div className="absolute top-10 right-0 w-44 rounded-xl bg-white p-2 shadow-xl ring-1 ring-gray-200/60">
+                <p className="text-muted-foreground mb-1.5 px-2 text-[10px] font-bold tracking-wider uppercase">
+                  Map Layers
+                </p>
+                <div className="space-y-0.5">
+                  {(
+                    [
+                      { key: 'standard' as const, label: 'Standard View', icon: MapIcon },
+                      { key: 'satellite' as const, label: 'Satellite View', icon: Satellite },
+                      {
+                        key: 'infrastructure' as const,
+                        label: 'Infrastructure View',
+                        icon: Grid3x3,
+                      },
+                    ] as const
+                  ).map(({ key, label, icon: Icon }) => (
+                    <button
+                      key={key}
+                      onClick={() => handleMapStyleChange(key)}
+                      className={cn(
+                        'flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-semibold transition-all',
+                        filters.mapStyle === key
+                          ? 'bg-primary/10 text-primary'
+                          : 'text-muted-foreground hover:bg-gray-100',
+                      )}
+                    >
+                      <Icon className="h-4 w-4 shrink-0" />
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
 
           {directionsTarget && (
             <DirectionsControl
@@ -1191,29 +1245,6 @@ export const GrievanceMap = ({
             {detectedCoords
               ? `${detectedCoords.lat.toFixed(4)}, ${detectedCoords.lng.toFixed(4)}`
               : 'Sarpang, Bhutan'}
-          </div>
-
-          <div className="absolute bottom-4 left-4 z-[1000] hidden flex-wrap items-center gap-x-2 gap-y-1 rounded-xl bg-white/90 px-3 py-2 text-[10px] font-bold tracking-wider text-gray-500 shadow-sm ring-1 ring-gray-200/50 backdrop-blur-md sm:flex md:gap-2">
-            <div className="flex items-center gap-1.5">
-              <span className="h-2.5 w-2.5 rounded-full bg-[#d97706]" />
-              <span>Road</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="h-2.5 w-2.5 rounded-full bg-[#2563eb]" />
-              <span>Waste</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="h-2.5 w-2.5 rounded-full bg-[#ca8a04]" />
-              <span>Lighting</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="h-2.5 w-2.5 rounded-full bg-[#0891b2]" />
-              <span>Drainage</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="h-2.5 w-2.5 rounded-full bg-[#154212]" />
-              <span>Other</span>
-            </div>
           </div>
         </MapContainer>
       </div>
