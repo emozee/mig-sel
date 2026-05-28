@@ -55,13 +55,13 @@ const MEDAL_CONFIG: Record<number, { ring: string; badge: string; bg: string; la
   2: {
     ring: 'ring-chart-2',
     badge: 'bg-chart-2 text-white',
-    bg: 'from-chart-2 to-chart-5',
+    bg: 'from-chart-2 to-chart-3',
     label: '2nd',
   },
   3: {
     ring: 'ring-chart-4',
-    badge: 'bg-chart-4 text-chart-1',
-    bg: 'from-chart-4 to-secondary',
+    badge: 'bg-chart-4 text-white',
+    bg: 'from-chart-4 to-chart-2',
     label: '3rd',
   },
 };
@@ -111,9 +111,9 @@ const PodiumEntry = ({
       >
         {entry.username ?? 'Anonymous'}
       </p>
-      <div className={`flex items-baseline gap-0.5 rounded-full ${config.bg} px-2.5 py-0.5`}>
-        <span className="text-xs font-black text-white">{entry.points}</span>
-        <span className="text-[10px] font-semibold text-white/80">pts</span>
+      <div className="flex items-baseline gap-0.5">
+        <span className="text-foreground text-sm font-black">{entry.points}</span>
+        <span className="text-muted-foreground text-[10px] font-semibold">pts</span>
       </div>
       {entry.id === currentUserId && (
         <p className="text-primary -mt-0.5 text-[10px] font-semibold">You</p>

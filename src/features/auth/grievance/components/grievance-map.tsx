@@ -32,6 +32,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { useSearchParams } from 'react-router';
 
 const SARPANG_BOUNDS = L.latLngBounds([26.7032, 89.9213], [27.2401, 90.7235]);
 const DEFAULT_CENTER = { lat: 26.9312, lng: 90.4795 };
@@ -438,7 +439,7 @@ function LocateButton({ coords: detectedCoords }: { coords: { lat: number; lng: 
   }, []);
 
   return (
-    <div className="absolute right-4 bottom-24 z-[1000]">
+    <div className="absolute right-4 bottom-32 z-[1000]">
       {error && (
         <div
           onClick={() => setError(null)}
@@ -452,10 +453,10 @@ function LocateButton({ coords: detectedCoords }: { coords: { lat: number; lng: 
         disabled={locating}
         title="My Location"
         aria-label="My Location"
-        className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl bg-white shadow-md ring-1 ring-gray-200/60 transition-all hover:bg-gray-50 active:scale-95 disabled:cursor-wait disabled:opacity-50"
+        className="flex h-12 w-12 cursor-pointer items-center justify-center rounded-xl bg-white shadow-md ring-1 ring-gray-200/60 transition-all hover:bg-gray-50 active:scale-95 disabled:cursor-wait disabled:opacity-50"
       >
         {locating ? (
-          <Loader2 className="h-5 w-5 animate-spin text-gray-700" />
+          <Loader2 className="h-6 w-6 animate-spin text-gray-700" />
         ) : (
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -465,7 +466,7 @@ function LocateButton({ coords: detectedCoords }: { coords: { lat: number; lng: 
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="h-5 w-5 text-gray-700"
+            className="h-6 w-6 text-gray-700"
           >
             <line x1="12" x2="12" y1="2" y2="6" />
             <line x1="12" x2="12" y1="18" y2="22" />
@@ -646,12 +647,25 @@ function FullscreenButton({
 
 function MapInit() {
   const map = useMap();
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
     requestAnimationFrame(() => {
       map.invalidateSize();
     });
   }, [map]);
+
+  useEffect(() => {
+    const lat = searchParams.get('lat');
+    const lng = searchParams.get('lng');
+    if (lat && lng) {
+      const numLat = Number.parseFloat(lat);
+      const numLng = Number.parseFloat(lng);
+      if (!Number.isNaN(numLat) && !Number.isNaN(numLng)) {
+        map.flyTo([numLat, numLng], 16, { duration: 1.2 });
+      }
+    }
+  }, [map, searchParams]);
 
   return null;
 }
@@ -722,11 +736,18 @@ function CategoryFilterChips({
       onMouseMove={(e) => onMove(e.clientX)}
       onMouseUp={onUp}
       onMouseLeave={onUp}
-      onTouchStart={(e) => onDown(e.touches[0].clientX)}
+      onTouchStart={(e) => {
+        e.stopPropagation();
+        onDown(e.touches[0].clientX);
+      }}
       onTouchMove={(e) => {
+        e.stopPropagation();
         onMove(e.touches[0].clientX);
       }}
-      onTouchEnd={onUp}
+      onTouchEnd={(e) => {
+        e.stopPropagation();
+        onUp();
+      }}
       className="absolute inset-x-0 top-16 z-[1000] cursor-grab [scrollbar-width:none] overflow-x-auto overscroll-x-contain px-3 select-none [-ms-overflow-style:none] active:cursor-grabbing [&::-webkit-scrollbar]:hidden"
     >
       <div className="inline-flex items-center gap-1.5">

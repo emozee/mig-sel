@@ -1,7 +1,9 @@
-import { useRef } from 'react';
-import { Heart, MoreHorizontal } from 'lucide-react';
+import { useRef, useState, useEffect } from 'react';
+import { Heart, MoreHorizontal, Edit3, Trash2, MapPin } from 'lucide-react';
+import { useNavigate } from 'react-router';
 import { useCurrentUser } from '@/features/auth/api/use-current-user';
 import { useToggleUpvote } from '../api/use-toggle-upvote';
+import { useDeleteFeedItem } from '../api/use-delete-feed-item';
 import { CommentSection } from './comment-section';
 import type { ActivityItem, FeedStatus } from '../types';
 
@@ -28,8 +30,50 @@ interface FeedItemProps {
 
 export const FeedItem = ({ item }: FeedItemProps) => {
   const { user } = useCurrentUser();
+  const navigate = useNavigate();
+  const { mutate: deleteFeedItem } = useDeleteFeedItem();
   const { mutate, isPending } = useToggleUpvote();
   const clickLock = useRef(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const isOwner = user?.id === item.userId;
+
+  const handleDelete = () => {
+    if (!confirm('Delete this post?')) return;
+    deleteFeedItem(item.id);
+    setMenuOpen(false);
+  };
+
+  const handleFindOnMap = () => {
+    setMenuOpen(false);
+    if (item.latitude && item.longitude) {
+      navigate(`/map?lat=${item.latitude}&lng=${item.longitude}`);
+    } else if (item.location) {
+      navigate(`/map?search=${encodeURIComponent(item.location)}`);
+    } else {
+      navigate('/map');
+    }
+  };
+
+  const handleEdit = () => {
+    setMenuOpen(false);
+    // TODO: open edit dialog
+  };
+
+  const handleMenuClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setMenuOpen((v) => !v);
+  };
+
+  useEffect(() => {
+    const close = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, []);
 
   const handleUpvote = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -78,7 +122,44 @@ export const FeedItem = ({ item }: FeedItemProps) => {
               )}
               <span className="shrink-0 text-xs text-gray-400">{timeAgo(item.timestamp)}</span>
             </div>
-            <MoreHorizontal className="h-4 w-4 shrink-0 text-gray-400" />
+            <div className="relative" ref={menuRef}>
+              <button
+                onClick={handleMenuClick}
+                className="flex h-7 w-7 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+              >
+                <MoreHorizontal className="h-4 w-4" />
+              </button>
+              {menuOpen && (
+                <div className="absolute top-8 right-0 z-50 w-40 overflow-hidden rounded-xl bg-white py-1 shadow-lg ring-1 ring-gray-200/60">
+                  {isOwner && (
+                    <>
+                      <button
+                        onClick={handleEdit}
+                        className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+                      >
+                        <Edit3 className="h-3.5 w-3.5" />
+                        Edit
+                      </button>
+                      <button
+                        onClick={handleDelete}
+                        className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-semibold text-red-600 transition-colors hover:bg-red-50"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        Delete
+                      </button>
+                      <div className="mx-2 my-1 border-t border-gray-100" />
+                    </>
+                  )}
+                  <button
+                    onClick={handleFindOnMap}
+                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+                  >
+                    <MapPin className="h-3.5 w-3.5" />
+                    Find on Map
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

@@ -14,6 +14,8 @@ export interface ActivityItem {
   userId?: string;
   avatarUrl?: string;
   status?: FeedStatus;
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface FeedComment {

@@ -102,11 +102,13 @@ export const ShopPage = () => {
             Back
           </Button>
           {profile && (
-            <div className="ml-auto rounded-xl border bg-white px-3 py-1.5 text-right shadow-sm sm:px-4 sm:py-2">
-              <p className="text-[10px] font-bold tracking-wide text-gray-400 uppercase">
-                Your Points
-              </p>
-              <p className="text-lg font-bold text-gray-900 sm:text-xl">{profile.points}</p>
+            <div className="ml-auto rounded-xl border bg-white px-3 py-1.5 shadow-sm sm:px-4 sm:py-2">
+              <div className="flex items-baseline gap-1.5">
+                <p className="text-[10px] font-bold tracking-wide text-gray-400 uppercase">
+                  Your Points
+                </p>
+                <p className="text-sm font-bold text-gray-900">{profile.points}</p>
+              </div>
             </div>
           )}
         </div>

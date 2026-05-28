@@ -29,7 +29,7 @@ export const useCommunityFeed = () => {
       const { data, error } = await supabase
         .from('community_feed')
         .select(
-          'id, user_name, user_initials, action_text, location, image_url, created_at, upvote_count, comment_count, user_id, status, grievance:grievances!grievance_id(status)',
+          'id, user_name, user_initials, action_text, location, image_url, created_at, upvote_count, comment_count, user_id, status, grievance:grievances!grievance_id(status, latitude, longitude)',
         )
         .order('created_at', { ascending: false })
         .limit(50);
@@ -86,9 +86,12 @@ export const useCommunityFeed = () => {
         userId: row.user_id ?? undefined,
         avatarUrl: row.user_id ? avatarMap.get(row.user_id) : undefined,
         status:
-          (row.grievance as { status?: FeedStatus } | null)?.status ??
+          (row.grievance as { status?: FeedStatus; latitude?: number; longitude?: number } | null)
+            ?.status ??
           (row.status as FeedStatus | null) ??
           undefined,
+        latitude: (row.grievance as { latitude?: number } | null)?.latitude ?? undefined,
+        longitude: (row.grievance as { longitude?: number } | null)?.longitude ?? undefined,
       }));
     },
   });
