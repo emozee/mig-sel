@@ -452,10 +452,10 @@ function LocateButton({ coords: detectedCoords }: { coords: { lat: number; lng: 
         disabled={locating}
         title="My Location"
         aria-label="My Location"
-        className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg bg-white shadow-md ring-1 ring-gray-200/60 transition-all hover:bg-gray-50 active:scale-95 disabled:cursor-wait disabled:opacity-50 md:h-9 md:w-9"
+        className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl bg-white shadow-md ring-1 ring-gray-200/60 transition-all hover:bg-gray-50 active:scale-95 disabled:cursor-wait disabled:opacity-50"
       >
         {locating ? (
-          <Loader2 className="h-3.5 w-3.5 animate-spin text-gray-700 md:h-4 md:w-4" />
+          <Loader2 className="h-5 w-5 animate-spin text-gray-700" />
         ) : (
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -465,7 +465,7 @@ function LocateButton({ coords: detectedCoords }: { coords: { lat: number; lng: 
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="h-3.5 w-3.5 text-gray-700 md:h-4 md:w-4"
+            className="h-5 w-5 text-gray-700"
           >
             <line x1="12" x2="12" y1="2" y2="6" />
             <line x1="12" x2="12" y1="18" y2="22" />
@@ -691,40 +691,47 @@ function CategoryFilterChips({
   onToggleCategory: (category: keyof MapFilters['categories']) => void;
   onToggleDropOffPoints: () => void;
 }) {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [startX, setStartX] = useState(0);
-  const [scrollLeft, setScrollLeft] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const stateRef = useRef({ isDown: false, startX: 0, scrollLeft: 0, moved: false });
 
-  const onDragStart = (e: React.MouseEvent) => {
-    setIsDragging(true);
-    setStartX(e.pageX - (scrollRef.current?.offsetLeft ?? 0));
-    setScrollLeft(scrollRef.current?.scrollLeft ?? 0);
+  const onDown = (clientX: number) => {
+    const s = stateRef.current;
+    s.isDown = true;
+    s.moved = false;
+    s.startX = clientX - (containerRef.current?.offsetLeft ?? 0);
+    s.scrollLeft = containerRef.current?.scrollLeft ?? 0;
   };
 
-  const onDragEnd = () => {
-    setIsDragging(false);
+  const onMove = (clientX: number) => {
+    const s = stateRef.current;
+    if (!s.isDown || !containerRef.current) return;
+    const x = clientX - containerRef.current.offsetLeft;
+    const dx = x - s.startX;
+    if (Math.abs(dx) > 5) s.moved = true;
+    containerRef.current.scrollLeft = s.scrollLeft - dx;
   };
 
-  const onDragMove = (e: React.MouseEvent) => {
-    if (!isDragging || !scrollRef.current) return;
-    e.preventDefault();
-    const x = e.pageX - scrollRef.current.offsetLeft;
-    const walk = (x - startX) * 1.5;
-    scrollRef.current.scrollLeft = scrollLeft - walk;
+  const onUp = () => {
+    stateRef.current.isDown = false;
   };
 
   return (
     <div
-      ref={scrollRef}
-      onMouseDown={onDragStart}
-      onMouseUp={onDragEnd}
-      onMouseLeave={onDragEnd}
-      onMouseMove={onDragMove}
-      className="absolute top-16 right-0 left-0 z-[1000] cursor-grab touch-pan-x [scrollbar-width:none] overflow-x-auto px-3 [-ms-overflow-style:none] active:cursor-grabbing [&::-webkit-scrollbar]:hidden"
+      ref={containerRef}
+      onMouseDown={(e) => onDown(e.clientX)}
+      onMouseMove={(e) => onMove(e.clientX)}
+      onMouseUp={onUp}
+      onMouseLeave={onUp}
+      onTouchStart={(e) => onDown(e.touches[0].clientX)}
+      onTouchMove={(e) => {
+        onMove(e.touches[0].clientX);
+      }}
+      onTouchEnd={onUp}
+      className="absolute inset-x-0 top-16 z-[1000] cursor-grab [scrollbar-width:none] overflow-x-auto overscroll-x-contain px-3 select-none [-ms-overflow-style:none] active:cursor-grabbing [&::-webkit-scrollbar]:hidden"
     >
-      <div className="flex w-max items-center gap-1.5">
+      <div className="inline-flex items-center gap-1.5">
         <button
+          type="button"
           onClick={onToggleDropOffPoints}
           className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm ring-1 transition-all active:scale-95 ${
             filters.showDropOffPoints
@@ -741,7 +748,11 @@ function CategoryFilterChips({
           return (
             <button
               key={key}
-              onClick={() => onToggleCategory(key)}
+              type="button"
+              onClick={() => {
+                if (stateRef.current.moved) return;
+                onToggleCategory(key);
+              }}
               className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm ring-1 transition-all active:scale-95 ${
                 isActive
                   ? 'text-white ring-transparent'
@@ -1160,9 +1171,9 @@ export const GrievanceMap = ({
               onClick={() => setShowLayers((v) => !v)}
               title="Map Layers"
               aria-label="Map Layers"
-              className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg bg-white shadow-md ring-1 ring-gray-200/60 transition-all hover:bg-gray-50 active:scale-95 md:h-9 md:w-9"
+              className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl bg-white shadow-md ring-1 ring-gray-200/60 transition-all hover:bg-gray-50 active:scale-95"
             >
-              <Layers className="h-3.5 w-3.5 text-gray-700 md:h-4 md:w-4" />
+              <Layers className="h-5 w-5 text-gray-700" />
             </button>
             {showLayers && (
               <div className="absolute top-10 right-0 w-44 rounded-xl bg-white p-2 shadow-xl ring-1 ring-gray-200/60">

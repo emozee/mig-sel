@@ -53,9 +53,9 @@ const MEDAL_CONFIG: Record<number, { ring: string; badge: string; bg: string; la
     label: '1st',
   },
   2: {
-    ring: 'ring-gray-300',
-    badge: 'bg-gray-300 text-gray-700',
-    bg: 'from-gray-200 to-gray-400',
+    ring: 'ring-chart-2',
+    badge: 'bg-chart-2 text-white',
+    bg: 'from-chart-2 to-chart-5',
     label: '2nd',
   },
   3: {
@@ -253,15 +253,15 @@ export const Leaderboard = () => {
   }
 
   const topThree = entries.slice(0, 3);
-  const listEntries = entries.slice(3, 8);
+  const listEntries = entries.slice(3, 10);
   const currentUserEntry = entries.find((e) => e.id === currentUserId);
-  const isUserInTop8 = currentUserEntry && currentUserEntry.rank <= 8;
+  const isUserInTop10 = currentUserEntry && currentUserEntry.rank <= 10;
 
   return (
     <div className="space-y-5">
       <Podium entries={topThree} currentUserId={currentUserId} />
 
-      {currentUserEntry && !isUserInTop8 && (
+      {currentUserEntry && !isUserInTop10 && (
         <YourRankCard entry={currentUserEntry} currentUserId={currentUserId} />
       )}
 
