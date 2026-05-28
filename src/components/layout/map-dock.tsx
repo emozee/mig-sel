@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Trophy, Users, Camera, ShoppingBag, Settings } from 'lucide-react';
+import { Trophy, Users, Camera, ShoppingBag, User } from 'lucide-react';
 import { useIsAdmin } from '@/features/auth/api/use-is-admin';
 import { useIsInspector } from '@/features/auth/api/use-is-inspector';
-import { UserSettingsDialog } from '@/features/auth/components/user-settings-dialog';
 
 interface NavItemProps {
   icon: typeof Trophy;
@@ -30,7 +29,6 @@ export const MapDock = () => {
   const { data: isAdmin } = useIsAdmin();
   const { data: isInspector } = useIsInspector();
   const [activeTab, setActiveTab] = useState('');
-  const [settingsOpen, setSettingsOpen] = useState(false);
 
   return (
     <div className="fixed bottom-6 left-1/2 z-50 w-[95%] max-w-xl -translate-x-1/2">
@@ -88,26 +86,25 @@ export const MapDock = () => {
               }}
             />
 
-            {/* Settings / Admin / Inspector */}
+            {/* Profile / Admin / Inspector */}
             <NavItem
-              icon={Settings}
-              label={isAdmin ? 'Admin' : isInspector ? 'Dashboard' : 'Settings'}
-              isActive={activeTab === 'settings'}
+              icon={User}
+              label={isAdmin ? 'Admin' : isInspector ? 'Dashboard' : 'Profile'}
+              isActive={activeTab === 'profile'}
               onClick={() => {
-                setActiveTab('settings');
+                setActiveTab('profile');
                 if (isAdmin) {
                   navigate('/dashboard');
                 } else if (isInspector) {
                   navigate('/inspector');
                 } else {
-                  setSettingsOpen(true);
+                  navigate('/profile');
                 }
               }}
             />
           </div>
         </div>
       </div>
-      <UserSettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
     </div>
   );
 };

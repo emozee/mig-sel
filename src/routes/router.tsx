@@ -12,6 +12,7 @@ import { ComplaintDetailPage } from './complaint-detail-page';
 import { LeaderboardPage } from './leaderboard-page';
 import { CommunityPage } from './community-page';
 import { ShopPage } from './shop-page';
+import { ProfilePage } from './profile-page';
 import { ProtectedRoute } from '@/components/layout/protected-route';
 import { AdminRoute } from '@/components/layout/admin-route';
 import { InspectorRoute } from '@/components/layout/inspector-route';
@@ -61,6 +62,11 @@ export const router = createBrowserRouter([
     path: '/shop',
     element: <ProtectedRoute />,
     children: [{ index: true, element: <ShopPage /> }],
+  },
+  {
+    path: '/profile',
+    element: <ProtectedRoute />,
+    children: [{ index: true, element: <ProfilePage /> }],
   },
   {
     path: '/inspector',
