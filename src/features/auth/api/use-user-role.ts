@@ -3,7 +3,9 @@ import { useCurrentUser } from './use-current-user';
 export const useUserRole = () => {
   const { user, isLoading, ...rest } = useCurrentUser();
 
-  const isAdmin = user?.app_metadata?.role === 'admin' || user?.user_metadata?.role === 'admin';
+  const role = user?.app_metadata?.role ?? user?.user_metadata?.role;
+  const isAdmin = role === 'admin';
+  const isInspector = role === 'inspector';
 
-  return { isAdmin, isLoading, user, ...rest };
+  return { isAdmin, isInspector, isLoading, user, ...rest };
 };

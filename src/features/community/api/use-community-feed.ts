@@ -24,7 +24,7 @@ export const useCommunityFeed = (page: number = 1, pageSize: number = 5) => {
 
   return useQuery({
     queryKey: communityKeys.feed(user?.id, page, pageSize),
-    staleTime: 30_000,
+    staleTime: 120_000,
     retry: 1,
     queryFn: async (): Promise<{ items: ActivityItem[]; count: number }> => {
       const from = (page - 1) * pageSize;

@@ -38,6 +38,7 @@ export const UserSettingsDialog = ({ open, onOpenChange }: UserSettingsDialogPro
               <img
                 src={profile.avatar_url}
                 alt=""
+                loading="lazy"
                 className="h-full w-full rounded-full object-cover"
               />
             ) : (

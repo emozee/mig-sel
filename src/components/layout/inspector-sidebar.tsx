@@ -45,7 +45,7 @@ export const InspectorSidebar = ({
     if (!user?.id) return;
     setUploading(true);
     try {
-      let avatarUrl = avatarPreview;
+      let avatarUrl: string | null = avatarPreview;
       if (avatarFile) {
         avatarUrl = await uploadAvatar(user.id, avatarFile);
       }
@@ -60,6 +60,9 @@ export const InspectorSidebar = ({
         username_edit_count: nameChanged ? editCount + 1 : editCount,
       });
 
+      const cacheBust = `?t=${Date.now()}`;
+      setAvatarPreview(avatarUrl ? `${avatarUrl}${cacheBust}` : null);
+      setAvatarFile(null);
       setIsProfileOpen(false);
     } finally {
       setUploading(false);
@@ -146,6 +149,7 @@ export const InspectorSidebar = ({
                   <img
                     src={profile.avatar_url}
                     alt=""
+                    loading="lazy"
                     className="h-5 w-5 rounded-full object-cover"
                   />
                 ) : (
@@ -199,7 +203,7 @@ export const InspectorSidebar = ({
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept="image/*"
+                    accept="image/jpeg,image/png,image/webp"
                     className="hidden"
                     onChange={handleAvatarChange}
                   />

@@ -548,7 +548,7 @@ export const ComplaintDetailPage = () => {
                           Click to upload image
                           <input
                             type="file"
-                            accept="image/*"
+                            accept="image/jpeg,image/png,image/webp,image/gif"
                             onChange={handleFileSelect}
                             className="hidden"
                           />

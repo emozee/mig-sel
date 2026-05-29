@@ -161,7 +161,7 @@ export const ReportPage = () => {
             <input
               ref={cameraInputRef}
               type="file"
-              accept="image/*"
+              accept="image/jpeg,image/png,image/webp,image/gif"
               capture="environment"
               onChange={handleFileSelect}
               className="hidden"

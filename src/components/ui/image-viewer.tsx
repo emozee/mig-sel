@@ -18,6 +18,7 @@ export function ClickableImage({
       <img
         src={src}
         alt={alt}
+        loading="lazy"
         className={`cursor-pointer ${className ?? ''}`}
         onClick={(e) => {
           e.stopPropagation();
@@ -38,6 +39,7 @@ export function ClickableImage({
           <img
             src={src}
             alt={alt}
+            loading="lazy"
             className="max-h-[90vh] max-w-[95vw] rounded-lg object-contain"
           />
         </DialogContent>

@@ -24,7 +24,8 @@ interface CommentSectionProps {
 export const CommentSection = ({ item }: CommentSectionProps) => {
   const { user } = useCurrentUser();
   const { data: isAdmin } = useIsAdmin();
-  const { data: comments, isLoading } = useFeedComments(item.id);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const { data: comments, isLoading } = useFeedComments(item.id, { enabled: dialogOpen });
   const { mutate: createComment, isPending } = useCreateComment();
   const [newComment, setNewComment] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -54,7 +55,7 @@ export const CommentSection = ({ item }: CommentSectionProps) => {
   };
 
   return (
-    <DialogRoot>
+    <DialogRoot open={dialogOpen} onOpenChange={setDialogOpen}>
       <DialogTrigger asChild>
         <button className="flex items-center gap-1 text-sm text-gray-500 transition-colors hover:text-gray-800">
           <MessageCircle className="h-[18px] w-[18px]" />

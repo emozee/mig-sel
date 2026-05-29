@@ -17,7 +17,7 @@ const getInitials = (name: string): string => {
     .slice(0, 2);
 };
 
-export const useFeedComments = (feedId: number) => {
+export const useFeedComments = (feedId: number, options?: { enabled?: boolean }) => {
   return useQuery({
     queryKey: commentKeys.byFeed(feedId),
     queryFn: async (): Promise<FeedComment[]> => {
@@ -41,9 +41,9 @@ export const useFeedComments = (feedId: number) => {
         user_initials: getInitials(row.user_name as string),
       }));
     },
-    staleTime: 30_000,
+    staleTime: 120_000,
     retry: 1,
-    enabled: feedId > 0,
+    enabled: feedId > 0 && (options?.enabled ?? true),
   });
 };
 
