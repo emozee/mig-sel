@@ -5,6 +5,7 @@
 @import '@fontsource-variable/playfair-display';
 
 :root {
+  color-scheme: light only;
   --background: #f1f5f9;
   --foreground: #1c1b1b;
   --card: #ffffff;

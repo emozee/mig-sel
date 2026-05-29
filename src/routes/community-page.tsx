@@ -1,13 +1,14 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { ArrowLeft } from 'lucide-react';
 import { ActivityFeed } from '@/features/community/components/activity-feed';
+import { MapDock } from '@/components/layout/map-dock';
 
 export const CommunityPage = () => {
   const navigate = useNavigate();
 
   return (
     <div className="min-h-dvh bg-gray-50">
-      <div className="sticky top-0 z-10 border-b border-gray-200 bg-white">
+      <div className="sticky top-0 z-40 border-b border-gray-200 bg-white">
         <div className="mx-auto flex h-12 max-w-lg items-center gap-2 px-3">
           <button
             onClick={() => navigate(-1)}
@@ -19,9 +20,11 @@ export const CommunityPage = () => {
         </div>
       </div>
 
-      <div className="mx-auto max-w-lg px-3 pt-3 pb-6">
+      <div className="mx-auto max-w-lg px-3 pt-3 pb-24">
         <ActivityFeed />
       </div>
+
+      <MapDock />
     </div>
   );
 };

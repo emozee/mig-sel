@@ -1,10 +1,20 @@
-import { Recycle, ClipboardList, LogOut, ChartLine, X, Map, FileText, Shield } from 'lucide-react';
+import {
+  Recycle,
+  ClipboardList,
+  LogOut,
+  ChartLine,
+  X,
+  Map,
+  FileText,
+  Shield,
+  Brain,
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { cn } from '@/lib/utils';
 import { useSignOut } from '@/features/auth/api/use-sign-out';
 
-export type NavView = 'complaint' | 'table' | 'inspector' | 'role' | 'charts';
+export type NavView = 'complaint' | 'table' | 'inspector' | 'role' | 'charts' | 'knowledge';
 
 const navItems = [
   { id: 'complaint' as const, label: 'Complaint Monitoring', icon: ClipboardList },
@@ -12,6 +22,7 @@ const navItems = [
   { id: 'inspector' as const, label: 'Inspector', icon: FileText },
   { id: 'role' as const, label: 'Role Assignment', icon: Shield },
   { id: 'charts' as const, label: 'Analytics', icon: ChartLine },
+  { id: 'knowledge' as const, label: 'Knowledge Base', icon: Brain },
 ];
 
 export function DashboardSidebar({

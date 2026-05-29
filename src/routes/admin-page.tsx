@@ -7,6 +7,7 @@ import {
   AlertTriangle,
   FileText,
   Shield,
+  Brain,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DashboardSidebar, type NavView } from '@/components/layout/dashboard-sidebar';
@@ -16,6 +17,7 @@ import { ComplaintMonitor } from '@/features/complaint/components/complaint-moni
 import { ComplaintCharts } from '@/features/complaint/components/complaint-charts';
 import { WasteReportingForm } from '@/features/waste/components/waste-reporting-form';
 import { RoleAssignment } from '@/features/admin/components/role-assignment';
+import { KnowledgeBase } from '@/features/admin/components/knowledge-base';
 
 const iconMap: Record<NavView, typeof ClipboardList> = {
   complaint: ClipboardList,
@@ -23,6 +25,7 @@ const iconMap: Record<NavView, typeof ClipboardList> = {
   inspector: FileText,
   role: Shield,
   charts: ChartPie,
+  knowledge: Brain,
 };
 
 export const AdminPage = () => {
@@ -39,6 +42,7 @@ export const AdminPage = () => {
     inspector: { title: 'Inspector', description: 'Submit waste collection records' },
     role: { title: 'Role Assignment', description: 'Search and update user roles' },
     charts: { title: 'Analytics', description: 'Oversight panel for GMC waste management' },
+    knowledge: { title: 'Knowledge Base', description: 'Manage chatbot Q&A pairs' },
   };
 
   const { title: pageTitle } = pageMeta[activeView];
@@ -158,6 +162,11 @@ export const AdminPage = () => {
               {activeView === 'table' && <WasteRecord />}
               {activeView === 'complaint' && <ComplaintMonitor />}
             </div>
+            {activeView === 'knowledge' && (
+              <div className="animate-in fade-in-0 slide-in-from-top-2 duration-500 [animation-delay:200ms]">
+                <KnowledgeBase />
+              </div>
+            )}
           </div>
         </main>
       </div>

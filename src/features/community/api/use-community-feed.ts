@@ -14,31 +14,36 @@ const MOCK_GOAL: ImpactGoal = {
 
 export const communityKeys = {
   all: ['community'] as const,
-  feed: (userId?: string) => [...communityKeys.all, 'feed', userId] as const,
+  feed: (userId?: string, page?: number, pageSize?: number) =>
+    [...communityKeys.all, 'feed', userId, page, pageSize] as const,
   goal: () => [...communityKeys.all, 'goal'] as const,
 };
 
-export const useCommunityFeed = () => {
+export const useCommunityFeed = (page: number = 1, pageSize: number = 5) => {
   const { user } = useCurrentUser();
 
   return useQuery({
-    queryKey: communityKeys.feed(user?.id),
+    queryKey: communityKeys.feed(user?.id, page, pageSize),
     staleTime: 30_000,
     retry: 1,
-    queryFn: async (): Promise<ActivityItem[]> => {
-      const { data, error } = await supabase
+    queryFn: async (): Promise<{ items: ActivityItem[]; count: number }> => {
+      const from = (page - 1) * pageSize;
+      const to = from + pageSize - 1;
+
+      const { data, error, count } = await supabase
         .from('community_feed')
         .select(
           'id, user_name, user_initials, action_text, location, image_url, created_at, upvote_count, comment_count, user_id, status, grievance:grievances!inner(approved, status, latitude, longitude)',
+          { count: 'exact', head: false },
         )
         .eq('grievance.approved', true)
         .order('created_at', { ascending: false })
-        .limit(50);
+        .range(from, to);
 
       if (error) {
         if (error.code === '42P01') {
           console.warn('community_feed table not yet created in DB');
-          return [];
+          return { items: [], count: 0 };
         }
         throw error;
       }
@@ -73,7 +78,7 @@ export const useCommunityFeed = () => {
         }
       }
 
-      return (data || []).map<ActivityItem>((row) => ({
+      const items = (data || []).map<ActivityItem>((row) => ({
         id: row.id,
         userName: row.user_name,
         userInitials: row.user_initials,
@@ -94,6 +99,8 @@ export const useCommunityFeed = () => {
         latitude: (row.grievance as { latitude?: number } | null)?.latitude ?? undefined,
         longitude: (row.grievance as { longitude?: number } | null)?.longitude ?? undefined,
       }));
+
+      return { items, count: count ?? items.length };
     },
   });
 };

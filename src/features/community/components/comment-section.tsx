@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
-import { MessageCircle, Send, X, MoreHorizontal, Trash2 } from 'lucide-react';
+import { MessageCircle, Send, X, MoreHorizontal, Trash2, Edit3, Image } from 'lucide-react';
 import { useFeedComments, useCreateComment } from '../api/use-feed-comments';
+import { useEditComment } from '../api/use-edit-comment';
 import { useDeleteComment } from '../api/use-delete-comment';
 import { useCurrentUser } from '@/features/auth/api/use-current-user';
 import { useIsAdmin } from '@/features/auth/api/use-is-admin';
@@ -13,6 +14,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { ClickableImage } from '@/components/ui/image-viewer';
 import type { ActivityItem } from '../types';
 
 interface CommentSectionProps {
@@ -25,14 +27,30 @@ export const CommentSection = ({ item }: CommentSectionProps) => {
   const { data: comments, isLoading } = useFeedComments(item.id);
   const { mutate: createComment, isPending } = useCreateComment();
   const [newComment, setNewComment] = useState('');
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newComment.trim() || isPending) return;
     createComment(
-      { feedId: item.id, body: newComment.trim() },
-      { onSuccess: () => setNewComment('') },
+      { feedId: item.id, body: newComment.trim(), imageFile },
+      {
+        onSuccess: () => {
+          setNewComment('');
+          setImageFile(null);
+          setImagePreview(null);
+        },
+      },
     );
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
   };
 
   return (
@@ -69,6 +87,7 @@ export const CommentSection = ({ item }: CommentSectionProps) => {
                   key={comment.id}
                   comment={comment}
                   feedId={item.id}
+                  isAdmin={!!isAdmin}
                   isOwner={isCommentOwner}
                 />
               );
@@ -79,23 +98,55 @@ export const CommentSection = ({ item }: CommentSectionProps) => {
         {user && isAdmin ? (
           <form
             onSubmit={handleSubmit}
-            className="flex items-center gap-2 border-t border-gray-100 pt-3"
+            className="flex flex-col gap-2 border-t border-gray-100 pt-3"
           >
-            <Input
-              placeholder="Write a comment..."
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              maxLength={500}
-              className="flex-1"
-            />
-            <Button
-              type="submit"
-              size="icon"
-              disabled={!newComment.trim() || isPending}
-              className="shrink-0"
-            >
-              <Send className="h-4 w-4" />
-            </Button>
+            {imagePreview && (
+              <div className="relative inline-flex">
+                <img src={imagePreview} alt="" className="h-16 w-16 rounded-lg object-cover" />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setImageFile(null);
+                    setImagePreview(null);
+                    if (fileInputRef.current) fileInputRef.current.value = '';
+                  }}
+                  className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-gray-700/70 text-white"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            )}
+            <div className="flex items-center gap-2">
+              <Input
+                placeholder="Write a comment..."
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                maxLength={500}
+                className="flex-1"
+              />
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                className="hidden"
+                onChange={handleFileChange}
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+              >
+                <Image className="h-4 w-4" />
+              </button>
+              <Button
+                type="submit"
+                size="icon"
+                disabled={!newComment.trim() || isPending}
+                className="shrink-0"
+              >
+                <Send className="h-4 w-4" />
+              </Button>
+            </div>
           </form>
         ) : user ? (
           <p className="border-t border-gray-100 pt-3 text-center text-xs text-gray-400">
@@ -114,6 +165,7 @@ export const CommentSection = ({ item }: CommentSectionProps) => {
 function CommentRow({
   comment,
   feedId,
+  isAdmin,
   isOwner,
 }: {
   comment: {
@@ -123,13 +175,19 @@ function CommentRow({
     user_initials: string;
     body: string;
     created_at: string;
+    updated_at?: string;
+    image_url?: string;
   };
   feedId: number;
+  isAdmin: boolean;
   isOwner: boolean;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editBody, setEditBody] = useState(comment.body);
   const menuRef = useRef<HTMLDivElement>(null);
   const { mutate: deleteComment } = useDeleteComment();
+  const { mutate: editComment, isPending: editPending } = useEditComment();
 
   useEffect(() => {
     const close = (e: MouseEvent) => {
@@ -147,6 +205,59 @@ function CommentRow({
     setMenuOpen(false);
   };
 
+  const wasEdited = comment.updated_at && comment.updated_at !== comment.created_at;
+
+  if (editing) {
+    return (
+      <div className="flex gap-2.5">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-700">
+          {comment.user_initials}
+        </div>
+        <div className="min-w-0 flex-1">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!editBody.trim() || editPending) return;
+              editComment(
+                { commentId: comment.id, feedId, body: editBody.trim() },
+                { onSuccess: () => setEditing(false) },
+              );
+            }}
+            className="flex items-center gap-2"
+          >
+            <Input
+              value={editBody}
+              onChange={(e) => setEditBody(e.target.value)}
+              maxLength={500}
+              className="h-8 flex-1 text-sm"
+              autoFocus
+            />
+            <Button type="submit" size="icon-xs" disabled={!editBody.trim() || editPending}>
+              <Send className="h-3.5 w-3.5" />
+            </Button>
+            <button
+              type="button"
+              onClick={() => {
+                setEditing(false);
+                setEditBody(comment.body);
+              }}
+              className="text-xs text-gray-400 hover:text-gray-600"
+            >
+              Cancel
+            </button>
+          </form>
+          {comment.image_url && (
+            <ClickableImage
+              src={comment.image_url}
+              alt="Comment image"
+              className="mt-2 max-h-32 rounded-lg object-cover"
+            />
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex gap-2.5">
       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-700">
@@ -162,8 +273,22 @@ function CommentRow({
                 day: 'numeric',
               })}
             </span>
+            {wasEdited && <span className="text-[11px] text-gray-400 italic">Edited</span>}
+            {isAdmin && isOwner && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setEditing(true);
+                  setEditBody(comment.body);
+                  setMenuOpen(false);
+                }}
+                className="text-gray-300 hover:text-gray-600"
+              >
+                <Edit3 className="h-3.5 w-3.5" />
+              </button>
+            )}
           </div>
-          {isOwner && (
+          {isAdmin && isOwner && (
             <div className="relative" ref={menuRef}>
               <button
                 onClick={(e) => {
@@ -189,6 +314,13 @@ function CommentRow({
           )}
         </div>
         <p className="mt-0.5 text-sm leading-relaxed text-gray-700">{comment.body}</p>
+        {comment.image_url && (
+          <ClickableImage
+            src={comment.image_url}
+            alt="Comment image"
+            className="mt-1 max-h-40 rounded-lg object-cover"
+          />
+        )}
       </div>
     </div>
   );

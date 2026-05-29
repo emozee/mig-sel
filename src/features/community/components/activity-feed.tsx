@@ -1,9 +1,18 @@
+import { useState } from 'react';
 import { useCommunityFeed } from '../api/use-community-feed';
 import { FeedItem } from './feed-item';
+import { Pagination } from '@/components/ui/pagination';
 import { AlertTriangle } from 'lucide-react';
 
+const ITEMS_PER_PAGE = 5;
+
 export const ActivityFeed = () => {
-  const { data: items, isLoading, isError, error } = useCommunityFeed();
+  const [currentPage, setCurrentPage] = useState(1);
+  const { data, isLoading, isError, error } = useCommunityFeed(currentPage, ITEMS_PER_PAGE);
+
+  const items = data?.items ?? [];
+  const totalItems = data?.count ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalItems / ITEMS_PER_PAGE));
 
   if (isLoading) {
     return (
@@ -11,7 +20,7 @@ export const ActivityFeed = () => {
         {[1, 2, 3].map((i) => (
           <div
             key={i}
-            className="animate-pulse rounded-xl bg-white p-3 shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
+            className="h-[440px] animate-pulse rounded-xl bg-white p-3 shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
           >
             <div className="flex items-center gap-2.5">
               <div className="h-9 w-9 rounded-full bg-gray-200" />
@@ -24,7 +33,7 @@ export const ActivityFeed = () => {
               <div className="h-2.5 w-full rounded bg-gray-200" />
               <div className="h-2.5 w-3/4 rounded bg-gray-200" />
             </div>
-            <div className="mt-3 h-40 w-full rounded-lg bg-gray-200" />
+            <div className="mt-3 h-48 w-full rounded-lg bg-gray-200" />
           </div>
         ))}
       </div>
@@ -41,7 +50,7 @@ export const ActivityFeed = () => {
     );
   }
 
-  if (!items || items.length === 0) {
+  if (totalItems === 0) {
     return (
       <div className="rounded-xl bg-white p-6 text-center shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
         <p className="text-sm text-gray-500">No activity yet. Be the first!</p>
@@ -54,6 +63,14 @@ export const ActivityFeed = () => {
       {items.map((item) => (
         <FeedItem key={item.id} item={item} />
       ))}
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        itemsPerPage={ITEMS_PER_PAGE}
+        onPageChange={setCurrentPage}
+      />
     </div>
   );
 };

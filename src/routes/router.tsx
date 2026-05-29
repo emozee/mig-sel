@@ -12,6 +12,7 @@ import { ReportPage } from './report-page';
 import { ComplaintDetailPage } from './complaint-detail-page';
 import { LeaderboardPage } from './leaderboard-page';
 import { CommunityPage } from './community-page';
+import { ChatPage } from './chat-page';
 import { ShopPage } from './shop-page';
 import { ProfilePage } from './profile-page';
 import { ProtectedRoute } from '@/components/layout/protected-route';
@@ -31,7 +32,7 @@ export const router = createBrowserRouter([
 
       if (role === 'admin') return redirect('/dashboard');
       if (role === 'inspector') return redirect('/inspector');
-      return redirect('/map');
+      return redirect('/community');
     },
     element: <LandingPage />,
   },
@@ -62,6 +63,11 @@ export const router = createBrowserRouter([
     path: '/community',
     element: <ProtectedRoute />,
     children: [{ index: true, element: <CommunityPage /> }],
+  },
+  {
+    path: '/chat',
+    element: <ProtectedRoute />,
+    children: [{ index: true, element: <ChatPage /> }],
   },
   {
     path: '/shop',

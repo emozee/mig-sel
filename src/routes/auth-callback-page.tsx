@@ -16,7 +16,7 @@ export const AuthCallbackPage = () => {
       if (!cancelled) {
         if (role === 'admin') navigate('/dashboard');
         else if (role === 'inspector') navigate('/inspector');
-        else navigate('/map');
+        else navigate('/community');
       }
     };
 

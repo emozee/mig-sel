@@ -24,6 +24,8 @@ export interface FeedComment {
   user_id: string;
   body: string;
   created_at: string;
+  updated_at?: string;
+  image_url?: string;
   user_name: string;
   user_initials: string;
 }

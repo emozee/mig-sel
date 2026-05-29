@@ -16,7 +16,7 @@ export const LandingPage = () => {
       const role = session.user?.app_metadata?.role ?? session.user?.user_metadata?.role;
       if (role === 'admin') navigate('/dashboard', { replace: true });
       else if (role === 'inspector') navigate('/inspector', { replace: true });
-      else navigate('/map', { replace: true });
+      else navigate('/community', { replace: true });
     }
   }, [session, isLoading, navigate]);
 

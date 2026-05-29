@@ -1,11 +1,19 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router';
-import { Trophy, Users, Camera, ShoppingBag, User } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router';
+import {
+  Map,
+  Users,
+  Trophy,
+  Camera,
+  MessageCircle,
+  ShoppingBag,
+  User,
+  type LucideIcon,
+} from 'lucide-react';
 import { useIsAdmin } from '@/features/auth/api/use-is-admin';
 import { useIsInspector } from '@/features/auth/api/use-is-inspector';
 
 interface NavItemProps {
-  icon: typeof Trophy;
+  icon: LucideIcon;
   label: string;
   isActive: boolean;
   onClick: () => void;
@@ -26,9 +34,25 @@ const NavItem = ({ icon: Icon, label, isActive, onClick, className = '' }: NavIt
 
 export const MapDock = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { data: isAdmin } = useIsAdmin();
   const { data: isInspector } = useIsInspector();
-  const [activeTab, setActiveTab] = useState('');
+
+  const activeTab = (() => {
+    const path = location.pathname;
+    if (path.startsWith('/map')) return 'map';
+    if (path.startsWith('/community')) return 'community';
+    if (path.startsWith('/leaderboard')) return 'leaderboard';
+    if (path.startsWith('/chat')) return 'chat';
+    if (path.startsWith('/shop')) return 'shop';
+    if (
+      path.startsWith('/profile') ||
+      path.startsWith('/dashboard') ||
+      path.startsWith('/inspector')
+    )
+      return 'profile';
+    return '';
+  })();
 
   return (
     <div className="fixed bottom-6 left-1/2 z-50 w-[95%] max-w-xl -translate-x-1/2">
@@ -37,7 +61,6 @@ export const MapDock = () => {
         <div className="absolute -top-8 left-1/2 z-10 -translate-x-1/2">
           <button
             onClick={() => {
-              setActiveTab('report');
               navigate('/report');
             }}
             className="flex items-center justify-center rounded-full bg-emerald-600 p-3.5 text-white shadow-xl transition-transform hover:scale-105 hover:bg-emerald-500 active:scale-95"
@@ -50,14 +73,13 @@ export const MapDock = () => {
         <div className="flex items-center">
           {/* Left group */}
           <div className="flex flex-1 items-center justify-around">
-            {/* Leaderboard */}
+            {/* Map */}
             <NavItem
-              icon={Trophy}
-              label="Leaderboard"
-              isActive={activeTab === 'leaderboard'}
+              icon={Map}
+              label="Map"
+              isActive={activeTab === 'map'}
               onClick={() => {
-                setActiveTab('leaderboard');
-                navigate('/leaderboard');
+                navigate('/map');
               }}
             />
 
@@ -67,21 +89,39 @@ export const MapDock = () => {
               label="Community"
               isActive={activeTab === 'community'}
               onClick={() => {
-                setActiveTab('community');
                 navigate('/community');
+              }}
+            />
+
+            {/* Leaderboard */}
+            <NavItem
+              icon={Trophy}
+              label="Leaderboard"
+              isActive={activeTab === 'leaderboard'}
+              onClick={() => {
+                navigate('/leaderboard');
               }}
             />
           </div>
 
           {/* Right group */}
           <div className="flex flex-1 items-center justify-around">
+            {/* Chat */}
+            <NavItem
+              icon={MessageCircle}
+              label="Chat"
+              isActive={activeTab === 'chat'}
+              onClick={() => {
+                navigate('/chat');
+              }}
+            />
+
             {/* Shop */}
             <NavItem
               icon={ShoppingBag}
               label="Shop"
               isActive={activeTab === 'shop'}
               onClick={() => {
-                setActiveTab('shop');
                 navigate('/shop');
               }}
             />
@@ -92,7 +132,6 @@ export const MapDock = () => {
               label={isAdmin ? 'Admin' : isInspector ? 'Dashboard' : 'Profile'}
               isActive={activeTab === 'profile'}
               onClick={() => {
-                setActiveTab('profile');
                 if (isAdmin) {
                   navigate('/dashboard');
                 } else if (isInspector) {

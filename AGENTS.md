@@ -40,3 +40,4 @@ Pre-commit hook currently runs `npm test` (no-op). `lint-staged` is configured b
 - **DB migrations are managed via Supabase CLI:** `npx supabase db push` applies pending migrations (requires `SUPABASE_ACCESS_TOKEN` env var).
 - **Migration version uniqueness:** Each migration file must have a unique version prefix (the leading number). Duplicates will cause `schema_migrations_pkey` conflicts. Files like `20250527_add_upvote_count_trigger.sql` were renamed to `20250527000001_add_upvote_count_trigger.sql` to avoid this.
 - OpenCode skill `supabase-postgres-best-practices` is locked in.
+- **Auto-update chatbot knowledge base:** Whenever I add or modify a feature, I must also update `supabase/migrations/20250529000006_seed_chatbot_knowledge.sql` with relevant Q&A entries and create a new migration to push changes. The chatbot knowledge base must always reflect the current state of the app.
