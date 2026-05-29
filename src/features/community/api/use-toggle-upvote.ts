@@ -9,10 +9,15 @@ interface ToggleUpvoteInput {
   isCurrentlyUpvoted: boolean;
 }
 
+interface FeedData {
+  items: ActivityItem[];
+  count: number;
+}
+
 export const useToggleUpvote = () => {
   const queryClient = useQueryClient();
   const { user } = useCurrentUser();
-  const queryKey = communityKeys.feed(user?.id);
+  const feedPrefix = communityKeys.feed(user?.id).slice(0, 3);
 
   return useMutation({
     mutationFn: async ({ feedId }: ToggleUpvoteInput) => {
@@ -27,28 +32,34 @@ export const useToggleUpvote = () => {
       return data[0] as { new_upvote_count: number; is_upvoted: boolean };
     },
     onMutate: async ({ feedId, isCurrentlyUpvoted }) => {
-      await queryClient.cancelQueries({ queryKey });
+      await queryClient.cancelQueries({ queryKey: feedPrefix });
 
-      const prev = queryClient.getQueryData<ActivityItem[]>(queryKey);
+      const prev = queryClient.getQueriesData<FeedData>({ queryKey: feedPrefix });
 
-      queryClient.setQueryData<ActivityItem[]>(queryKey, (old) =>
-        old?.map((item) =>
-          item.id === feedId
-            ? {
-                ...item,
-                isUpvoted: !isCurrentlyUpvoted,
-                upvoteCount: item.upvoteCount + (isCurrentlyUpvoted ? -1 : 1),
-              }
-            : item,
-        ),
-      );
+      queryClient.setQueriesData<FeedData>({ queryKey: feedPrefix }, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          items: old.items.map((item) =>
+            item.id === feedId
+              ? {
+                  ...item,
+                  isUpvoted: !isCurrentlyUpvoted,
+                  upvoteCount: item.upvoteCount + (isCurrentlyUpvoted ? -1 : 1),
+                }
+              : item,
+          ),
+        };
+      });
 
       return { prev };
     },
     onError: (error, _vars, ctx) => {
       console.error('Toggle upvote failed:', error);
       if (ctx?.prev) {
-        queryClient.setQueryData(queryKey, ctx.prev);
+        for (const [key, data] of ctx.prev) {
+          queryClient.setQueryData(key, data);
+        }
       }
     },
   });

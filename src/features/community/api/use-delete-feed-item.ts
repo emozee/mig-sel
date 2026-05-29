@@ -4,10 +4,15 @@ import { useCurrentUser } from '@/features/auth/api/use-current-user';
 import { communityKeys } from './use-community-feed';
 import type { ActivityItem } from '../types';
 
+interface FeedData {
+  items: ActivityItem[];
+  count: number;
+}
+
 export const useDeleteFeedItem = () => {
   const queryClient = useQueryClient();
   const { user } = useCurrentUser();
-  const feedQueryKey = communityKeys.feed(user?.id);
+  const feedPrefix = communityKeys.feed(user?.id).slice(0, 3);
 
   return useMutation({
     mutationFn: async (feedId: number) => {
@@ -15,18 +20,26 @@ export const useDeleteFeedItem = () => {
       if (error) throw error;
     },
     onMutate: async (feedId) => {
-      await queryClient.cancelQueries({ queryKey: feedQueryKey });
-      const prev = queryClient.getQueryData<ActivityItem[]>(feedQueryKey);
-      queryClient.setQueryData<ActivityItem[]>(feedQueryKey, (old) =>
-        old?.filter((item) => item.id !== feedId),
-      );
+      await queryClient.cancelQueries({ queryKey: feedPrefix });
+      const prev = queryClient.getQueriesData<FeedData>({ queryKey: feedPrefix });
+      queryClient.setQueriesData<FeedData>({ queryKey: feedPrefix }, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          items: old.items.filter((item) => item.id !== feedId),
+        };
+      });
       return { prev };
     },
     onError: (_err, _vars, ctx) => {
-      if (ctx?.prev) queryClient.setQueryData(feedQueryKey, ctx.prev);
+      if (ctx?.prev) {
+        for (const [key, data] of ctx.prev) {
+          queryClient.setQueryData(key, data);
+        }
+      }
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: feedQueryKey });
+      queryClient.invalidateQueries({ queryKey: feedPrefix });
     },
   });
 };
