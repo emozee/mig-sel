@@ -1,14 +1,16 @@
 import { useNavigate, useLocation } from 'react-router';
+import { useCallback, useState } from 'react';
 import {
   Map,
+  Sparkles,
   Users,
   Trophy,
   Camera,
-  MessageCircle,
   ShoppingBag,
   User,
   type LucideIcon,
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { useIsAdmin } from '@/features/auth/api/use-is-admin';
 import { useIsInspector } from '@/features/auth/api/use-is-inspector';
 
@@ -20,17 +22,29 @@ interface NavItemProps {
   className?: string;
 }
 
-const NavItem = ({ icon: Icon, label, isActive, onClick, className = '' }: NavItemProps) => (
-  <button
-    onClick={onClick}
-    className={`flex flex-col items-center gap-0.5 transition-colors ${
-      isActive ? 'text-slate-900' : 'text-slate-500 hover:text-slate-900'
-    } ${className}`}
-  >
-    <Icon className="h-5 w-5" />
-    <span className="text-[10px] leading-none font-semibold">{label}</span>
-  </button>
-);
+const NavItem = ({ icon: Icon, label, isActive, onClick, className = '' }: NavItemProps) => {
+  const [anim, setAnim] = useState(false);
+
+  const handleClick = useCallback(() => {
+    setAnim(true);
+    setTimeout(() => setAnim(false), 400);
+    onClick();
+  }, [onClick]);
+
+  return (
+    <button
+      onClick={handleClick}
+      className={cn(
+        'flex flex-col items-center gap-0.5 transition-colors duration-200',
+        isActive ? 'text-slate-900' : 'text-slate-500 hover:text-slate-900',
+        className,
+      )}
+    >
+      <Icon className={cn('h-5 w-5 transition-all duration-300', anim && 'animate-nav-bounce')} />
+      <span className="text-[10px] leading-none font-semibold">{label}</span>
+    </button>
+  );
+};
 
 export const MapDock = () => {
   const navigate = useNavigate();
@@ -42,8 +56,8 @@ export const MapDock = () => {
     const path = location.pathname;
     if (path.startsWith('/map')) return 'map';
     if (path.startsWith('/community')) return 'community';
+    if (path.startsWith('/diamond')) return 'diamond';
     if (path.startsWith('/leaderboard')) return 'leaderboard';
-    if (path.startsWith('/chat')) return 'chat';
     if (path.startsWith('/shop')) return 'shop';
     if (
       path.startsWith('/profile') ||
@@ -73,60 +87,44 @@ export const MapDock = () => {
         <div className="flex items-center">
           {/* Left group */}
           <div className="flex flex-1 items-center justify-around">
-            {/* Map */}
             <NavItem
               icon={Map}
               label="Map"
               isActive={activeTab === 'map'}
-              onClick={() => {
-                navigate('/map');
-              }}
+              onClick={() => navigate('/map')}
             />
 
-            {/* Community */}
+            <NavItem
+              icon={Sparkles}
+              label="Diamond"
+              isActive={activeTab === 'diamond'}
+              onClick={() => navigate('/diamond')}
+            />
+
             <NavItem
               icon={Users}
               label="Community"
               isActive={activeTab === 'community'}
-              onClick={() => {
-                navigate('/community');
-              }}
-            />
-
-            {/* Leaderboard */}
-            <NavItem
-              icon={Trophy}
-              label="Leaderboard"
-              isActive={activeTab === 'leaderboard'}
-              onClick={() => {
-                navigate('/leaderboard');
-              }}
+              onClick={() => navigate('/community')}
             />
           </div>
 
           {/* Right group */}
           <div className="flex flex-1 items-center justify-around">
-            {/* Chat */}
             <NavItem
-              icon={MessageCircle}
-              label="Chat"
-              isActive={activeTab === 'chat'}
-              onClick={() => {
-                navigate('/chat');
-              }}
+              icon={Trophy}
+              label="Leaderboard"
+              isActive={activeTab === 'leaderboard'}
+              onClick={() => navigate('/leaderboard')}
             />
 
-            {/* Shop */}
             <NavItem
               icon={ShoppingBag}
               label="Shop"
               isActive={activeTab === 'shop'}
-              onClick={() => {
-                navigate('/shop');
-              }}
+              onClick={() => navigate('/shop')}
             />
 
-            {/* Profile / Admin / Inspector */}
             <NavItem
               icon={User}
               label={isAdmin ? 'Admin' : isInspector ? 'Dashboard' : 'Profile'}

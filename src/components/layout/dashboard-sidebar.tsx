@@ -14,6 +14,7 @@ import {
   Award,
   Coins,
   Loader2,
+  Gem,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -26,12 +27,20 @@ import { useUserProfile } from '@/features/gamification/api/use-user-profile';
 import { useUpdateProfile } from '@/features/gamification/api/use-update-profile';
 import { uploadAvatar } from '@/features/gamification/api/use-upload-avatar';
 
-export type NavView = 'complaint' | 'table' | 'inspector' | 'role' | 'charts' | 'knowledge';
+export type NavView =
+  | 'complaint'
+  | 'table'
+  | 'inspector'
+  | 'role'
+  | 'charts'
+  | 'knowledge'
+  | 'diamond';
 
 const navItems = [
   { id: 'complaint' as const, label: 'Complaint Monitoring', icon: ClipboardList },
   { id: 'table' as const, label: 'Waste Management', icon: Recycle },
   { id: 'inspector' as const, label: 'Inspector', icon: FileText },
+  { id: 'diamond' as const, label: 'Diamond Review', icon: Gem },
   { id: 'role' as const, label: 'Role Assignment', icon: Shield },
   { id: 'charts' as const, label: 'Analytics', icon: ChartLine },
   { id: 'knowledge' as const, label: 'Knowledge Base', icon: Brain },
