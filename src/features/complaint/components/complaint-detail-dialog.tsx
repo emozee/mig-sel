@@ -1,5 +1,14 @@
 import { useState, useRef } from 'react';
-import { Clock, CheckCircle2, MoveRight, MapPin, Trophy, Loader2 } from 'lucide-react';
+import {
+  Clock,
+  CheckCircle2,
+  MoveRight,
+  MapPin,
+  Trophy,
+  Loader2,
+  UserCheck,
+  Trash2,
+} from 'lucide-react';
 import {
   DialogRoot,
   DialogTrigger,
@@ -22,6 +31,8 @@ import {
 import { Field } from '@/components/ui/field';
 import { ImageLightbox } from '@/features/auth/grievance/components/image-lightbox';
 import { useUpdateComplaint } from '@/features/complaint/api/use-update-complaint';
+import { useApproveComplaint } from '@/features/complaint/api/use-approve-complaint';
+import { useDisapproveComplaint } from '@/features/complaint/api/use-disapprove-complaint';
 import { useClickOutside } from '@/hooks/use-click-outside';
 import type { Complaint, ComplaintStatus, ComplaintUrgency } from '@/features/complaint/types';
 
@@ -33,6 +44,9 @@ export function ComplaintDetailDialog({
   trigger: React.ReactNode;
 }) {
   const updateComplaint = useUpdateComplaint();
+  const approveComplaint = useApproveComplaint();
+  const disapproveComplaint = useDisapproveComplaint();
+  const [showDisapproveConfirm, setShowDisapproveConfirm] = useState(false);
   const [editingUrgency, setEditingUrgency] = useState(false);
   const [editingStatus, setEditingStatus] = useState(false);
   const urgencyRef = useRef<HTMLDivElement>(null);
@@ -81,6 +95,36 @@ export function ComplaintDetailDialog({
 
         <div className="space-y-5">
           <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2">
+              {complaint.approved ? (
+                <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-3 py-1 text-xs font-bold text-green-700">
+                  <CheckCircle2 className="h-3 w-3" />
+                  Approved
+                </span>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => approveComplaint.mutate(complaint.id)}
+                    disabled={approveComplaint.isPending}
+                    className="inline-flex cursor-pointer items-center gap-1 rounded-full bg-amber-600 px-3 py-1 text-xs font-bold text-white transition-all hover:bg-amber-700 disabled:opacity-50"
+                  >
+                    <UserCheck className="h-3 w-3" />
+                    {approveComplaint.isPending ? 'Approving...' : 'Approve'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowDisapproveConfirm(true)}
+                    disabled={disapproveComplaint.isPending}
+                    className="inline-flex cursor-pointer items-center gap-1 rounded-full bg-red-600 px-3 py-1 text-xs font-bold text-white transition-all hover:bg-red-700 disabled:opacity-50"
+                    title="Permanently delete this report"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                    {disapproveComplaint.isPending ? 'Removing...' : 'Disapprove'}
+                  </button>
+                </>
+              )}
+            </div>
             <div ref={urgencyRef} className="relative">
               <button
                 type="button"
@@ -278,6 +322,38 @@ export function ComplaintDetailDialog({
           )}
         </div>
 
+        {showDisapproveConfirm && (
+          <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+            <p className="mb-1 text-sm font-bold text-red-800">Disapprove Complaint?</p>
+            <p className="mb-3 text-xs text-red-700">
+              This will permanently delete <strong>{complaint.title}</strong>. Any points awarded
+              will be revoked. This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setShowDisapproveConfirm(false)}
+                className="rounded-lg px-3 py-1.5 text-xs font-semibold transition-all hover:bg-red-100"
+                style={{ color: '#72796e' }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  disapproveComplaint.mutate(complaint.id, {
+                    onSuccess: () => setShowDisapproveConfirm(false),
+                  });
+                }}
+                disabled={disapproveComplaint.isPending}
+                className="inline-flex items-center gap-1 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white transition-all hover:bg-red-700 disabled:opacity-50"
+              >
+                {disapproveComplaint.isPending && <Loader2 className="h-3 w-3 animate-spin" />}
+                {disapproveComplaint.isPending ? 'Removing...' : 'Yes, Delete Permanently'}
+              </button>
+            </div>
+          </div>
+        )}
         <div className="flex justify-end gap-2 pt-2">
           {updateComplaint.isPending && (
             <span className="text-muted-foreground flex items-center gap-1 text-xs">

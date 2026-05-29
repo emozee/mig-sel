@@ -29,6 +29,7 @@ export const useGrievances = () => {
       const { data, error } = await supabase
         .from('grievances')
         .select('*')
+        .eq('approved', true)
         .order('created_at', { ascending: false });
 
       if (error) throw error;

@@ -83,7 +83,7 @@ export function ImageLightbox({ src, alt, className }: ImageLightboxProps) {
               e.stopPropagation();
               handleFullscreenToggle();
             }}
-            className="max-h-[90vh] max-w-[90vw] cursor-zoom-in rounded-lg object-contain shadow-2xl transition-transform"
+            className="max-h-screen max-w-screen cursor-zoom-in object-contain transition-transform"
           />
         </div>
       )}

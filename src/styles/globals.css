@@ -4,8 +4,6 @@
 @import '@fontsource-variable/noto-sans';
 @import '@fontsource-variable/playfair-display';
 
-@custom-variant dark (&:is(.dark *));
-
 :root {
   --background: #f1f5f9;
   --foreground: #1c1b1b;
@@ -33,34 +31,6 @@
   --chart-4: #9dd090;
   --chart-5: #bcf0ae;
   --radius: 0.5rem;
-}
-
-.dark {
-  --background: #0f1214;
-  --foreground: #e8eaed;
-  --card: #1a1d21;
-  --card-foreground: #e8eaed;
-  --popover: #1a1d21;
-  --popover-foreground: #e8eaed;
-  --primary: #6dde76;
-  --primary-foreground: #002a04;
-  --secondary: #2a3d2b;
-  --secondary-foreground: #c6ecc0;
-  --muted: #25282c;
-  --muted-foreground: #8b8f96;
-  --accent: #25282c;
-  --accent-foreground: #e8eaed;
-  --destructive: #ffdad6;
-  --destructive-foreground: #93000a;
-  --destructive-ring: #ba1a1a;
-  --border: #2e3136;
-  --input: #2e3136;
-  --ring: #6dde76;
-  --chart-1: #6dde76;
-  --chart-2: #5c8a5a;
-  --chart-3: #3a6b3a;
-  --chart-4: #1a4f1a;
-  --chart-5: #0d2f0d;
 }
 
 @theme inline {

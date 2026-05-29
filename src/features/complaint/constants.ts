@@ -11,24 +11,24 @@ export const URGENCY_ORDER: Record<ComplaintUrgency, number> = {
 };
 
 export const URGENCY_BADGE: Record<ComplaintUrgency, { bg: string; text: string }> = {
-  high: { bg: '#fff7ed', text: '#ea580c' },
-  medium: { bg: '#eff6ff', text: '#2563eb' },
-  low: { bg: '#f0fdf4', text: '#16a34a' },
+  high: { bg: '#fff7ed', text: '#f97316' },
+  medium: { bg: '#eff6ff', text: '#3b82f6' },
+  low: { bg: '#f0fdf4', text: '#22c55e' },
 };
 
 export const URGENCY_BADGE_WITH_HOVER: Record<
   ComplaintUrgency,
   { bg: string; text: string; hoverBg: string }
 > = {
-  high: { bg: '#fff7ed', text: '#ea580c', hoverBg: '#ffedd5' },
-  medium: { bg: '#eff6ff', text: '#2563eb', hoverBg: '#dbeafe' },
-  low: { bg: '#f0fdf4', text: '#16a34a', hoverBg: '#dcfce7' },
+  high: { bg: '#fff7ed', text: '#f97316', hoverBg: '#ffedd5' },
+  medium: { bg: '#eff6ff', text: '#3b82f6', hoverBg: '#dbeafe' },
+  low: { bg: '#f0fdf4', text: '#22c55e', hoverBg: '#dcfce7' },
 };
 
 export const STATUS_BADGE: Record<ComplaintStatus, { bg: string; text: string }> = {
-  pending: { bg: '#fff7ed', text: '#ea580c' },
-  'in-progress': { bg: '#eff6ff', text: '#2563eb' },
-  resolved: { bg: '#f0fdf4', text: '#16a34a' },
+  pending: { bg: '#fff7ed', text: '#f97316' },
+  'in-progress': { bg: '#eff6ff', text: '#3b82f6' },
+  resolved: { bg: '#f0fdf4', text: '#22c55e' },
 };
 
 export const CATEGORY_LABELS: Record<ComplaintCategory, string> = {

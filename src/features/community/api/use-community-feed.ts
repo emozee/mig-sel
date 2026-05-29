@@ -29,8 +29,9 @@ export const useCommunityFeed = () => {
       const { data, error } = await supabase
         .from('community_feed')
         .select(
-          'id, user_name, user_initials, action_text, location, image_url, created_at, upvote_count, comment_count, user_id, status, grievance:grievances!grievance_id(status, latitude, longitude)',
+          'id, user_name, user_initials, action_text, location, image_url, created_at, upvote_count, comment_count, user_id, status, grievance:grievances!inner(approved, status, latitude, longitude)',
         )
+        .eq('grievance.approved', true)
         .order('created_at', { ascending: false })
         .limit(50);
 

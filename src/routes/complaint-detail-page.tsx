@@ -11,12 +11,16 @@ import {
   Save,
   Trophy,
   Menu,
+  UserCheck,
+  Trash2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { DashboardSidebar } from '@/components/layout/dashboard-sidebar';
 import { useComplaint } from '@/features/complaint/api/use-complaint';
 import { useUpdateComplaint } from '@/features/complaint/api/use-update-complaint';
+import { useApproveComplaint } from '@/features/complaint/api/use-approve-complaint';
+import { useDisapproveComplaint } from '@/features/complaint/api/use-disapprove-complaint';
 import { uploadGrievanceImage } from '@/features/auth/grievance/components/use-upload-image';
 import { ImageLightbox } from '@/features/auth/grievance/components/image-lightbox';
 import {
@@ -37,8 +41,11 @@ export const ComplaintDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const { data: complaint, isLoading, error } = useComplaint(id ?? '');
   const updateComplaint = useUpdateComplaint();
+  const approveComplaint = useApproveComplaint();
+  const disapproveComplaint = useDisapproveComplaint();
 
   const [urgencyOpen, setUrgencyOpen] = useState(false);
+  const [showDisapproveConfirm, setShowDisapproveConfirm] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<ComplaintStatus | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -191,6 +198,35 @@ export const ComplaintDetailPage = () => {
                 </p>
               </div>
               <div className="flex shrink-0 items-center gap-2">
+                {/* Approval status */}
+                {complaint.approved ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-3 py-1 text-xs font-bold text-green-700 shadow-sm">
+                    <CheckCircle2 className="h-3 w-3" />
+                    Approved
+                  </span>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => approveComplaint.mutate(complaint.id)}
+                      disabled={approveComplaint.isPending}
+                      className="inline-flex cursor-pointer items-center gap-1 rounded-lg bg-amber-50 px-3 py-2 text-xs font-bold text-amber-700 shadow-sm transition-all hover:bg-amber-100 disabled:opacity-50"
+                    >
+                      <UserCheck className="h-3 w-3" />
+                      {approveComplaint.isPending ? 'Approving...' : 'Approve'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowDisapproveConfirm(true)}
+                      disabled={disapproveComplaint.isPending}
+                      className="inline-flex cursor-pointer items-center gap-1 rounded-lg bg-red-50 px-3 py-2 text-xs font-bold text-red-700 shadow-sm transition-all hover:bg-red-100 disabled:opacity-50"
+                      title="Permanently delete this report"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                      {disapproveComplaint.isPending ? 'Removing...' : 'Disapprove'}
+                    </button>
+                  </>
+                )}
                 {/* Urgency dropdown */}
                 <div ref={urgencyRef} className="relative">
                   <button
@@ -546,6 +582,53 @@ export const ComplaintDetailPage = () => {
               </CardContent>
             </Card>
           </div>
+
+          {showDisapproveConfirm && (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+              onClick={() => setShowDisapproveConfirm(false)}
+            >
+              <div
+                className="mx-4 w-full max-w-sm rounded-xl border bg-white p-6 shadow-xl"
+                onClick={(e) => e.stopPropagation()}
+                style={{ borderColor: '#e5e2e1' }}
+              >
+                <h3 className="mb-2 text-sm font-bold" style={{ color: '#1c1b1b' }}>
+                  Disapprove Complaint?
+                </h3>
+                <p className="mb-1 text-xs" style={{ color: '#72796e' }}>
+                  This will permanently delete{' '}
+                  <span className="font-semibold" style={{ color: '#42493e' }}>
+                    {complaint.title}
+                  </span>
+                  . Any points awarded will be revoked. This action cannot be undone.
+                </p>
+                <div className="flex justify-end gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowDisapproveConfirm(false)}
+                    className="rounded-lg px-3 py-1.5 text-xs font-semibold transition-all hover:bg-gray-100"
+                    style={{ color: '#72796e' }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      disapproveComplaint.mutate(complaint.id, {
+                        onSuccess: () => navigate('/dashboard'),
+                      });
+                    }}
+                    disabled={disapproveComplaint.isPending}
+                    className="inline-flex items-center gap-1 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white transition-all hover:bg-red-700 disabled:opacity-50"
+                  >
+                    {disapproveComplaint.isPending && <Loader2 className="h-3 w-3 animate-spin" />}
+                    {disapproveComplaint.isPending ? 'Removing...' : 'Yes, Delete Permanently'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </main>
       </div>
     </div>

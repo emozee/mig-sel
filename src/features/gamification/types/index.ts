@@ -4,6 +4,7 @@ export type UserProfile = {
   avatar_url: string | null;
   points: number;
   role: string | null;
+  username_edit_count: number;
 };
 
 export type LeaderboardEntry = {

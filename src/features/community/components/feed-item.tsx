@@ -8,9 +8,9 @@ import { CommentSection } from './comment-section';
 import type { ActivityItem, FeedStatus } from '../types';
 
 const STATUS_BADGE: Record<FeedStatus, { bg: string; text: string; label: string }> = {
-  pending: { bg: 'bg-orange-50', text: 'text-orange-600', label: 'Pending' },
-  'in-progress': { bg: 'bg-blue-50', text: 'text-blue-600', label: 'In Progress' },
-  resolved: { bg: 'bg-green-50', text: 'text-green-600', label: 'Resolved' },
+  pending: { bg: 'bg-orange-50', text: 'text-orange-500', label: 'Pending' },
+  'in-progress': { bg: 'bg-blue-50', text: 'text-blue-500', label: 'In Progress' },
+  resolved: { bg: 'bg-green-50', text: 'text-green-500', label: 'Resolved' },
 };
 
 function timeAgo(date: Date): string {
