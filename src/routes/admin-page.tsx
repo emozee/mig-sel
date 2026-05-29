@@ -8,6 +8,7 @@ import {
   FileText,
   Shield,
   Brain,
+  Gem,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DashboardSidebar, type NavView } from '@/components/layout/dashboard-sidebar';
@@ -18,11 +19,13 @@ import { ComplaintCharts } from '@/features/complaint/components/complaint-chart
 import { WasteReportingForm } from '@/features/waste/components/waste-reporting-form';
 import { RoleAssignment } from '@/features/admin/components/role-assignment';
 import { KnowledgeBase } from '@/features/admin/components/knowledge-base';
+import { DiamondReview } from '@/features/diamonds/components/diamond-review';
 
 const iconMap: Record<NavView, typeof ClipboardList> = {
   complaint: ClipboardList,
   table: Recycle,
   inspector: FileText,
+  diamond: Gem,
   role: Shield,
   charts: ChartPie,
   knowledge: Brain,
@@ -40,6 +43,7 @@ export const AdminPage = () => {
     },
     table: { title: 'Waste Management', description: 'Oversight panel for GMC waste management' },
     inspector: { title: 'Inspector', description: 'Submit waste collection records' },
+    diamond: { title: 'Diamond Review', description: 'Review and approve direct-solve requests' },
     role: { title: 'Role Assignment', description: 'Search and update user roles' },
     charts: { title: 'Analytics', description: 'Oversight panel for GMC waste management' },
     knowledge: { title: 'Knowledge Base', description: 'Manage chatbot Q&A pairs' },
@@ -165,6 +169,11 @@ export const AdminPage = () => {
             {activeView === 'knowledge' && (
               <div className="animate-in fade-in-0 slide-in-from-top-2 duration-500 [animation-delay:200ms]">
                 <KnowledgeBase />
+              </div>
+            )}
+            {activeView === 'diamond' && (
+              <div className="animate-in fade-in-0 slide-in-from-top-2 duration-500 [animation-delay:200ms]">
+                <DiamondReview />
               </div>
             )}
           </div>
