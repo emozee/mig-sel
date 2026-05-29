@@ -12,6 +12,7 @@ import { ReportPage } from './report-page';
 import { ComplaintDetailPage } from './complaint-detail-page';
 import { LeaderboardPage } from './leaderboard-page';
 import { CommunityPage } from './community-page';
+import { DiamondPage } from './diamond-page';
 import { ChatPage } from './chat-page';
 import { ShopPage } from './shop-page';
 import { ProfilePage } from './profile-page';
@@ -63,6 +64,11 @@ export const router = createBrowserRouter([
     path: '/community',
     element: <ProtectedRoute />,
     children: [{ index: true, element: <CommunityPage /> }],
+  },
+  {
+    path: '/diamond',
+    element: <ProtectedRoute />,
+    children: [{ index: true, element: <DiamondPage /> }],
   },
   {
     path: '/chat',

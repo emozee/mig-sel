@@ -33,6 +33,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useSearchParams } from 'react-router';
+import { FloatingChat } from '@/features/chatbot/components/floating-chat';
 
 const SARPANG_BOUNDS = L.latLngBounds([26.7032, 89.9213], [27.2401, 90.7235]);
 const DEFAULT_CENTER = { lat: 26.9312, lng: 90.4795 };
@@ -1185,6 +1186,9 @@ export const GrievanceMap = ({
 
           <UserMarker userLocation={userLocation} />
 
+          <div className="absolute right-4 bottom-52 z-[1000]">
+            <FloatingChat />
+          </div>
           <LocateButton coords={detectedCoords} />
 
           <div ref={layerRef} className="absolute top-36 right-4 z-[1000]">
