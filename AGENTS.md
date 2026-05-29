@@ -41,3 +41,16 @@ Pre-commit hook currently runs `npm test` (no-op). `lint-staged` is configured b
 - **Migration version uniqueness:** Each migration file must have a unique version prefix (the leading number). Duplicates will cause `schema_migrations_pkey` conflicts. Files like `20250527_add_upvote_count_trigger.sql` were renamed to `20250527000001_add_upvote_count_trigger.sql` to avoid this.
 - OpenCode skill `supabase-postgres-best-practices` is locked in.
 - **Auto-update chatbot knowledge base:** Whenever I add or modify a feature, I must also update `supabase/migrations/20250529000006_seed_chatbot_knowledge.sql` with relevant Q&A entries and create a new migration to push changes. The chatbot knowledge base must always reflect the current state of the app.
+
+## Cached Egress Reduction (always apply)
+
+Every time I write or modify data-fetching code, I MUST consider cached egress impact:
+
+1. **Never use `select('*')`** — always list explicit columns needed by the component.
+2. **Set appropriate `staleTime`** — at least 2-5 min for slow-changing data (map, KB, leaderboard, profiles). Use 60s only for rapidly-changing data.
+3. **Server-side filtering** — push WHERE/filter logic to Supabase queries, never download full tables and filter in JS.
+4. **Server-side pagination** — use `.range()` on list queries. Never load all rows and paginate client-side.
+5. **Lazy-load** — defer expensive queries (e.g., comments, details) until the dialog/modal is opened.
+6. **Narrow invalidation** — mutations should only invalidate query keys that are directly affected, not blanket-invalidate 5+ keys.
+7. **Image optimization** — use `loading="lazy"` on `<img>`, use Supabase image transforms (`?width=...&quality=...`) on storage URLs, restrict upload file types and sizes.
+8. **Cache-Control headers** — set aggressive caching on static assets via deployment config.

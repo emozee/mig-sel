@@ -7,6 +7,7 @@ export const useIsInspector = () => {
 
   return useQuery({
     queryKey: ['profile-role-inspector', session?.user?.id],
+    staleTime: 600_000,
     queryFn: async () => {
       if (!session?.user?.id) return false;
       const { data } = await supabase

@@ -22,10 +22,11 @@ function mapKnowledge(raw: Record<string, unknown>): KnowledgeItem {
 export const useKnowledge = () => {
   return useQuery({
     queryKey: knowledgeKeys.list(),
+    staleTime: 300_000,
     queryFn: async (): Promise<KnowledgeItem[]> => {
       const { data, error } = await supabase
         .from('chatbot_knowledge')
-        .select('*')
+        .select('id, question, answer, keywords, created_at, updated_at')
         .order('question', { ascending: true });
 
       if (error) throw error;
@@ -37,30 +38,27 @@ export const useKnowledge = () => {
 export const useSearchKnowledge = (query: string) => {
   return useQuery({
     queryKey: knowledgeKeys.search(query),
+    staleTime: 300_000,
     queryFn: async (): Promise<KnowledgeItem | null> => {
       if (!query.trim()) return null;
 
-      const lowerQuery = query.toLowerCase().trim();
-
-      const { data, error } = await supabase.from('chatbot_knowledge').select('*');
+      const { data, error } = await supabase.rpc('search_chatbot_knowledge', {
+        search_query: query.trim(),
+      });
 
       if (error) throw error;
 
-      const items = (data ?? []).map(mapKnowledge);
+      if (!data || data.length === 0) return null;
 
-      const scored = items.map((item) => {
-        let score = 0;
-        if (item.question.toLowerCase().includes(lowerQuery)) score += 3;
-        if (item.answer.toLowerCase().includes(lowerQuery)) score += 1;
-        for (const kw of item.keywords) {
-          if (lowerQuery.includes(kw.toLowerCase())) score += 2;
-        }
-        return { item, score };
-      });
-
-      scored.sort((a, b) => b.score - a.score);
-
-      return scored.length > 0 && scored[0].score > 0 ? scored[0].item : null;
+      const best = data[0];
+      return {
+        id: best.id as number,
+        question: best.question as string,
+        answer: best.answer as string,
+        keywords: (best.keywords as string[]) ?? [],
+        created_at: '',
+        updated_at: undefined,
+      };
     },
     enabled: query.trim().length > 0,
   });

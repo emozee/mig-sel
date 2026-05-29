@@ -60,21 +60,24 @@ export const ProfilePage = () => {
   const handleSave = async () => {
     if (!user?.id) return;
     try {
-      let avatarUrl = avatarPreview;
+      let avatarUrl: string | null = avatarPreview;
       if (avatarFile) {
         avatarUrl = await uploadAvatar(user.id, avatarFile);
       }
       await mutation.mutateAsync({
         userId: user.id,
-        ...(hasUsername ? {} : { username: displayName.trim() || null }),
+        username: displayName.trim() || null,
         avatar_url: avatarUrl,
       });
+      const cacheBust = `?t=${Date.now()}`;
+      setAvatarPreview(avatarUrl ? `${avatarUrl}${cacheBust}` : null);
+      setAvatarFile(null);
     } catch {
       // error handled by mutation
     }
   };
 
-  const hasNameChanged = !hasUsername && displayName !== (profile?.username ?? '');
+  const hasNameChanged = displayName !== (profile?.username ?? '');
   const hasAvatarChanged = avatarFile !== null;
   const hasChanges = hasNameChanged || hasAvatarChanged;
   const isSaving = mutation.isPending;
@@ -118,7 +121,7 @@ export const ProfilePage = () => {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp"
                 className="hidden"
                 onChange={handleAvatarChange}
               />

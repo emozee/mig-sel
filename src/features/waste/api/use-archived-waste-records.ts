@@ -35,10 +35,13 @@ export const archivedWasteKeys = {
 export const useArchivedWasteRecords = () => {
   return useQuery({
     queryKey: archivedWasteKeys.all,
+    staleTime: 300_000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('waste_records')
-        .select('*')
+        .select(
+          'id, category, quantity, unit, reported_at, collected_at, deleted_at, deletion_reason, edit_count, notes',
+        )
         .not('deleted_at', 'is', null)
         .order('deleted_at', { ascending: false });
 
