@@ -1,10 +1,14 @@
 import { supabase } from '@/lib/supabase';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 
 export const uploadGrievanceImage = async (file: File) => {
   if (file.size > MAX_FILE_SIZE) {
     throw new Error('File is too large. Maximum size is 10MB.');
+  }
+  if (!ALLOWED_TYPES.includes(file.type)) {
+    throw new Error('Invalid file type. Allowed: JPEG, PNG, WebP, GIF.');
   }
 
   const fileExt = file.name.split('.').pop() ?? '';

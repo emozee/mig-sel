@@ -197,6 +197,7 @@ export const FeedItem = ({ item }: FeedItemProps) => {
           <img
             src={item.image_url}
             alt=""
+            loading="lazy"
             className={`w-full ${fullView ? '' : 'h-full object-cover'}`}
           />
         </div>
@@ -228,7 +229,9 @@ export const FeedItem = ({ item }: FeedItemProps) => {
   );
 
   const { data: isAdmin } = useIsAdmin();
-  const { data: comments, isLoading: commentsLoading } = useFeedComments(item.id);
+  const { data: comments, isLoading: commentsLoading } = useFeedComments(item.id, {
+    enabled: imageViewerOpen,
+  });
   const { mutate: createComment, isPending: createPending } = useCreateComment();
   const { mutate: editComment, isPending: editPending } = useEditComment();
   const { mutate: deleteComment } = useDeleteComment();
@@ -319,6 +322,7 @@ export const FeedItem = ({ item }: FeedItemProps) => {
                 <img
                   src={item.image_url}
                   alt=""
+                  loading="lazy"
                   className="max-h-full max-w-full rounded-lg object-contain"
                 />
               )}

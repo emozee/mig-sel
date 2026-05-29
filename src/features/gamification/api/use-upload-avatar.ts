@@ -1,10 +1,14 @@
 import { supabase } from '@/lib/supabase';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 export const uploadAvatar = async (userId: string, file: File) => {
   if (file.size > MAX_FILE_SIZE) {
     throw new Error('File is too large. Maximum size is 5MB.');
+  }
+  if (!ALLOWED_TYPES.includes(file.type)) {
+    throw new Error('Invalid file type. Allowed: JPEG, PNG, WebP.');
   }
 
   const fileExt = file.name.split('.').pop() ?? '';

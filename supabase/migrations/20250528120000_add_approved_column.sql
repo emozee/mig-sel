@@ -1,2 +1,2 @@
 alter table public.grievances
-  add column approved boolean not null default false;
+  add column if not exists approved boolean not null default false;

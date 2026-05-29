@@ -16,6 +16,7 @@ const Avatar = ({
       <img
         src={url}
         alt={username ?? 'Avatar'}
+        loading="lazy"
         className={`rounded-full object-cover ${className}`}
       />
     );
@@ -95,8 +96,13 @@ const PodiumEntry = ({
           className={`${avatarSize} ring-2 ${config.ring} shadow-lg`}
         />
         {isFirst ? (
-          <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-            <Crown className="text-primary h-5 w-5 drop-shadow-sm" />
+          <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+            <div className="relative">
+              <div className="absolute inset-0 animate-ping rounded-full bg-amber-400/30" />
+              <div className="relative flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-amber-300 via-amber-400 to-orange-500 shadow-[0_0_12px_rgba(251,191,36,0.6)]">
+                <Crown className="h-5 w-5 text-white drop-shadow-md" />
+              </div>
+            </div>
           </div>
         ) : (
           <div

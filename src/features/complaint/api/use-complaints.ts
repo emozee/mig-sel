@@ -11,10 +11,13 @@ export const complaintKeys = {
 export const useComplaints = () => {
   return useQuery({
     queryKey: complaintKeys.all,
+    staleTime: 120_000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('grievances')
-        .select('*')
+        .select(
+          'id, title, description, category, status, urgency, latitude, longitude, image_url, resolved_image_url, created_at, resolved_at, parent_id, reporter_id, approved, bonus_awarded',
+        )
         .order('created_at', { ascending: false });
 
       if (error) throw error;
