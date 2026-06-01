@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useCommunityFeed } from '../api/use-community-feed';
+import { useReportsFeed } from '../api/use-reports-feed';
 import { FeedItem } from './feed-item';
 import { Pagination } from '@/components/ui/pagination';
 import { AlertTriangle } from 'lucide-react';
@@ -8,7 +8,7 @@ const ITEMS_PER_PAGE = 5;
 
 export const ActivityFeed = () => {
   const [currentPage, setCurrentPage] = useState(1);
-  const { data, isLoading, isError, error } = useCommunityFeed(currentPage, ITEMS_PER_PAGE);
+  const { data, isLoading, isError, error } = useReportsFeed(currentPage, ITEMS_PER_PAGE);
 
   const items = data?.items ?? [];
   const totalItems = data?.count ?? 0;

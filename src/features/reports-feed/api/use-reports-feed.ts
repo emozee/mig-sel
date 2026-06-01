@@ -13,13 +13,13 @@ const MOCK_GOAL: ImpactGoal = {
 };
 
 export const communityKeys = {
-  all: ['community'] as const,
+  all: ['reports-feed'] as const,
   feed: (userId?: string, page?: number, pageSize?: number) =>
     [...communityKeys.all, 'feed', userId, page, pageSize] as const,
   goal: () => [...communityKeys.all, 'goal'] as const,
 };
 
-export const useCommunityFeed = (page: number = 1, pageSize: number = 5) => {
+export const useReportsFeed = (page: number = 1, pageSize: number = 5) => {
   const { user } = useCurrentUser();
 
   return useQuery({
@@ -105,7 +105,7 @@ export const useCommunityFeed = (page: number = 1, pageSize: number = 5) => {
   });
 };
 
-export const useCommunityGoal = () => {
+export const useReportsGoal = () => {
   return useQuery({
     queryKey: communityKeys.goal(),
     queryFn: async (): Promise<ImpactGoal> => {

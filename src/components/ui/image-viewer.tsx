@@ -26,7 +26,7 @@ export function ClickableImage({
         }}
       />
       <DialogRoot open={open} onOpenChange={setOpen}>
-        <DialogContent className="!inset-0 !top-0 !left-0 flex h-dvh w-full max-w-full !translate-x-0 !translate-y-0 !items-center !justify-center !rounded-none !border-0 !bg-emerald-950/95 !p-0 sm:max-w-full">
+        <DialogContent className="!bg-primary/95 !inset-0 !top-0 !left-0 flex h-dvh w-full max-w-full !translate-x-0 !translate-y-0 !items-center !justify-center !rounded-none !border-0 !p-0 sm:max-w-full">
           <button
             onClick={(e) => {
               e.stopPropagation();

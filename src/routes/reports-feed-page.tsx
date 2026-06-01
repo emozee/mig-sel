@@ -1,9 +1,9 @@
 import { useNavigate } from 'react-router';
 import { ArrowLeft } from 'lucide-react';
-import { ActivityFeed } from '@/features/community/components/activity-feed';
+import { ActivityFeed } from '@/features/reports-feed/components/activity-feed';
 import { MapDock } from '@/components/layout/map-dock';
 
-export const CommunityPage = () => {
+export const ReportsFeedPage = () => {
   const navigate = useNavigate();
 
   return (
@@ -16,7 +16,7 @@ export const CommunityPage = () => {
           >
             <ArrowLeft className="h-4 w-4" />
           </button>
-          <h1 className="text-base font-bold text-gray-900">Community</h1>
+          <h1 className="text-base font-bold text-gray-900">Reports Feed</h1>
         </div>
       </div>
 

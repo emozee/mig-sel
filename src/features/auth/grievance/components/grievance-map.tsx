@@ -757,7 +757,7 @@ function CategoryFilterChips({
           onClick={onToggleDropOffPoints}
           className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm ring-1 transition-all active:scale-95 ${
             filters.showDropOffPoints
-              ? 'bg-emerald-600 text-white ring-transparent'
+              ? 'bg-primary text-white ring-transparent'
               : 'bg-white text-gray-600 ring-gray-200/60 hover:bg-gray-50'
           }`}
         >
@@ -1256,8 +1256,8 @@ export const GrievanceMap = ({
           <div className="absolute top-4 right-4 z-[1000] flex items-center gap-1.5 md:gap-2">
             <div className="hidden items-center gap-1.5 rounded-xl bg-white/90 px-2 py-1.5 text-[10px] font-bold tracking-wide text-gray-700 shadow-sm ring-1 ring-gray-200/50 backdrop-blur-md sm:flex md:gap-2 md:px-3 md:py-2 md:text-xs">
               <span className="relative flex h-1.5 w-1.5 md:h-2 md:w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500 md:h-2 md:w-2" />
+                <span className="bg-primary/60 absolute inline-flex h-full w-full animate-ping rounded-full opacity-75" />
+                <span className="bg-primary relative inline-flex h-1.5 w-1.5 rounded-full md:h-2 md:w-2" />
               </span>
               Live
             </div>

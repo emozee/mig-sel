@@ -472,7 +472,7 @@ export const WasteRecord = () => {
                                 <button
                                   onClick={() => handleUpdate(editForm)}
                                   disabled={updateRecord.isPending}
-                                  className="rounded-lg p-1.5 text-emerald-600 transition-all hover:bg-emerald-50 disabled:opacity-40"
+                                  className="text-primary hover:bg-primary/10 rounded-lg p-1.5 transition-all disabled:opacity-40"
                                 >
                                   <Check className="h-4 w-4" />
                                 </button>

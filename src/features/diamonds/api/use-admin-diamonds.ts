@@ -5,7 +5,7 @@ import { complaintKeys } from '@/features/complaint/api/use-complaints';
 import { grievanceKeys } from '@/features/auth/grievance/api/use-grievances';
 import { leaderboardKeys } from '@/features/gamification/api/use-leaderboard';
 import { profileKeys } from '@/features/gamification/api/use-user-profile';
-import { communityKeys } from '@/features/community/api/use-community-feed';
+import { communityKeys } from '@/features/reports-feed/api/use-reports-feed';
 import type { PendingDiamondReview } from '../types';
 
 export const usePendingDiamonds = () => {

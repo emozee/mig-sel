@@ -92,7 +92,7 @@ export const KnowledgeBase = () => {
             placeholder="Search knowledge base..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="h-10 w-full rounded-lg border border-gray-200 bg-white pr-3 pl-9 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+            className="focus:border-primary focus:ring-primary h-10 w-full rounded-lg border border-gray-200 bg-white pr-3 pl-9 text-sm outline-none focus:ring-1"
           />
         </div>
         {!isAdding && (
@@ -101,7 +101,7 @@ export const KnowledgeBase = () => {
               resetForm();
               setIsAdding(true);
             }}
-            className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-700"
+            className="bg-primary hover:bg-primary/90 flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-semibold text-white transition-colors"
           >
             <Plus className="h-4 w-4" />
             Add Q&A
@@ -110,10 +110,10 @@ export const KnowledgeBase = () => {
       </div>
 
       {isAdding && (
-        <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+        <div className="border-primary/20 bg-primary/5 rounded-xl border p-4">
           <div className="mb-3 flex items-center gap-2">
-            <Brain className="h-4 w-4 text-emerald-600" />
-            <span className="text-sm font-bold text-emerald-800">New Knowledge Entry</span>
+            <Brain className="text-primary h-4 w-4" />
+            <span className="text-primary text-sm font-bold">New Knowledge Entry</span>
           </div>
           <div className="space-y-3">
             <div>
@@ -123,7 +123,7 @@ export const KnowledgeBase = () => {
                 placeholder="e.g. How do I report an issue?"
                 value={form.question}
                 onChange={(e) => setForm((f) => ({ ...f, question: e.target.value }))}
-                className="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                className="focus:border-primary focus:ring-primary h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm outline-none focus:ring-1"
               />
             </div>
             <div>
@@ -133,7 +133,7 @@ export const KnowledgeBase = () => {
                 value={form.answer}
                 onChange={(e) => setForm((f) => ({ ...f, answer: e.target.value }))}
                 rows={4}
-                className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                className="focus:border-primary focus:ring-primary w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:ring-1"
               />
             </div>
             <div>
@@ -145,14 +145,14 @@ export const KnowledgeBase = () => {
                 placeholder="report, issue, complaint, file"
                 value={form.keywords}
                 onChange={(e) => setForm((f) => ({ ...f, keywords: e.target.value }))}
-                className="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                className="focus:border-primary focus:ring-primary h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm outline-none focus:ring-1"
               />
             </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={handleSave}
                 disabled={!form.question.trim() || !form.answer.trim() || isPending}
-                className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 disabled:opacity-50"
+                className="bg-primary hover:bg-primary/90 flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-semibold text-white transition-colors disabled:opacity-50"
               >
                 <Check className="h-4 w-4" />
                 Save
@@ -191,7 +191,7 @@ export const KnowledgeBase = () => {
                       type="text"
                       value={form.question}
                       onChange={(e) => setForm((f) => ({ ...f, question: e.target.value }))}
-                      className="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                      className="focus:border-primary focus:ring-primary h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm outline-none focus:ring-1"
                     />
                   </div>
                   <div>
@@ -200,7 +200,7 @@ export const KnowledgeBase = () => {
                       value={form.answer}
                       onChange={(e) => setForm((f) => ({ ...f, answer: e.target.value }))}
                       rows={4}
-                      className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                      className="focus:border-primary focus:ring-primary w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:ring-1"
                     />
                   </div>
                   <div>
@@ -211,14 +211,14 @@ export const KnowledgeBase = () => {
                       type="text"
                       value={form.keywords}
                       onChange={(e) => setForm((f) => ({ ...f, keywords: e.target.value }))}
-                      className="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                      className="focus:border-primary focus:ring-primary h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm outline-none focus:ring-1"
                     />
                   </div>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={handleSave}
                       disabled={!form.question.trim() || !form.answer.trim() || isPending}
-                      className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 disabled:opacity-50"
+                      className="bg-primary hover:bg-primary/90 flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-semibold text-white transition-colors disabled:opacity-50"
                     >
                       <Check className="h-4 w-4" />
                       Save
@@ -236,7 +236,7 @@ export const KnowledgeBase = () => {
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <Brain className="h-4 w-4 shrink-0 text-emerald-500" />
+                      <Brain className="text-primary h-4 w-4 shrink-0" />
                       <h3 className="truncate text-sm font-bold text-gray-900">{item.question}</h3>
                     </div>
                     <p className="mt-1.5 text-sm leading-relaxed text-gray-600">{item.answer}</p>

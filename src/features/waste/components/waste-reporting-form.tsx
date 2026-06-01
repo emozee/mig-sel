@@ -432,7 +432,7 @@ export const WasteReportingForm = () => {
                     onClick={handleSubmitAll}
                     disabled={submitting}
                     className={cn(
-                      'inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-semibold text-white shadow-xs transition-all hover:bg-emerald-700 hover:shadow-md active:scale-95 disabled:pointer-events-none disabled:opacity-50',
+                      'bg-primary hover:bg-primary/90 inline-flex items-center gap-2 rounded-lg px-6 py-2.5 text-sm font-semibold text-white shadow-xs transition-all hover:shadow-md active:scale-95 disabled:pointer-events-none disabled:opacity-50',
                     )}
                   >
                     {submitting ? (
@@ -480,7 +480,7 @@ export const WasteReportingForm = () => {
             <button
               type="button"
               onClick={executeSubmit}
-              className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-6 py-2 text-sm font-semibold text-white shadow-xs transition-all hover:bg-emerald-700 hover:shadow-md active:scale-95"
+              className="bg-primary hover:bg-primary/90 inline-flex items-center gap-2 rounded-lg px-6 py-2 text-sm font-semibold text-white shadow-xs transition-all hover:shadow-md active:scale-95"
             >
               <CheckCircle className="h-4 w-4" />
               Yes, Submit
@@ -492,8 +492,8 @@ export const WasteReportingForm = () => {
       {toast.show && (
         <div className="animate-in fade-in-0 fixed inset-0 z-50 flex items-center justify-center bg-black/30 duration-200">
           <div className="bg-card border-border shadow-elevated animate-in zoom-in-95 fade-in-0 mx-4 flex w-full max-w-sm items-start gap-3 rounded-xl border p-4 shadow-lg duration-200">
-            <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-100">
-              <CheckCircle className="h-4 w-4 text-emerald-600" />
+            <div className="bg-primary/10 mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full">
+              <CheckCircle className="text-primary h-4 w-4" />
             </div>
             <div className="flex-1">
               <p className="text-foreground text-sm font-semibold">Success</p>
