@@ -1,4 +1,4 @@
-export type FeedStatus = 'pending' | 'in-progress' | 'resolved';
+export type FeedStatus = 'pending' | 'in-progress' | 'resolved' | 'public';
 
 export interface ActivityItem {
   id: number;

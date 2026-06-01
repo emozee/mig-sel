@@ -25,6 +25,7 @@ export const useDiamonds = (page: number = 1, pageSize: number = 10) => {
           'id, user_id, body, image_urls, created_at, linked_grievance_id, status, direct_solve_awarded',
           { count: 'exact', head: false },
         )
+        .neq('status', 'rejected')
         .order('created_at', { ascending: false })
         .range(from, to);
 

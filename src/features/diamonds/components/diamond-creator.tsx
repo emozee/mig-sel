@@ -178,7 +178,7 @@ export const DiamondCreator = () => {
             />
             <p className="text-primary/70 flex items-center gap-1 text-[10px]">
               <Sparkles className="h-3 w-3" />
-              Direct Solve — everyone in this group gets 10 pts upon admin acceptance
+              Direct Solve — uploader gets 4 pts, volunteer(s) get 10 pts each upon admin acceptance
             </p>
           </div>
         )}
