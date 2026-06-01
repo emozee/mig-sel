@@ -16,7 +16,7 @@ export const useUserGrievances = (search?: string) => {
       let query = supabase
         .from('grievances')
         .select('id, title, status, image_url')
-        .in('status', ['pending', 'in-progress'])
+        .in('status', ['public'])
         .order('created_at', { ascending: false });
 
       if (search?.trim()) {

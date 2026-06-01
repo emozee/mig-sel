@@ -202,6 +202,11 @@ export const DiamondPost = ({ post, index = 0 }: DiamondPostProps) => {
                   <CheckCircle className="h-3 w-3" />
                   10 pts awarded
                 </span>
+              ) : post.status === 'rejected' ? (
+                <span className="inline-flex items-center gap-0.5 rounded-full bg-red-100/80 px-1.5 py-0.5 text-[10px] font-medium text-red-700">
+                  <X className="h-3 w-3" />
+                  Rejected
+                </span>
               ) : (
                 <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-100/80 px-1.5 py-0.5 text-[10px] font-medium text-amber-700">
                   <Clock className="h-3 w-3" />

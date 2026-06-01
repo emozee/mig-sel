@@ -29,6 +29,7 @@ export const STATUS_BADGE: Record<ComplaintStatus, { bg: string; text: string }>
   pending: { bg: '#fff7ed', text: '#f97316' },
   'in-progress': { bg: '#eff6ff', text: '#3b82f6' },
   resolved: { bg: '#f0fdf4', text: '#22c55e' },
+  public: { bg: '#f5f3ff', text: '#8b5cf6' },
 };
 
 export const CATEGORY_LABELS: Record<ComplaintCategory, string> = {
@@ -51,6 +52,7 @@ export const STATUS_LABELS: Record<ComplaintStatus, string> = {
   pending: 'Pending',
   'in-progress': 'In Progress',
   resolved: 'Resolved',
+  public: 'Public',
 };
 
 export const URGENCY_LABELS: Record<ComplaintUrgency, string> = {
@@ -61,4 +63,4 @@ export const URGENCY_LABELS: Record<ComplaintUrgency, string> = {
 
 export const STATUS_URGENCY_ORDER: ComplaintUrgency[] = ['low', 'medium', 'high'];
 
-export const STATUS_ORDER: ComplaintStatus[] = ['pending', 'in-progress', 'resolved'];
+export const STATUS_ORDER: ComplaintStatus[] = ['pending', 'public', 'in-progress', 'resolved'];

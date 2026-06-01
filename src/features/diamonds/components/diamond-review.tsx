@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Check, X, Users, Link2, Clock, AlertTriangle, Loader2 } from 'lucide-react';
+import { useNavigate } from 'react-router';
+import { Check, X, Users, Link2, Clock, AlertTriangle, Loader2, ExternalLink } from 'lucide-react';
 import {
   usePendingDiamonds,
   useAcceptDiamond,
@@ -88,9 +89,16 @@ function DiamondReviewCard({
   acceptPending: boolean;
   rejectPending: boolean;
 }) {
+  const navigate = useNavigate();
   const { data: collaborators } = useDiamondCollaborators(expanded ? diamond.id : 0);
   const { mutate: removeCollab } = useAdminRemoveCollaborator();
   const [removingId, setRemovingId] = useState<string | null>(null);
+
+  const rawDiamond = diamond as Record<string, unknown>;
+  const reviewImages: string[] =
+    (rawDiamond.image_urls as string[] | undefined) ??
+    (rawDiamond.imageUrls as string[] | undefined) ??
+    [];
 
   const handleRemoveCollab = (userId: string) => {
     setRemovingId(userId);
@@ -135,6 +143,24 @@ function DiamondReviewCard({
 
       {expanded && (
         <div className="border-t border-gray-100 px-4 py-3">
+          {reviewImages.length > 0 && (
+            <div className="mb-3">
+              <p className="text-muted-foreground mb-1.5 text-xs font-medium">Photos</p>
+              <div className="flex flex-wrap gap-1.5">
+                {reviewImages.map((url, i) => (
+                  <img
+                    key={i}
+                    src={url}
+                    alt=""
+                    className="h-20 w-20 rounded-lg object-cover ring-1 ring-gray-200"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).style.display = 'none';
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
           {collaborators && collaborators.length > 0 && (
             <div className="mb-3 space-y-1.5">
               <p className="text-muted-foreground text-xs font-medium">Volunteers</p>
@@ -170,33 +196,43 @@ function DiamondReviewCard({
             </div>
           )}
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between">
             <button
               type="button"
-              onClick={onAccept}
-              disabled={acceptPending || rejectPending}
-              className="flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-emerald-500 disabled:opacity-50"
+              onClick={() => navigate(`/diamond?post=${diamond.id}`)}
+              className="text-muted-foreground hover:text-primary flex items-center gap-1 text-xs font-medium transition-colors"
             >
-              {acceptPending ? (
-                <Loader2 className="h-3 w-3 animate-spin" />
-              ) : (
-                <Check className="h-3 w-3" />
-              )}
-              Accept
+              <ExternalLink className="h-3 w-3" />
+              View Post
             </button>
-            <button
-              type="button"
-              onClick={onReject}
-              disabled={acceptPending || rejectPending}
-              className="flex items-center gap-1 rounded-lg bg-red-100 px-3 py-1.5 text-xs font-semibold text-red-700 transition-colors hover:bg-red-200 disabled:opacity-50"
-            >
-              {rejectPending ? (
-                <Loader2 className="h-3 w-3 animate-spin" />
-              ) : (
-                <X className="h-3 w-3" />
-              )}
-              Reject
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={onAccept}
+                disabled={acceptPending || rejectPending}
+                className="flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-emerald-500 disabled:opacity-50"
+              >
+                {acceptPending ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <Check className="h-3 w-3" />
+                )}
+                Accept
+              </button>
+              <button
+                type="button"
+                onClick={onReject}
+                disabled={acceptPending || rejectPending}
+                className="flex items-center gap-1 rounded-lg bg-red-100 px-3 py-1.5 text-xs font-semibold text-red-700 transition-colors hover:bg-red-200 disabled:opacity-50"
+              >
+                {rejectPending ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <X className="h-3 w-3" />
+                )}
+                Reject
+              </button>
+            </div>
           </div>
         </div>
       )}

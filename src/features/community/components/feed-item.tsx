@@ -29,6 +29,7 @@ const STATUS_BADGE: Record<FeedStatus, { bg: string; text: string; label: string
   pending: { bg: 'bg-orange-50', text: 'text-orange-500', label: 'Pending' },
   'in-progress': { bg: 'bg-blue-50', text: 'text-blue-500', label: 'In Progress' },
   resolved: { bg: 'bg-green-50', text: 'text-green-500', label: 'Resolved' },
+  public: { bg: 'bg-violet-50', text: 'text-violet-500', label: 'Public' },
 };
 
 function timeAgo(date: Date): string {

@@ -53,7 +53,7 @@ export const GrievancePicker = ({ selectedId, onSelect }: GrievancePickerProps) 
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search your active issues..."
+          placeholder="Search public issues..."
           className="placeholder:text-muted-foreground/50 flex-1 bg-transparent text-xs outline-none"
           autoFocus
         />
@@ -76,7 +76,7 @@ export const GrievancePicker = ({ selectedId, onSelect }: GrievancePickerProps) 
           <div className="flex flex-col items-center gap-1 p-4 text-center">
             <AlertCircle className="text-muted-foreground/40 h-5 w-5" />
             <p className="text-muted-foreground/60 text-xs">
-              {search ? 'No matching issues' : 'No active issues to link'}
+              {search ? 'No matching issues' : 'No public issues available'}
             </p>
           </div>
         ) : (
@@ -105,14 +105,8 @@ export const GrievancePicker = ({ selectedId, onSelect }: GrievancePickerProps) 
               <div className="min-w-0 flex-1">
                 <div className="text-foreground truncate font-medium">{g.title}</div>
                 <div className="mt-0.5 flex items-center gap-1.5">
-                  <span
-                    className={`h-1.5 w-1.5 shrink-0 rounded-full ${
-                      g.status === 'in-progress' ? 'bg-blue-500' : 'bg-orange-500'
-                    }`}
-                  />
-                  <span className="text-muted-foreground/60 text-[10px] capitalize">
-                    {g.status === 'in-progress' ? 'In Progress' : 'Pending'}
-                  </span>
+                  <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-violet-500" />
+                  <span className="text-muted-foreground/60 text-[10px]">Public</span>
                 </div>
               </div>
             </button>

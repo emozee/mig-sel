@@ -5,6 +5,7 @@ const POINTS: Record<ComplaintStatus, { master: number; child: number }> = {
   pending: { master: 1, child: 1 },
   'in-progress': { master: 2, child: 1 },
   resolved: { master: 4, child: 2 },
+  public: { master: 1, child: 1 },
 };
 
 function getPoints(status: ComplaintStatus, isChild: boolean): number {
