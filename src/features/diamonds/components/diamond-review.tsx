@@ -40,7 +40,7 @@ export const DiamondReview = () => {
   if (!pending?.length) {
     return (
       <div className="rounded-xl bg-white p-6 text-center shadow-sm">
-        <Check className="mx-auto h-8 w-8 text-emerald-400" />
+        <Check className="text-primary mx-auto h-8 w-8" />
         <p className="mt-2 text-sm text-gray-500">No pending direct-solve requests</p>
       </div>
     );
@@ -210,7 +210,7 @@ function DiamondReviewCard({
                 type="button"
                 onClick={onAccept}
                 disabled={acceptPending || rejectPending}
-                className="flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-emerald-500 disabled:opacity-50"
+                className="bg-primary hover:bg-primary/90 flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold text-white transition-colors disabled:opacity-50"
               >
                 {acceptPending ? (
                   <Loader2 className="h-3 w-3 animate-spin" />

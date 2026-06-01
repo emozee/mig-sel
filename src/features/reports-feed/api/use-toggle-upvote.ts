@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useCurrentUser } from '@/features/auth/api/use-current-user';
-import { communityKeys } from './use-community-feed';
+import { communityKeys } from './use-reports-feed';
 import type { ActivityItem } from '../types';
 
 interface ToggleUpvoteInput {

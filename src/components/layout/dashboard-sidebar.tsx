@@ -247,7 +247,7 @@ export function DashboardSidebar({
               <div className="flex flex-col items-center gap-4">
                 {/* Avatar */}
                 <div className="relative">
-                  <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-emerald-100 text-2xl font-bold text-emerald-700">
+                  <div className="bg-primary/10 text-primary flex h-20 w-20 items-center justify-center overflow-hidden rounded-full text-2xl font-bold">
                     {avatarPreview ? (
                       <img src={avatarPreview} alt="" className="h-full w-full object-cover" />
                     ) : (

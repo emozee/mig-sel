@@ -172,4 +172,8 @@ insert into public.chatbot_knowledge (question, answer, keywords) values
 
 ('What happens if admin rejects my Diamond post?',
   'If an admin rejects your Diamond post, the post is automatically deleted. The linked issue stays unchanged (still public), and no points are awarded to anyone.',
-  array['reject diamond', 'diamond rejected', 'post rejected', 'delete diamond', 'diamond declined']);
+  array['reject diamond', 'diamond rejected', 'post rejected', 'delete diamond', 'diamond declined']),
+
+('Hi',
+  'Kuzu zangpola! I\'m the mig-sel assistant. I can help you with reporting issues, earning points, using the Diamond feature, and anything else about the platform. What would you like to know?',
+  array['greeting', 'hello', 'hey', 'kuzu zangpola', 'hi', 'good morning', 'good evening', 'howdy']);

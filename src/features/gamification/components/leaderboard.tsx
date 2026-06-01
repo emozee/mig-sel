@@ -98,8 +98,8 @@ const PodiumEntry = ({
         {isFirst ? (
           <div className="absolute -top-4 left-1/2 -translate-x-1/2">
             <div className="relative">
-              <div className="absolute inset-0 animate-ping rounded-full bg-amber-400/30" />
-              <div className="relative flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-amber-300 via-amber-400 to-orange-500 shadow-[0_0_12px_rgba(251,191,36,0.6)]">
+              <div className="bg-primary/30 absolute inset-0 animate-ping rounded-full" />
+              <div className="from-primary/80 via-primary to-primary relative flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br shadow-[0_0_12px_var(--primary)]">
                 <Crown className="h-5 w-5 text-white drop-shadow-md" />
               </div>
             </div>

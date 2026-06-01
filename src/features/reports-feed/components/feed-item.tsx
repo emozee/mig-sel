@@ -127,7 +127,7 @@ export const FeedItem = ({ item }: FeedItemProps) => {
             className="h-9 w-9 shrink-0 rounded-full object-cover"
           />
         ) : (
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-700">
+          <div className="bg-primary/10 text-primary flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold">
             {item.userInitials}
           </div>
         )}
@@ -211,7 +211,7 @@ export const FeedItem = ({ item }: FeedItemProps) => {
           onClick={handleUpvote}
           disabled={isPending}
           className={`flex items-center gap-1 text-sm transition-colors ${
-            item.isUpvoted ? 'text-emerald-600' : 'text-gray-500 hover:text-gray-800'
+            item.isUpvoted ? 'text-primary' : 'text-gray-500 hover:text-gray-800'
           } ${isPending ? 'opacity-50' : ''}`}
         >
           <Heart
@@ -304,7 +304,7 @@ export const FeedItem = ({ item }: FeedItemProps) => {
 
       {/* Image viewer – image + like + comments (Facebook-style) */}
       <DialogRoot open={imageViewerOpen} onOpenChange={setImageViewerOpen}>
-        <DialogContent className="!inset-0 !top-0 !left-0 flex h-dvh w-full max-w-full !translate-x-0 !translate-y-0 !flex-col !rounded-none !border-0 !bg-emerald-950 !p-0 sm:max-w-full">
+        <DialogContent className="!bg-primary/95 !inset-0 !top-0 !left-0 flex h-dvh w-full max-w-full !translate-x-0 !translate-y-0 !flex-col !rounded-none !border-0 !p-0 sm:max-w-full">
           {/* Close button */}
           <button
             onClick={(e) => {
@@ -318,7 +318,7 @@ export const FeedItem = ({ item }: FeedItemProps) => {
 
           <div className="mx-auto flex w-full max-w-lg flex-1 flex-col">
             {/* Image area */}
-            <div className="flex min-h-0 flex-1 items-center justify-center bg-emerald-950 px-2">
+            <div className="bg-primary/95 flex min-h-0 flex-1 items-center justify-center px-2">
               {item.image_url && (
                 <img
                   src={item.image_url}
@@ -346,7 +346,7 @@ export const FeedItem = ({ item }: FeedItemProps) => {
                   }}
                   disabled={isPending}
                   className={`flex items-center gap-1 text-sm transition-colors ${
-                    item.isUpvoted ? 'text-emerald-600' : 'text-gray-500'
+                    item.isUpvoted ? 'text-primary' : 'text-gray-500'
                   } ${isPending ? 'opacity-50' : ''}`}
                 >
                   <Heart
@@ -376,7 +376,7 @@ export const FeedItem = ({ item }: FeedItemProps) => {
                       comment.updated_at && comment.updated_at !== comment.created_at;
                     return (
                       <div key={comment.id} className="flex items-start gap-2">
-                        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[10px] font-bold text-emerald-700">
+                        <div className="bg-primary/10 text-primary flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-bold">
                           {comment.user_initials}
                         </div>
                         <div className="min-w-0 flex-1">

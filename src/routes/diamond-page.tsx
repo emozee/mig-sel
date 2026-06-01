@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router';
-import { ArrowLeft, Sparkles } from 'lucide-react';
+import { ArrowLeft, Gem } from 'lucide-react';
 import { DiamondCreator } from '@/features/diamonds/components/diamond-creator';
 import { DiamondFeed } from '@/features/diamonds/components/diamond-feed';
 import { MapDock } from '@/components/layout/map-dock';
@@ -17,7 +17,7 @@ export const DiamondPage = () => {
           >
             <ArrowLeft className="h-4 w-4" />
           </button>
-          <Sparkles className="h-5 w-5 text-emerald-600" />
+          <Gem className="text-primary h-5 w-5" />
           <h1 className="text-base font-bold text-gray-900">Diamond</h1>
         </div>
       </div>

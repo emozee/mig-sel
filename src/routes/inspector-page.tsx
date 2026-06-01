@@ -9,8 +9,8 @@ export const InspectorPage = () => {
   return (
     <div className="relative flex min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100/80">
       <div className="pointer-events-none fixed inset-0">
-        <div className="absolute -top-32 -left-32 h-96 w-96 rounded-full bg-amber-200/20 blur-3xl" />
-        <div className="absolute -right-32 -bottom-32 h-96 w-96 rounded-full bg-emerald-200/20 blur-3xl" />
+        <div className="bg-primary/10 absolute -top-32 -left-32 h-96 w-96 rounded-full blur-3xl" />
+        <div className="bg-primary/10 absolute -right-32 -bottom-32 h-96 w-96 rounded-full blur-3xl" />
         <div className="absolute top-1/2 left-1/3 h-64 w-64 -translate-y-1/2 rounded-full bg-blue-200/10 blur-3xl" />
       </div>
 
@@ -44,8 +44,8 @@ export const InspectorPage = () => {
           >
             <div className="animate-in fade-in-0 slide-in-from-top-2 mb-8 hidden duration-500 [animation-delay:100ms] md:block">
               <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-100">
-                  <FileText className="h-6 w-6 text-amber-700" />
+                <div className="bg-primary/10 flex h-12 w-12 items-center justify-center rounded-xl">
+                  <FileText className="text-primary h-6 w-6" />
                 </div>
                 <div>
                   <div className="text-muted-foreground/40 mb-1 text-xs font-semibold tracking-widest uppercase">

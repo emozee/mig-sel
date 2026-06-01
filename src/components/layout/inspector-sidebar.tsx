@@ -91,7 +91,7 @@ export const InspectorSidebar = ({
           </div>
           <div className="flex items-center gap-2.5">
             <span className="text-foreground text-lg font-bold tracking-tight">Migsel</span>
-            <span className="rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold tracking-wider text-amber-700 uppercase">
+            <span className="bg-primary/10 text-primary rounded-md px-1.5 py-0.5 text-[10px] font-bold tracking-wider uppercase">
               Inspector
             </span>
           </div>
@@ -186,7 +186,7 @@ export const InspectorSidebar = ({
               <div className="flex flex-col items-center gap-4">
                 {/* Avatar */}
                 <div className="relative">
-                  <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-emerald-100 text-2xl font-bold text-emerald-700">
+                  <div className="bg-primary/10 text-primary flex h-20 w-20 items-center justify-center overflow-hidden rounded-full text-2xl font-bold">
                     {avatarPreview ? (
                       <img src={avatarPreview} alt="" className="h-full w-full object-cover" />
                     ) : (

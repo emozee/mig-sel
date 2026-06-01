@@ -11,7 +11,7 @@ import { MapPage } from './map-page';
 import { ReportPage } from './report-page';
 import { ComplaintDetailPage } from './complaint-detail-page';
 import { LeaderboardPage } from './leaderboard-page';
-import { CommunityPage } from './community-page';
+import { ReportsFeedPage } from './reports-feed-page';
 import { DiamondPage } from './diamond-page';
 import { ChatPage } from './chat-page';
 import { ShopPage } from './shop-page';
@@ -33,7 +33,7 @@ export const router = createBrowserRouter([
 
       if (role === 'admin') return redirect('/dashboard');
       if (role === 'inspector') return redirect('/inspector');
-      return redirect('/community');
+      return redirect('/reports-feed');
     },
     element: <LandingPage />,
   },
@@ -61,9 +61,9 @@ export const router = createBrowserRouter([
     children: [{ index: true, element: <LeaderboardPage /> }],
   },
   {
-    path: '/community',
+    path: '/reports-feed',
     element: <ProtectedRoute />,
-    children: [{ index: true, element: <CommunityPage /> }],
+    children: [{ index: true, element: <ReportsFeedPage /> }],
   },
   {
     path: '/diamond',

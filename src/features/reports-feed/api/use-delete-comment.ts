@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { commentKeys } from './use-feed-comments';
-import { communityKeys } from './use-community-feed';
+import { communityKeys } from './use-reports-feed';
 
 export const useDeleteComment = () => {
   const queryClient = useQueryClient();

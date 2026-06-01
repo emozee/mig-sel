@@ -11,14 +11,14 @@ interface Message {
 }
 
 const DEFAULT_RESPONSE =
-  "I'm not sure about that. Try asking about: reports, community, map, shop, points, profile, or leaderboard.";
+  "I'm not sure about that. Try asking about: reports feed, map, shop, points, profile, or leaderboard.";
 
 export const ChatPage = () => {
   const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'bot',
-      text: "Hi! I'm the mig-sel assistant. Ask me about reporting issues, the community, points, or anything else!",
+      text: "Hi! I'm the mig-sel assistant. Ask me about reporting issues, points, or anything else!",
     },
   ]);
   const [input, setInput] = useState('');
@@ -69,7 +69,7 @@ export const ChatPage = () => {
           >
             <ArrowLeft className="h-4 w-4" />
           </button>
-          <Bot className="h-5 w-5 text-emerald-600" />
+          <Bot className="text-primary h-5 w-5" />
           <h1 className="text-base font-bold text-gray-900">Chat Assistant</h1>
         </div>
       </div>
@@ -83,9 +83,7 @@ export const ChatPage = () => {
             >
               <div
                 className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${
-                  msg.role === 'bot'
-                    ? 'bg-emerald-100 text-emerald-700'
-                    : 'bg-gray-200 text-gray-600'
+                  msg.role === 'bot' ? 'bg-primary/10 text-primary' : 'bg-gray-200 text-gray-600'
                 }`}
               >
                 {msg.role === 'bot' ? <Bot className="h-4 w-4" /> : <User className="h-4 w-4" />}
@@ -94,7 +92,7 @@ export const ChatPage = () => {
                 className={`max-w-[80%] rounded-2xl px-3.5 py-2 text-sm leading-relaxed ${
                   msg.role === 'bot'
                     ? 'rounded-tl-sm bg-white text-gray-700 shadow-[0_1px_3px_rgba(0,0,0,0.06)]'
-                    : 'rounded-tr-sm bg-emerald-600 text-white'
+                    : 'bg-primary rounded-tr-sm text-white'
                 }`}
               >
                 {msg.text}
@@ -103,7 +101,7 @@ export const ChatPage = () => {
           ))}
           {isFetching && (
             <div className="flex items-start gap-2">
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+              <div className="bg-primary/10 text-primary flex h-7 w-7 shrink-0 items-center justify-center rounded-full">
                 <Bot className="h-4 w-4" />
               </div>
               <div className="rounded-2xl rounded-tl-sm bg-white px-3.5 py-2 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
