@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import {
   Clock,
   CheckCircle2,
+  Globe,
   MoveRight,
   MapPin,
   Trophy,
@@ -75,6 +76,7 @@ export function ComplaintDetailDialog({
     pending: 1,
     'in-progress': 2,
     resolved: 4,
+    public: 1,
   };
 
   return (
@@ -175,6 +177,8 @@ export function ComplaintDetailDialog({
                   <Clock className="h-3 w-3" />
                 ) : complaint.status === 'resolved' ? (
                   <CheckCircle2 className="h-3 w-3" />
+                ) : complaint.status === 'public' ? (
+                  <Globe className="h-3 w-3" />
                 ) : (
                   <MoveRight className="h-3 w-3" />
                 )}
@@ -198,6 +202,8 @@ export function ComplaintDetailDialog({
                         <Clock className="h-3 w-3" />
                       ) : s === 'resolved' ? (
                         <CheckCircle2 className="h-3 w-3" />
+                      ) : s === 'public' ? (
+                        <Globe className="h-3 w-3" />
                       ) : (
                         <MoveRight className="h-3 w-3" />
                       )}

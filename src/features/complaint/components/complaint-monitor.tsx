@@ -224,6 +224,7 @@ export const ComplaintMonitor = () => {
     pending: complaints.filter((c) => c.status === 'pending').length,
     inProgress: complaints.filter((c) => c.status === 'in-progress').length,
     resolved: complaints.filter((c) => c.status === 'resolved').length,
+    public: complaints.filter((c) => c.status === 'public').length,
     unapproved: complaints.filter((c) => !c.approved).length,
   };
 
@@ -251,7 +252,12 @@ export const ComplaintMonitor = () => {
       Urgency: URGENCY_LABELS[c.urgency] || c.urgency,
       Status: STATUS_LABELS[c.status] || c.status,
       Points: (() => {
-        const statusPoints: Record<string, number> = { pending: 1, 'in-progress': 2, resolved: 4 };
+        const statusPoints: Record<string, number> = {
+          pending: 1,
+          'in-progress': 2,
+          resolved: 4,
+          public: 1,
+        };
         return statusPoints[c.status] ?? 1;
       })(),
       Location: c.location || '',
@@ -414,7 +420,7 @@ export const ComplaintMonitor = () => {
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         {tabCard('total', 'Total', summary.total, '#ffffff', '#e5e2e1', null, '#1c1b1b', '#1c1b1b')}
         {tabCard(
           'pending',
@@ -435,6 +441,16 @@ export const ComplaintMonitor = () => {
           <MapPin className="h-4 w-4 text-blue-500" />,
           '#2563eb',
           '#2563eb',
+        )}
+        {tabCard(
+          'public',
+          'Public',
+          summary.public,
+          '#f5f3ff',
+          '#d8b4fe',
+          <CheckCircle2 className="h-4 w-4 text-violet-500" />,
+          '#8b5cf6',
+          '#8b5cf6',
         )}
         {tabCard(
           'resolved',
@@ -632,7 +648,9 @@ export const ComplaintMonitor = () => {
                                 ? 'border-emerald-500 bg-emerald-50 text-emerald-500'
                                 : complaint.status === 'in-progress'
                                   ? 'border-blue-500 bg-blue-50 text-blue-500'
-                                  : 'border-orange-500 bg-orange-50 text-orange-500'
+                                  : complaint.status === 'public'
+                                    ? 'border-violet-500 bg-violet-50 text-violet-500'
+                                    : 'border-orange-500 bg-orange-50 text-orange-500'
                             }`}
                           >
                             {Object.entries(STATUS_LABELS).map(([key, label]) => (
@@ -651,6 +669,7 @@ export const ComplaintMonitor = () => {
                                   pending: 1,
                                   'in-progress': 2,
                                   resolved: 4,
+                                  public: 1,
                                 };
                                 return statusPoints[complaint.status] ?? 1;
                               })()}
@@ -803,6 +822,7 @@ export const ComplaintMonitor = () => {
             pending: 1,
             'in-progress': 2,
             resolved: 4,
+            public: 1,
           };
           return (
             <div
@@ -890,7 +910,9 @@ export const ComplaintMonitor = () => {
                           ? 'bg-emerald-50 text-emerald-500'
                           : previewComplaint.status === 'in-progress'
                             ? 'bg-blue-50 text-blue-500'
-                            : 'bg-orange-50 text-orange-500'
+                            : previewComplaint.status === 'public'
+                              ? 'bg-violet-50 text-violet-500'
+                              : 'bg-orange-50 text-orange-500'
                       }`}
                     >
                       {Object.entries(STATUS_LABELS).map(([key, label]) => (

@@ -2,7 +2,7 @@ export type ComplaintCategory = 'road' | 'garbage' | 'lighting' | 'drainage' | '
 
 export type ComplaintUrgency = 'low' | 'medium' | 'high';
 
-export type ComplaintStatus = 'pending' | 'in-progress' | 'resolved';
+export type ComplaintStatus = 'pending' | 'in-progress' | 'resolved' | 'public';
 
 export type Complaint = {
   id: string;
