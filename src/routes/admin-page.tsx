@@ -39,7 +39,7 @@ export const AdminPage = () => {
   const pageMeta: Record<NavView, { title: string; description: string }> = {
     complaint: {
       title: 'Complaint Monitoring',
-      description: 'Monitor and manage community complaints',
+      description: 'Monitor and manage reports and complaints',
     },
     table: { title: 'Waste Management', description: 'Oversight panel for GMC waste management' },
     inspector: { title: 'Inspector', description: 'Submit waste collection records' },
@@ -62,7 +62,7 @@ export const AdminPage = () => {
     <div className="relative flex min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100/80">
       <div className="pointer-events-none fixed inset-0">
         <div className="absolute -top-32 -left-32 h-96 w-96 rounded-full bg-purple-200/20 blur-3xl" />
-        <div className="absolute -right-32 -bottom-32 h-96 w-96 rounded-full bg-emerald-200/20 blur-3xl" />
+        <div className="bg-primary/10 absolute -right-32 -bottom-32 h-96 w-96 rounded-full blur-3xl" />
         <div className="absolute top-1/2 left-1/3 h-64 w-64 -translate-y-1/2 rounded-full bg-blue-200/10 blur-3xl" />
       </div>
       {sidebarOpen && (

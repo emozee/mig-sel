@@ -11,10 +11,15 @@ import {
 interface DiamondCommentSectionProps {
   diamondId: number;
   open: boolean;
+  onToggle?: () => void;
   onClose?: () => void;
 }
 
-export const DiamondCommentSection = ({ diamondId, open }: DiamondCommentSectionProps) => {
+export const DiamondCommentSection = ({
+  diamondId,
+  open,
+  onToggle,
+}: DiamondCommentSectionProps) => {
   const { user } = useCurrentUser();
   const { data: comments, isLoading } = useDiamondComments(diamondId);
   const { mutate: createComment, isPending: isCreating } = useCreateDiamondComment(diamondId);
@@ -37,12 +42,44 @@ export const DiamondCommentSection = ({ diamondId, open }: DiamondCommentSection
     editComment({ commentId, body: editBody.trim() }, { onSuccess: () => setEditId(null) });
   };
 
-  if (!open) return null;
+  const latestComment = comments?.[comments.length - 1];
+
+  if (!open) {
+    if (!comments?.length) return null;
+    return (
+      <div className="border-t border-gray-100 px-4 py-2">
+        <p
+          onClick={onToggle}
+          className="cursor-pointer text-xs font-medium text-gray-500 hover:text-gray-700"
+        >
+          View all {comments.length} comment{comments.length !== 1 ? 's' : ''}
+        </p>
+        {latestComment && (
+          <div className="mt-1 flex items-start gap-2">
+            {latestComment.avatarUrl ? (
+              <img
+                src={latestComment.avatarUrl}
+                alt=""
+                className="h-5 w-5 shrink-0 rounded-full object-cover"
+              />
+            ) : (
+              <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gray-200 text-[7px] font-bold text-gray-500">
+                {latestComment.userInitials}
+              </div>
+            )}
+            <p className="text-[11px] text-gray-500">
+              <span className="font-semibold text-gray-700">{latestComment.userName}</span>{' '}
+              {latestComment.body}
+            </p>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="border-t border-gray-100 bg-gray-50/50">
-      {/* Comments list */}
-      <div className="max-h-40 space-y-2 overflow-y-auto px-3 py-2">
+      <div className="max-h-40 space-y-2 overflow-y-auto px-4 py-2">
         {isLoading ? (
           <p className="py-2 text-center text-[11px] text-gray-400">Loading comments...</p>
         ) : !comments?.length ? (
@@ -60,7 +97,7 @@ export const DiamondCommentSection = ({ diamondId, open }: DiamondCommentSection
                     className="h-6 w-6 shrink-0 rounded-full object-cover"
                   />
                 ) : (
-                  <div className="bg-primary/10 text-primary flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[9px] font-bold">
+                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gray-200 text-[9px] font-bold text-gray-500">
                     {c.userInitials}
                   </div>
                 )}
@@ -143,24 +180,26 @@ export const DiamondCommentSection = ({ diamondId, open }: DiamondCommentSection
         )}
       </div>
 
-      {/* Comment input */}
       {user && (
         <form
           onSubmit={handleSubmit}
-          className="flex items-center gap-1.5 border-t border-gray-100 px-3 py-2"
+          className="flex items-center gap-1.5 border-t border-gray-100 px-4 py-2"
         >
+          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gray-200 text-[8px] font-bold text-gray-500">
+            {user.user_metadata?.full_name?.[0]?.toUpperCase() ?? '?'}
+          </div>
           <input
             ref={inputRef}
             value={newBody}
             onChange={(e) => setNewBody(e.target.value)}
             placeholder="Write a comment..."
             maxLength={500}
-            className="focus:ring-primary/30 h-7 flex-1 rounded-lg bg-white px-2.5 text-[11px] ring-1 ring-gray-200 outline-none"
+            className="h-7 flex-1 rounded-full bg-gray-100 px-3 text-[11px] outline-none"
           />
           <button
             type="submit"
             disabled={!newBody.trim() || isCreating}
-            className="bg-primary hover:bg-primary/90 flex h-7 w-7 items-center justify-center rounded-lg text-white transition-colors disabled:opacity-40"
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 disabled:opacity-40"
           >
             {isCreating ? (
               <Loader2 className="h-3 w-3 animate-spin" />

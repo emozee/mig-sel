@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { MessageCircle, X, Send, Bot, User, Loader2 } from 'lucide-react';
+import { X, Send, Bot, User, Loader2 } from 'lucide-react';
 import { useSearchKnowledge } from '../api/use-knowledge';
 
 interface Message {
@@ -8,14 +8,14 @@ interface Message {
 }
 
 const DEFAULT_RESPONSE =
-  "I'm not sure about that. Try asking about: reports, community, map, shop, points, profile, or leaderboard.";
+  "I'm not sure about that. Try asking about: reports feed, map, shop, points, profile, or leaderboard.";
 
 export const FloatingChat = () => {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'bot',
-      text: 'Hi! Ask me about mig-sel — reports, community, points, and more!',
+      text: 'Hi! Ask me about mig-sel — reports feed, points, and more!',
     },
   ]);
   const [input, setInput] = useState('');
@@ -67,7 +67,7 @@ export const FloatingChat = () => {
         <div className="animate-fade-in flex w-72 flex-col overflow-hidden rounded-2xl bg-white shadow-lg ring-1 ring-black/5">
           <div className="flex items-center justify-between border-b border-gray-100 px-3 py-2.5">
             <div className="flex items-center gap-1.5">
-              <Bot className="h-4 w-4 text-emerald-600" />
+              <Bot className="text-primary h-4 w-4" />
               <span className="text-xs font-semibold text-gray-900">Chat Assistant</span>
             </div>
             <button
@@ -87,9 +87,7 @@ export const FloatingChat = () => {
               >
                 <div
                   className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${
-                    msg.role === 'bot'
-                      ? 'bg-emerald-100 text-emerald-700'
-                      : 'bg-gray-200 text-gray-600'
+                    msg.role === 'bot' ? 'bg-primary/10 text-primary' : 'bg-gray-200 text-gray-600'
                   }`}
                 >
                   {msg.role === 'bot' ? <Bot className="h-3 w-3" /> : <User className="h-3 w-3" />}
@@ -98,7 +96,7 @@ export const FloatingChat = () => {
                   className={`max-w-[85%] rounded-2xl px-2.5 py-1.5 text-[11px] leading-relaxed ${
                     msg.role === 'bot'
                       ? 'rounded-tl-sm bg-gray-50 text-gray-700'
-                      : 'rounded-tr-sm bg-emerald-600 text-white'
+                      : 'bg-primary rounded-tr-sm text-white'
                   }`}
                 >
                   {msg.text}
@@ -107,7 +105,7 @@ export const FloatingChat = () => {
             ))}
             {isFetching && (
               <div className="flex items-start gap-1.5">
-                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+                <div className="bg-primary/10 text-primary flex h-5 w-5 shrink-0 items-center justify-center rounded-full">
                   <Bot className="h-3 w-3" />
                 </div>
                 <div className="rounded-2xl rounded-tl-sm bg-gray-50 px-2.5 py-1.5">
@@ -133,7 +131,7 @@ export const FloatingChat = () => {
             <button
               type="submit"
               disabled={!input.trim() || isFetching}
-              className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-600 text-white transition-colors hover:bg-emerald-500 disabled:opacity-50"
+              className="bg-primary hover:bg-primary/90 flex h-7 w-7 items-center justify-center rounded-lg text-white transition-colors disabled:opacity-50"
             >
               {isFetching ? (
                 <Loader2 className="h-3 w-3 animate-spin" />
@@ -150,12 +148,12 @@ export const FloatingChat = () => {
         onClick={() => setOpen((v) => !v)}
         title="Chat Assistant"
         aria-label="Chat Assistant"
-        className="flex h-12 w-12 cursor-pointer items-center justify-center rounded-xl bg-white shadow-md ring-1 ring-gray-200/60 transition-all hover:bg-gray-50 active:scale-95"
+        className="group bg-primary shadow-primary/30 ring-primary/20 hover:bg-primary/90 flex h-12 w-12 cursor-pointer items-center justify-center rounded-xl text-white shadow-lg ring-1 transition-all duration-200 active:scale-90"
       >
         {open ? (
-          <X className="h-6 w-6 text-gray-700" />
+          <X className="h-6 w-6" />
         ) : (
-          <MessageCircle className="h-6 w-6 text-gray-700" />
+          <Bot className="h-6 w-6 transition-transform duration-300 group-active:scale-0 group-active:opacity-0" />
         )}
       </button>
     </div>

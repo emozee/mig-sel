@@ -114,7 +114,7 @@ export const ShopPage = () => {
         </div>
 
         <div className="mb-5 text-center sm:mb-6">
-          <div className="mx-auto mb-2 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 shadow-lg sm:h-16 sm:w-16">
+          <div className="from-primary/80 to-primary mx-auto mb-2 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br shadow-lg sm:h-16 sm:w-16">
             <ShoppingBag className="h-7 w-7 text-white sm:h-8 sm:w-8" />
           </div>
           <h1 className="text-xl font-bold text-gray-900 sm:text-2xl">Points Shop</h1>

@@ -211,7 +211,7 @@ function CommentRow({
   if (editing) {
     return (
       <div className="flex gap-2.5">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-700">
+        <div className="bg-primary/10 text-primary flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold">
           {comment.user_initials}
         </div>
         <div className="min-w-0 flex-1">
@@ -261,7 +261,7 @@ function CommentRow({
 
   return (
     <div className="flex gap-2.5">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-700">
+      <div className="bg-primary/10 text-primary flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold">
         {comment.user_initials}
       </div>
       <div className="min-w-0 flex-1">

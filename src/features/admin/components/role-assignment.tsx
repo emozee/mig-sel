@@ -101,12 +101,12 @@ export const RoleAssignment = () => {
       </div>
 
       {successMessage && (
-        <div className="animate-in fade-in-0 slide-in-from-top-2 flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-800 duration-300">
-          <CheckCircle className="h-5 w-5 shrink-0 text-emerald-600" />
+        <div className="animate-in fade-in-0 slide-in-from-top-2 border-primary/20 bg-primary/5 text-primary flex items-center gap-3 rounded-xl border px-5 py-4 text-sm duration-300">
+          <CheckCircle className="text-primary h-5 w-5 shrink-0" />
           <span className="font-medium">{successMessage}</span>
           <button
             onClick={() => setSuccessMessage(null)}
-            className="ml-auto text-emerald-500 hover:text-emerald-700"
+            className="text-primary hover:text-primary ml-auto"
           >
             <span className="text-lg leading-none">&times;</span>
           </button>

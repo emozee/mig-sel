@@ -33,7 +33,7 @@ export const UserSettingsDialog = ({ open, onOpenChange }: UserSettingsDialogPro
         </DialogHeader>
 
         <div className="flex flex-col items-center gap-4 pt-2 pb-6">
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-emerald-100 text-2xl font-bold text-emerald-700">
+          <div className="bg-primary/10 text-primary flex h-20 w-20 items-center justify-center rounded-full text-2xl font-bold">
             {profile?.avatar_url ? (
               <img
                 src={profile.avatar_url}

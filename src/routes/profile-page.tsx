@@ -19,7 +19,7 @@ import { useCurrentUser } from '@/features/auth/api/use-current-user';
 import { useSignOut } from '@/features/auth/api/use-sign-out';
 
 const POINTS_BREAKDOWN = [
-  { icon: Upload, label: 'Submit a report', points: 1, color: 'text-blue-600', bg: 'bg-blue-50' },
+  { icon: Upload, label: 'Submit a report', points: 1, color: 'text-primary', bg: 'bg-primary/10' },
   {
     icon: LoaderPinwheel,
     label: 'Status → In Progress',

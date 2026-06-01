@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import { communityKeys } from './use-community-feed';
+import { communityKeys } from './use-reports-feed';
 import { uploadCommentImage } from './upload-comment-image';
 import type { FeedComment } from '../types';
 
