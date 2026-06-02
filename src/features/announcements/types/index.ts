@@ -9,6 +9,7 @@ export type Announcement = {
   is_pinned: boolean;
   created_at: string;
   updated_at: string;
+  expires_at: string | null;
 };
 
 export type AnnouncementWithAuthor = Announcement & {

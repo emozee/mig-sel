@@ -133,7 +133,7 @@ export const DiamondPost = ({ post, index = 0 }: DiamondPostProps) => {
           <div className="flex items-center gap-2">
             <span className="text-sm font-bold text-gray-900">{post.userName}</span>
             {post.userRole === 'official' && (
-              <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-blue-500" />
+              <BadgeCheck className="text-primary h-3.5 w-3.5 shrink-0" />
             )}
             <span className="text-[11px] text-gray-400">· {timeAgo(post.createdAt)}</span>
           </div>

@@ -35,8 +35,8 @@ import { Button } from '@/components/ui/button';
 import { useSearchParams } from 'react-router';
 import { FloatingChat } from '@/features/chatbot/components/floating-chat';
 
-const SARPANG_BOUNDS = L.latLngBounds([26.7032, 89.9213], [27.2401, 90.7235]);
-const DEFAULT_CENTER = { lat: 26.9312, lng: 90.4795 };
+const BHUTAN_BOUNDS = L.latLngBounds([26.4, 88.6], [28.5, 92.2]);
+const DEFAULT_CENTER = { lat: 27.4, lng: 90.4 };
 
 function categoryIcon(
   category: string,
@@ -586,7 +586,7 @@ function MapSearch({ map }: { map: L.Map }) {
           onFocus={() => {
             if (results.length > 0) setIsOpen(true);
           }}
-          placeholder="Search places in Sarpang..."
+          placeholder="Search places in Bhutan..."
           className="w-full bg-transparent text-sm text-gray-700 outline-none placeholder:text-gray-400"
         />
         {isSearching && <Loader2 className="h-4 w-4 animate-spin text-gray-400" />}
@@ -1136,11 +1136,11 @@ export const GrievanceMap = ({
         )}
 
         <MapContainer
-          center={[26.9312, 90.4795]}
-          zoom={13}
-          minZoom={11}
+          center={[27.4, 90.4]}
+          zoom={8}
+          minZoom={7}
           maxZoom={21}
-          maxBounds={SARPANG_BOUNDS}
+          maxBounds={BHUTAN_BOUNDS}
           maxBoundsViscosity={1.0}
           className="z-10 h-full w-full bg-gray-100"
           zoomControl={false}
@@ -1280,7 +1280,7 @@ export const GrievanceMap = ({
             </svg>
             {detectedCoords
               ? `${detectedCoords.lat.toFixed(4)}, ${detectedCoords.lng.toFixed(4)}`
-              : 'Sarpang, Bhutan'}
+              : 'Bhutan'}
           </div>
         </MapContainer>
       </div>

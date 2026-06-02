@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import type { AnnouncementWithAuthor } from '@/features/announcements/types';
+import type { Announcement } from '@/features/announcements/types';
 
 export const announcementsKeys = {
   all: () => ['announcements'] as const,
@@ -12,12 +12,12 @@ export const useAnnouncements = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('announcements')
-        .select('*, profiles!inner(username, avatar_url)')
+        .select('*')
         .order('is_pinned', { ascending: false })
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as AnnouncementWithAuthor[];
+      return data as Announcement[];
     },
     staleTime: 60_000,
   });

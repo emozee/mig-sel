@@ -2,7 +2,17 @@ import { useUserProfile } from '@/features/gamification/api/use-user-profile';
 import { useAnnouncements } from '@/features/announcements/api/use-announcements';
 import { useDeleteAnnouncement } from '@/features/announcements/api/use-delete-announcement';
 import { useUpdateAnnouncement } from '@/features/announcements/api/use-update-announcement';
-import { Loader2, Trash2, Pin, PinOff, Calendar, Megaphone, AlertTriangle } from 'lucide-react';
+import { Linkify } from '@/components/ui/linkify';
+import {
+  Loader2,
+  Trash2,
+  Pin,
+  PinOff,
+  Calendar,
+  Megaphone,
+  AlertTriangle,
+  Timer,
+} from 'lucide-react';
 
 export const AnnouncementList = () => {
   const { data: profile } = useUserProfile();
@@ -44,6 +54,7 @@ export const AnnouncementList = () => {
       {announcements.map((a) => {
         const isImportant = a.type === 'important_notice';
         const isOwn = isOfficial && a.author_id === profile?.id;
+        const expired = a.expires_at && new Date(a.expires_at) < new Date();
 
         return (
           <div
@@ -59,19 +70,25 @@ export const AnnouncementList = () => {
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  {a.is_pinned && (
+                  {expired && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-bold text-gray-500">
+                      <Timer className="h-3 w-3" />
+                      Expired
+                    </span>
+                  )}
+                  {!expired && a.is_pinned && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700">
                       <Pin className="h-3 w-3" />
                       Pinned
                     </span>
                   )}
-                  {isImportant && (
+                  {!expired && isImportant && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-bold text-red-700">
                       <AlertTriangle className="h-3 w-3" />
                       Important
                     </span>
                   )}
-                  {!a.is_pinned && !isImportant && (
+                  {!expired && !a.is_pinned && !isImportant && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
                       <Megaphone className="h-3 w-3" />
                       Announcement
@@ -80,7 +97,7 @@ export const AnnouncementList = () => {
                   <h3 className="text-base font-bold text-gray-900">{a.title}</h3>
                 </div>
                 <p className="mt-2 text-sm leading-relaxed whitespace-pre-wrap text-gray-600">
-                  {a.body}
+                  <Linkify>{a.body}</Linkify>
                 </p>
                 <div className="mt-3 flex items-center gap-3 text-[11px] text-gray-400">
                   <span className="flex items-center gap-1">
@@ -91,9 +108,15 @@ export const AnnouncementList = () => {
                       day: 'numeric',
                     })}
                   </span>
-                  {a.profiles?.username && (
-                    <span className="font-medium text-gray-500">— {a.profiles.username}</span>
+                  {a.expires_at && (
+                    <span className={`flex items-center gap-1 ${expired ? 'text-gray-400' : ''}`}>
+                      <Timer className="h-3 w-3" />
+                      {expired
+                        ? 'Expired'
+                        : `Expires ${new Date(a.expires_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`}
+                    </span>
                   )}
+                  <span className="font-medium text-gray-500">— Official</span>
                 </div>
               </div>
 
