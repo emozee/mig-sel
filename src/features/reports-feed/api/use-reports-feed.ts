@@ -48,16 +48,18 @@ export const useReportsFeed = (page: number = 1, pageSize: number = 5) => {
         throw error;
       }
 
+      const roleMap = new Map<string, string>();
       const avatarMap = new Map<string, string>();
       const userIds = (data || []).map((r) => r.user_id).filter((id): id is string => !!id);
       if (userIds.length > 0) {
         const { data: profiles } = await supabase
           .from('profiles')
-          .select('id, avatar_url')
+          .select('id, avatar_url, role')
           .in('id', userIds);
         if (profiles) {
           for (const p of profiles) {
             if (p.avatar_url) avatarMap.set(p.id, p.avatar_url);
+            if (p.role) roleMap.set(p.id, p.role);
           }
         }
       }
@@ -91,6 +93,7 @@ export const useReportsFeed = (page: number = 1, pageSize: number = 5) => {
         image_url: row.image_url ?? undefined,
         userId: row.user_id ?? undefined,
         avatarUrl: row.user_id ? avatarMap.get(row.user_id) : undefined,
+        userRole: row.user_id ? roleMap.get(row.user_id) : undefined,
         status:
           (row.grievance as { status?: FeedStatus; latitude?: number; longitude?: number } | null)
             ?.status ??

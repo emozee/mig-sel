@@ -8,6 +8,7 @@ const ROLE_OPTIONS = [
   { value: 'user', label: 'User' },
   { value: 'inspector', label: 'Inspector' },
   { value: 'admin', label: 'Admin' },
+  { value: 'official', label: 'Official' },
 ];
 
 const extractErrorMessage = (err: unknown): string => {

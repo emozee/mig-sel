@@ -29,6 +29,20 @@ export const useFeedComments = (feedId: number, options?: { enabled?: boolean })
 
       if (error) throw error;
 
+      const userIds = [...new Set((data ?? []).map((r) => r.user_id as string))];
+      const roleMap = new Map<string, string>();
+      if (userIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id, role')
+          .in('id', userIds);
+        if (profiles) {
+          for (const p of profiles) {
+            if (p.role) roleMap.set(p.id, p.role);
+          }
+        }
+      }
+
       return (data ?? []).map((row) => ({
         id: row.id as string,
         feed_id: row.feed_id as number,
@@ -39,6 +53,7 @@ export const useFeedComments = (feedId: number, options?: { enabled?: boolean })
         image_url: (row.image_url as string) ?? undefined,
         user_name: row.user_name as string,
         user_initials: getInitials(row.user_name as string),
+        user_role: row.user_id ? roleMap.get(row.user_id as string) : undefined,
       }));
     },
     staleTime: 120_000,

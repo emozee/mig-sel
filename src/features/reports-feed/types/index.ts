@@ -13,6 +13,7 @@ export interface ActivityItem {
   image_url?: string;
   userId?: string;
   avatarUrl?: string;
+  userRole?: string;
   status?: FeedStatus;
   latitude?: number;
   longitude?: number;
@@ -28,6 +29,7 @@ export interface FeedComment {
   image_url?: string;
   user_name: string;
   user_initials: string;
+  user_role?: string;
 }
 
 export interface ImpactGoal {

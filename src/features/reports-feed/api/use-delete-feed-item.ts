@@ -16,7 +16,7 @@ export const useDeleteFeedItem = () => {
 
   return useMutation({
     mutationFn: async (feedId: number) => {
-      const { error } = await supabase.from('grievances').delete().eq('id', feedId);
+      const { error } = await supabase.from('community_feed').delete().eq('id', feedId);
       if (error) throw error;
     },
     onMutate: async (feedId) => {

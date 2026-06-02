@@ -9,6 +9,7 @@ import {
   MessageCircle,
   Send,
   Image,
+  BadgeCheck,
 } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { useCurrentUser } from '@/features/auth/api/use-current-user';
@@ -129,6 +130,9 @@ export const FeedItem = ({ item }: FeedItemProps) => {
           <div className="flex items-center justify-between">
             <div className="flex min-w-0 items-baseline gap-2">
               <span className="truncate text-sm font-semibold text-gray-900">{item.userName}</span>
+              {item.userRole === 'official' && (
+                <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-blue-500" />
+              )}
               {item.status && (
                 <span
                   className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${STATUS_BADGE[item.status].bg} ${STATUS_BADGE[item.status].text}`}
@@ -328,6 +332,9 @@ export const FeedItem = ({ item }: FeedItemProps) => {
               {/* Action text */}
               <div className="flex items-start gap-2 pb-1">
                 <span className="text-sm font-semibold text-gray-900">{item.userName}</span>
+                {item.userRole === 'official' && (
+                  <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-blue-500" />
+                )}
                 <p className="text-sm text-gray-700">{item.action}</p>
               </div>
 

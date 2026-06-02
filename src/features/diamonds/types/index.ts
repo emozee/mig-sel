@@ -33,6 +33,7 @@ export interface DiamondCollaboratorSummary {
   userName: string;
   userInitials: string;
   avatarUrl?: string;
+  role?: string;
 }
 
 export interface DiamondComment {
@@ -46,6 +47,7 @@ export interface DiamondComment {
   userName: string;
   userInitials: string;
   avatarUrl?: string;
+  userRole?: string;
 }
 
 export interface DiamondFeedItem {
@@ -57,6 +59,7 @@ export interface DiamondFeedItem {
   userName: string;
   userInitials: string;
   avatarUrl?: string;
+  userRole?: string;
   linkedGrievanceId?: string;
   linkedGrievanceTitle?: string;
   linkedGrievanceImage?: string;
