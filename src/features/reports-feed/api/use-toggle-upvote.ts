@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import { toast } from 'sonner';
 import { useCurrentUser } from '@/features/auth/api/use-current-user';
 import { communityKeys } from './use-reports-feed';
 import type { ActivityItem } from '../types';
@@ -25,7 +26,6 @@ export const useToggleUpvote = () => {
         p_feed_id: feedId,
       });
       if (error) {
-        console.error('[toggle_feed_upvote] RPC error:', error);
         throw error;
       }
       if (!data?.length) throw new Error('No data returned from toggle_feed_upvote');
@@ -54,8 +54,8 @@ export const useToggleUpvote = () => {
 
       return { prev };
     },
-    onError: (error, _vars, ctx) => {
-      console.error('Toggle upvote failed:', error);
+    onError: (_, _vars, ctx) => {
+      toast.error('Failed to toggle upvote. Please try again.');
       if (ctx?.prev) {
         for (const [key, data] of ctx.prev) {
           queryClient.setQueryData(key, data);

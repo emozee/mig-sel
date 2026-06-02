@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { X, MapPin, Camera, CheckCircle, AlertCircle } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
   DialogRoot,
@@ -82,7 +83,11 @@ export const GrievanceDrawer = ({ onClose }: Props) => {
       setMessage({ type: 'success', text: 'Report submitted to GMC successfully!' });
       setTimeout(() => onClose(), 1500);
     } catch (error) {
-      console.error('Submission failed. Category:', category, 'Error:', error);
+      const messageText =
+        error && typeof error === 'object' && 'message' in error
+          ? String((error as { message: string }).message)
+          : 'Failed to submit. Please try again.';
+      toast.error(messageText);
       if (error && typeof error === 'object' && 'message' in error) {
         setMessage({ type: 'error', text: String((error as { message: string }).message) });
       } else {

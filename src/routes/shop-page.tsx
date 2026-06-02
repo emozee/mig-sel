@@ -15,6 +15,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Pagination } from '@/components/ui/pagination';
 import { useUserProfile } from '@/features/gamification/api/use-user-profile';
+import { MapDock } from '@/components/layout/map-dock';
 
 const ITEMS = [
   {
@@ -89,8 +90,8 @@ export const ShopPage = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      <div className="mx-auto max-w-2xl px-3 py-4 sm:px-4 sm:py-6">
+    <div className="min-h-dvh bg-gradient-to-b from-gray-50 to-white">
+      <div className="mx-auto max-w-2xl px-3 py-4 pb-24 sm:px-4 sm:py-6 sm:pb-24">
         <div className="mb-4 flex flex-wrap items-center gap-2 sm:mb-6 sm:flex-nowrap sm:justify-between">
           <Button
             variant="ghost"
@@ -195,6 +196,8 @@ export const ShopPage = () => {
           </div>
         )}
       </div>
+
+      <MapDock />
     </div>
   );
 };

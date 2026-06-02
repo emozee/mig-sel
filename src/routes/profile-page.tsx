@@ -1,213 +1,183 @@
-import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router';
 import {
   ArrowLeft,
-  Upload,
-  LoaderPinwheel,
-  CheckCheck,
-  Camera,
-  Loader2,
+  FileText,
+  RefreshCw,
+  Trophy,
+  ShoppingBag,
+  Building2,
+  ChevronRight,
   Sparkles,
-  LogOut,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { useUserProfile } from '@/features/gamification/api/use-user-profile';
-import { useUpdateProfile } from '@/features/gamification/api/use-update-profile';
-import { uploadAvatar } from '@/features/gamification/api/use-upload-avatar';
-import { useCurrentUser } from '@/features/auth/api/use-current-user';
-import { useSignOut } from '@/features/auth/api/use-sign-out';
-
-const POINTS_BREAKDOWN = [
-  { icon: Upload, label: 'Submit a report', points: 1, color: 'text-primary', bg: 'bg-primary/10' },
-  {
-    icon: LoaderPinwheel,
-    label: 'Status → In Progress',
-    points: 1,
-    color: 'text-amber-600',
-    bg: 'bg-amber-50',
-  },
-  {
-    icon: CheckCheck,
-    label: 'Status → Resolved',
-    points: 2,
-    color: 'text-green-600',
-    bg: 'bg-green-50',
-  },
-];
+import { useMyReports } from '@/features/complaint/api/use-my-reports';
+import { useMyDiamonds } from '@/features/diamonds/api/use-my-diamonds';
+import { EditProfileDialog } from '@/features/gamification/components/edit-profile-dialog';
+import { MapDock } from '@/components/layout/map-dock';
 
 export const ProfilePage = () => {
   const navigate = useNavigate();
   const { data: profile } = useUserProfile();
-  const { user } = useCurrentUser();
-  const mutation = useUpdateProfile();
-  const signOut = useSignOut();
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { data: myReports = [] } = useMyReports();
+  const { data: myDiamonds } = useMyDiamonds(1, 1);
 
-  const [displayName, setDisplayName] = useState(profile?.username ?? '');
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(profile?.avatar_url ?? null);
-  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const isOfficial = profile?.role === 'official';
+  const isAdmin = profile?.role === 'admin';
+  const isInspector = profile?.role === 'inspector';
+  const updatesCount = myDiamonds?.count ?? 0;
 
-  const hasUsername = !!profile?.username;
-
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setAvatarFile(file);
-    setAvatarPreview(URL.createObjectURL(file));
-  };
-
-  const handleSave = async () => {
-    if (!user?.id) return;
-    try {
-      let avatarUrl: string | null = avatarPreview;
-      if (avatarFile) {
-        avatarUrl = await uploadAvatar(user.id, avatarFile);
-      }
-      await mutation.mutateAsync({
-        userId: user.id,
-        username: displayName.trim() || null,
-        avatar_url: avatarUrl,
-      });
-      const cacheBust = `?t=${Date.now()}`;
-      setAvatarPreview(avatarUrl ? `${avatarUrl}${cacheBust}` : null);
-      setAvatarFile(null);
-    } catch {
-      // error handled by mutation
-    }
-  };
-
-  const hasNameChanged = displayName !== (profile?.username ?? '');
-  const hasAvatarChanged = avatarFile !== null;
-  const hasChanges = hasNameChanged || hasAvatarChanged;
-  const isSaving = mutation.isPending;
+  const activities = [
+    {
+      icon: FileText,
+      label: 'My Reports',
+      sub: `${myReports.length} total`,
+      href: '/profile/reports',
+    },
+    {
+      icon: RefreshCw,
+      label: 'My Updates',
+      sub: `${updatesCount} posted`,
+      href: '/profile/updates',
+    },
+    {
+      icon: Trophy,
+      label: 'Leaderboard',
+      sub: 'Top contributors',
+      href: '/leaderboard',
+    },
+    {
+      icon: ShoppingBag,
+      label: 'Shop',
+      sub: 'Redeem points',
+      href: '/shop',
+    },
+  ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-gray-50">
-      <div className="mx-auto max-w-2xl px-4 py-6">
+    <div className="bg-background min-h-dvh">
+      <div className="mx-auto max-w-2xl px-4 py-6 pb-24">
         <div className="mb-4">
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate(-1)}
-            className="text-gray-500 hover:text-gray-800"
+            onClick={() => navigate('/reports-feed')}
+            className="text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="mr-1 h-4 w-4" />
             Back
           </Button>
         </div>
 
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-black text-gray-900">Profile</h1>
+        {/* Profile Card */}
+        <div className="bg-card shadow-card mb-6 overflow-hidden rounded-xl border">
+          {/* Gradient banner */}
+          <div className="from-primary/5 via-primary/10 to-primary/5 relative bg-gradient-to-r px-6 pb-4">
+            <div className="absolute top-4 right-4">
+              <EditProfileDialog />
+            </div>
+
+            <div className="flex items-end gap-5 pt-10">
+              {/* Avatar */}
+              <div className="relative shrink-0">
+                <div className="bg-muted shadow-elevated flex h-20 w-20 items-center justify-center overflow-hidden rounded-xl border-4 border-white">
+                  {profile?.avatar_url ? (
+                    <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="from-primary/10 to-primary/5 text-primary flex h-full w-full items-center justify-center bg-gradient-to-br text-xl font-bold">
+                      {(profile?.username ?? 'U').charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Name + points */}
+              <div className="min-w-0 flex-1 pb-3">
+                <div className="flex items-center gap-2">
+                  <h1 className="text-foreground truncate text-xl font-bold">
+                    {profile?.username ?? 'User'}
+                  </h1>
+                  {profile?.role && profile.role !== 'user' && (
+                    <span className="bg-primary/10 text-primary shrink-0 rounded-md px-2 py-0.5 text-[11px] font-semibold capitalize">
+                      {profile.role}
+                    </span>
+                  )}
+                </div>
+                <div className="mt-1 flex items-baseline gap-1.5">
+                  <span className="text-foreground text-2xl font-bold">{profile?.points ?? 0}</span>
+                  <span className="text-muted-foreground text-xs font-medium">points</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
-          <div className="mb-6 flex flex-col items-center gap-4">
-            <div className="relative">
-              <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-gray-100 to-gray-200 shadow-inner ring-2 ring-gray-200">
-                {avatarPreview ? (
-                  <img src={avatarPreview} alt="" className="h-full w-full object-cover" />
-                ) : (
-                  <Camera className="h-8 w-8 text-gray-400" />
-                )}
-              </div>
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="bg-primary hover:bg-primary/90 absolute right-0 bottom-0 flex h-7 w-7 items-center justify-center rounded-full text-white shadow-lg transition-all hover:scale-110"
-              >
-                <Upload className="h-3.5 w-3.5" />
-              </button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                className="hidden"
-                onChange={handleAvatarChange}
-              />
-            </div>
-          </div>
+        {/* How points work */}
+        <p className="text-muted-foreground mb-6 flex items-center gap-1.5 text-sm">
+          <Sparkles className="h-4 w-4 shrink-0" />
+          +1 submit &middot; +1 in progress &middot; +2 resolved
+        </p>
 
-          <div className="mb-6 space-y-2">
-            <label className="text-sm font-bold text-gray-700">Display Name</label>
-            {hasUsername ? (
-              <>
-                <div className="rounded-xl border border-gray-100 bg-gray-50 px-3.5 py-2.5 text-sm text-gray-500">
-                  {profile?.username}
-                </div>
-                <p className="text-xs text-gray-400">Username can only be set once.</p>
-              </>
-            ) : (
-              <Input
-                placeholder="Enter your display name"
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                maxLength={50}
-              />
-            )}
-          </div>
-
-          <Button
-            onClick={handleSave}
-            disabled={isSaving || !hasChanges}
-            className="w-full rounded-xl font-bold shadow-sm"
-          >
-            {isSaving && <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />}
-            Save Changes
-          </Button>
-
-          <hr className="my-6 border-gray-100" />
-
-          {profile && (
-            <div className="mb-6 rounded-xl bg-gradient-to-br from-gray-50 to-white p-4 ring-1 ring-gray-100">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-bold text-gray-600">Your Points</span>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-3xl font-black text-gray-900">{profile.points}</span>
-                  <span className="text-xs font-semibold text-gray-400">pts</span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          <h3 className="mb-3 flex items-center gap-1.5 text-xs font-bold tracking-wider text-gray-400 uppercase">
-            <Sparkles className="h-3 w-3" />
-            How points work
+        {/* My Activities */}
+        <div className="mb-6">
+          <h3 className="text-muted-foreground mb-3 text-xs font-semibold tracking-wider uppercase">
+            My Activities
           </h3>
-          <div className="space-y-2">
-            {POINTS_BREAKDOWN.map((item) => {
-              const Icon = item.icon;
-              return (
-                <div
-                  key={item.label}
-                  className="flex items-center gap-3 rounded-xl p-3 transition-all hover:-translate-y-0.5 hover:bg-gray-50"
-                >
-                  <div
-                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${item.bg} ring-1 ring-black/5 ring-inset`}
-                  >
-                    <Icon className={`h-4 w-4 ${item.color}`} />
-                  </div>
-                  <span className="flex-1 text-sm font-medium text-gray-700">{item.label}</span>
-                  <div className="flex items-baseline gap-0.5">
-                    <span className="text-lg font-black text-gray-900">+{item.points}</span>
-                  </div>
+          <div className="bg-card shadow-card divide-y rounded-xl border">
+            {activities.map(({ icon: Icon, label, sub, href }) => (
+              <button
+                key={href}
+                onClick={() => navigate(href)}
+                className="hover:bg-muted/50 flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors"
+              >
+                <div className="bg-primary/10 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg">
+                  <Icon className="text-primary h-4 w-4" />
                 </div>
-              );
-            })}
+                <div className="min-w-0 flex-1">
+                  <p className="text-foreground text-sm font-semibold">{label}</p>
+                  <p className="text-muted-foreground text-xs">{sub}</p>
+                </div>
+                <ChevronRight className="text-muted-foreground h-4 w-4" />
+              </button>
+            ))}
           </div>
-
-          <hr className="my-6 border-gray-100" />
-
-          <button
-            onClick={() => signOut.mutate()}
-            disabled={signOut.isPending}
-            className="flex w-full items-center justify-center gap-2 rounded-xl border border-red-200 px-4 py-3 text-sm font-bold text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
-          >
-            <LogOut className="h-4 w-4" />
-            {signOut.isPending ? 'Signing out...' : 'Sign Out'}
-          </button>
         </div>
+
+        {/* Official Dashboard */}
+        {isOfficial && (
+          <button
+            onClick={() => navigate('/official')}
+            className="border-primary/20 text-primary hover:bg-primary/5 mb-3 flex w-full items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-semibold transition-colors"
+          >
+            <Building2 className="h-4 w-4" />
+            Official Dashboard
+          </button>
+        )}
+
+        {/* Inspector Portal */}
+        {isInspector && (
+          <button
+            onClick={() => navigate('/inspector')}
+            className="border-primary/20 text-primary hover:bg-primary/5 mb-3 flex w-full items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-semibold transition-colors"
+          >
+            <Building2 className="h-4 w-4" />
+            Inspector Portal
+          </button>
+        )}
+
+        {/* Admin Dashboard */}
+        {isAdmin && (
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="border-primary/20 text-primary hover:bg-primary/5 flex w-full items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-semibold transition-colors"
+          >
+            <Building2 className="h-4 w-4" />
+            Admin Dashboard
+          </button>
+        )}
       </div>
+
+      <MapDock />
     </div>
   );
 };

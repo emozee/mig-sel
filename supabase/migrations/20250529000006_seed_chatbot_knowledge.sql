@@ -174,6 +174,50 @@ insert into public.chatbot_knowledge (question, answer, keywords) values
   'If an admin rejects your Diamond post, the post is automatically deleted. The linked issue stays unchanged (still public), and no points are awarded to anyone.',
   array['reject diamond', 'diamond rejected', 'post rejected', 'delete diamond', 'diamond declined']),
 
+('How do I view my reports?',
+  'Go to your Profile page and tap "My Reports". You will see a list of all issues you have reported. Tap any report to view it in a community feed-style card showing the title, description, photo, status, and location.',
+  array['my reports', 'view reports', 'my issues', 'my complaints', 'profile reports', 'my reported issues']),
+
+('How do I view my Diamond updates?',
+  'Go to your Profile page and tap "My Updates". This shows all the Diamond posts you have published. Each post appears as a full Diamond card where you can edit, delete, view comments, and see upvotes — just like in the Diamond feed.',
+  array['my updates', 'my diamond posts', 'my posts', 'view updates', 'profile updates', 'diamond updates']),
+
+('What is the difference between My Reports and My Updates?',
+  '"My Reports" shows the civic issues you have submitted (grievances), displayed in a community feed-style card. "My Updates" shows your Diamond social posts — the thoughts, photos, and updates you have shared with the community.',
+  array['reports vs updates', 'difference reports updates', 'my reports vs my updates', 'profile activities']),
+
+('How do I find my report on the Map from the detail view?',
+  'When viewing a report in the community feed-style detail page, tap "Find on Map" in the details bar. This will navigate you to the Map page centered on your report\'s location.',
+  array['find on map report', 'report map location', 'navigate to report map', 'view report on map']),
+
 ('Hi',
   'Kuzu zangpola! I\'m the mig-sel assistant. I can help you with reporting issues, earning points, using the Diamond feature, and anything else about the platform. What would you like to know?',
-  array['greeting', 'hello', 'hey', 'kuzu zangpola', 'hi', 'good morning', 'good evening', 'howdy']);
+  array['greeting', 'hello', 'hey', 'kuzu zangpola', 'hi', 'good morning', 'good evening', 'howdy']),
+
+('How do I view photos in a Diamond post?',
+  'If a Diamond post has multiple photos, tap any photo to open the gallery viewer. You can swipe or use the arrow buttons to navigate between photos. Each photo has its own Like, Comment, and Share buttons. Tap a photo again to view it full-screen.',
+  array['diamond photos', 'view photos', 'photo gallery', 'diamond gallery', 'view images', 'photo navigation', 'swipe photos']),
+
+('How do I share a Diamond post?',
+  'Tap the Share button on any Diamond post. If your device supports native sharing, it will open the share menu. Otherwise, the post link is copied to your clipboard. You can also tap Share on individual photos in the gallery viewer. The share count increases each time you share.',
+  array['share diamond', 'share post', 'share button', 'share count', 'share photo']),
+
+('What are the guidelines for Diamond posts?',
+  'Diamond is a positive space for sharing your happiest moments and best experiences at GMC. Please keep posts respectful — no sensitive, defamatory, or inappropriate content. Posts that violate these guidelines may be removed by admins.',
+  array['diamond guidelines', 'post rules', 'community guidelines', 'diamond rules', 'content policy', 'appropriate content', 'positive space']),
+
+('Can admins remove Diamond posts?',
+  'Yes. Admins can remove any Diamond post that violates community guidelines. If you see a post that contains sensitive, defamatory, or inappropriate content, please contact an admin. The post owner will also see their own Edit and Delete options.',
+  array['admin remove post', 'admin delete diamond', 'remove post', 'delete diamond', 'moderate diamond']),
+
+('What is share count on Diamond posts?',
+  'The share count shows how many times a Diamond post has been shared. You can see it next to the Share button on each post and in the photo gallery. Share a post to spread positive moments from GMC!',
+  array['share count', 'share counter', 'shares on diamond', 'shared count']),
+
+('How do I view a single photo in full screen?',
+  'If a Diamond post has only one photo, tapping it opens directly in full-screen mode with Like, Comment, and Share buttons. If a post has multiple photos, open the gallery first, then tap any photo to enter full-screen mode. Use the arrow keys or on-screen buttons to navigate.',
+  array['full screen photo', 'single photo view', 'photo fullscreen', 'expand photo', 'view photo full']),
+
+('How do I comment on a photo in the gallery?',
+  'When viewing photos in the gallery or full-screen mode, tap the Comment button below the photo. The comment section will appear inline. Type your comment and press send. You can like, comment, and share directly from the photo viewer.',
+  array['comment on photo', 'gallery comment', 'photo comment', 'comment in viewer', 'gallery actions']);

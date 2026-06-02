@@ -1,31 +1,19 @@
-import { useState, useRef } from 'react';
 import {
   Recycle,
   ClipboardList,
-  LogOut,
   ChartLine,
-  X,
   Map,
   FileText,
   Shield,
   Brain,
-  User,
-  Camera,
-  Award,
-  Coins,
-  Loader2,
+  LogOut,
   Gem,
+  X,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { useSignOut } from '@/features/auth/api/use-sign-out';
-import { useCurrentUser } from '@/features/auth/api/use-current-user';
-import { useUserProfile } from '@/features/gamification/api/use-user-profile';
-import { useUpdateProfile } from '@/features/gamification/api/use-update-profile';
-import { uploadAvatar } from '@/features/gamification/api/use-upload-avatar';
 
 export type NavView =
   | 'complaint'
@@ -59,62 +47,6 @@ export function DashboardSidebar({
 }) {
   const navigate = useNavigate();
   const signOut = useSignOut();
-  const { user } = useCurrentUser();
-  const { data: profile } = useUserProfile();
-  const updateProfile = useUpdateProfile();
-
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [displayName, setDisplayName] = useState('');
-  const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const initials = profile?.username
-    ? profile.username.slice(0, 2).toUpperCase()
-    : (user?.email?.slice(0, 2).toUpperCase() ?? '?');
-
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setAvatarFile(file);
-    setAvatarPreview(URL.createObjectURL(file));
-  };
-
-  const handleSaveProfile = async () => {
-    if (!user?.id) return;
-    setUploading(true);
-    try {
-      let avatarUrl: string | null = avatarPreview;
-      if (avatarFile) {
-        avatarUrl = await uploadAvatar(user.id, avatarFile);
-      }
-
-      const nameChanged = displayName.trim() !== (profile?.username ?? '');
-      const editCount = profile?.username_edit_count ?? 0;
-
-      await updateProfile.mutateAsync({
-        userId: user.id,
-        username: displayName.trim() || null,
-        avatar_url: avatarUrl,
-        username_edit_count: nameChanged ? editCount + 1 : editCount,
-      });
-
-      const cacheBust = `?t=${Date.now()}`;
-      setAvatarPreview(avatarUrl ? `${avatarUrl}${cacheBust}` : null);
-      setAvatarFile(null);
-      setIsProfileOpen(false);
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const nameChanged = displayName !== (profile?.username ?? '');
-  const avatarChanged = avatarFile !== null;
-  const hasChanges = nameChanged || avatarChanged;
-  const isSaving = updateProfile.isPending || uploading;
-  const editsRemaining = 1 - (profile?.username_edit_count ?? 0);
-  const nameLocked = editsRemaining <= 0;
 
   return (
     <>
@@ -196,152 +128,21 @@ export function DashboardSidebar({
               </span>
             </button>
             <button
-              onClick={() => {
-                setDisplayName(profile?.username ?? '');
-                setAvatarPreview(profile?.avatar_url ?? null);
-                setAvatarFile(null);
-                setIsProfileOpen(true);
-              }}
-              className="group text-muted-foreground relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-all duration-300 ease-out outline-none hover:text-slate-900"
+              onClick={() => signOut.mutate()}
+              disabled={signOut.isPending}
+              className="group text-muted-foreground relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-all duration-300 ease-out outline-none hover:text-red-600"
             >
               <span className="absolute inset-0 rounded-lg bg-slate-100/60 opacity-0 transition-all duration-300 ease-out group-hover:scale-100 group-hover:opacity-100" />
               <div className="relative flex h-5 w-5 items-center justify-center transition-transform duration-300 ease-out group-hover:translate-x-0.5">
-                {profile?.avatar_url ? (
-                  <img
-                    src={profile.avatar_url}
-                    alt=""
-                    loading="lazy"
-                    className="h-5 w-5 rounded-full object-cover"
-                  />
-                ) : (
-                  <User className="h-4 w-4" />
-                )}
+                <LogOut className="h-4 w-4" />
               </div>
               <span className="relative transition-all duration-300 ease-out group-hover:translate-x-0.5">
-                Profile
+                {signOut.isPending ? 'Signing out...' : 'Sign Out'}
               </span>
             </button>
           </div>
         </div>
       </aside>
-
-      {/* Profile slide-in panel */}
-      {isProfileOpen && (
-        <div className="fixed inset-0 z-[60]">
-          <div
-            className="animate-fade-in absolute inset-0 bg-black/20"
-            onClick={() => setIsProfileOpen(false)}
-          />
-          <div className="animate-in slide-in-from-left absolute top-0 left-0 flex h-full w-72 flex-col bg-white shadow-xl duration-300">
-            <div className="flex h-16 shrink-0 items-center justify-between border-b px-5">
-              <span className="text-lg font-semibold">Profile</span>
-              <button
-                onClick={() => setIsProfileOpen(false)}
-                className="hover:bg-accent rounded-lg p-1.5 transition-all"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-6">
-              <div className="flex flex-col items-center gap-4">
-                {/* Avatar */}
-                <div className="relative">
-                  <div className="bg-primary/10 text-primary flex h-20 w-20 items-center justify-center overflow-hidden rounded-full text-2xl font-bold">
-                    {avatarPreview ? (
-                      <img src={avatarPreview} alt="" className="h-full w-full object-cover" />
-                    ) : (
-                      initials
-                    )}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="bg-primary hover:bg-primary/90 absolute right-0 bottom-0 flex h-7 w-7 items-center justify-center rounded-full text-white shadow transition-colors"
-                  >
-                    <Camera className="h-3.5 w-3.5" />
-                  </button>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp"
-                    className="hidden"
-                    onChange={handleAvatarChange}
-                  />
-                </div>
-
-                {/* Name */}
-                <div className="w-full space-y-1.5">
-                  <label className="text-xs font-medium text-gray-500">Display Name</label>
-                  <Input
-                    value={displayName}
-                    onChange={(e) => setDisplayName(e.target.value)}
-                    placeholder="Enter display name"
-                    maxLength={50}
-                    disabled={nameLocked}
-                  />
-                  {nameLocked ? (
-                    <p className="text-xs text-amber-600">Name has already been changed.</p>
-                  ) : (
-                    <p className="text-xs text-gray-400">Name can only be changed once.</p>
-                  )}
-                </div>
-
-                {/* Email */}
-                <p className="-mt-2 text-sm text-gray-500">{user?.email}</p>
-
-                {/* Role badge */}
-                {profile?.role && (
-                  <span className="inline-block rounded-full bg-blue-50 px-3 py-0.5 text-xs font-medium text-blue-600 capitalize">
-                    {profile.role}
-                  </span>
-                )}
-
-                {/* Role + Points */}
-                <div className="flex w-full gap-4 rounded-lg bg-gray-50 p-3">
-                  <div className="flex flex-1 items-center gap-2">
-                    <Award className="h-4 w-4 text-gray-400" />
-                    <div>
-                      <p className="text-xs text-gray-500">Role</p>
-                      <p className="text-sm font-medium text-gray-900 capitalize">
-                        {profile?.role ?? 'Admin'}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex flex-1 items-center gap-2">
-                    <Coins className="h-4 w-4 text-gray-400" />
-                    <div>
-                      <p className="text-xs text-gray-500">Points</p>
-                      <p className="text-sm font-medium text-gray-900">{profile?.points ?? 0}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Save */}
-                <Button
-                  onClick={handleSaveProfile}
-                  disabled={isSaving || !hasChanges}
-                  className="w-full"
-                >
-                  {isSaving && <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />}
-                  Save
-                </Button>
-              </div>
-            </div>
-
-            <div className="border-t p-4">
-              <button
-                onClick={() => signOut.mutate()}
-                disabled={signOut.isPending}
-                className="flex w-full items-center justify-center gap-2 rounded-xl border border-red-200 px-4 py-2.5 text-sm font-medium text-red-600 transition-all hover:bg-red-50 hover:text-red-700 disabled:opacity-50"
-              >
-                <LogOut className="h-4 w-4" />
-                {signOut.isPending ? 'Signing out...' : 'Sign Out'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }

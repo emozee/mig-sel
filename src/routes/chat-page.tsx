@@ -4,6 +4,7 @@ import { ArrowLeft, Send, Bot, User } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useSearchKnowledge } from '@/features/chatbot/api/use-knowledge';
+import { MapDock } from '@/components/layout/map-dock';
 
 interface Message {
   role: 'bot' | 'user';
@@ -74,7 +75,7 @@ export const ChatPage = () => {
         </div>
       </div>
 
-      <div className="mx-auto flex w-full max-w-lg flex-1 flex-col px-3 py-3">
+      <div className="mx-auto flex w-full max-w-lg flex-1 flex-col px-3 py-3 pb-24">
         <div className="flex-1 space-y-3 overflow-y-auto">
           {messages.map((msg, i) => (
             <div
@@ -128,6 +129,8 @@ export const ChatPage = () => {
           </Button>
         </form>
       </div>
+
+      <MapDock />
     </div>
   );
 };
