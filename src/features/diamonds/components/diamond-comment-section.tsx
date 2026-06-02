@@ -105,7 +105,7 @@ export const DiamondCommentSection = ({
                   <div className="flex items-baseline gap-1.5">
                     <span className="text-[11px] font-semibold text-gray-900">{c.userName}</span>
                     {c.userRole === 'official' && (
-                      <BadgeCheck className="h-3 w-3 shrink-0 text-blue-500" />
+                      <BadgeCheck className="text-primary h-3 w-3 shrink-0" />
                     )}
                     <span className="text-[10px] text-gray-400">
                       {new Date(c.createdAt).toLocaleDateString(undefined, {

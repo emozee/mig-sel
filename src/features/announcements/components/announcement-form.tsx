@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useUserProfile } from '@/features/gamification/api/use-user-profile';
 import { useCreateAnnouncement } from '@/features/announcements/api/use-create-announcement';
-import { Megaphone, AlertTriangle, Loader2 } from 'lucide-react';
+import { Megaphone, AlertTriangle, Loader2, Calendar } from 'lucide-react';
 import type { AnnouncementType } from '@/features/announcements/types';
 
 export const AnnouncementForm = () => {
@@ -10,6 +10,13 @@ export const AnnouncementForm = () => {
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [type, setType] = useState<AnnouncementType>('announcement');
+  const [customExpiry, setCustomExpiry] = useState('');
+
+  const defaultExpiryDate = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + (type === 'important_notice' ? 3 : 7));
+    return d.toISOString().split('T')[0];
+  }, [type]);
 
   const isOfficial = profile?.role === 'official';
   if (!isOfficial) return null;
@@ -18,13 +25,16 @@ export const AnnouncementForm = () => {
     e.preventDefault();
     if (!title.trim() || !body.trim()) return;
 
+    const expiresAt = customExpiry ? new Date(customExpiry + 'T23:59:59').toISOString() : undefined;
+
     mutation.mutate(
-      { title: title.trim(), body: body.trim(), type },
+      { title: title.trim(), body: body.trim(), type, expiresAt },
       {
         onSuccess: () => {
           setTitle('');
           setBody('');
           setType('announcement');
+          setCustomExpiry('');
         },
       },
     );
@@ -85,6 +95,16 @@ export const AnnouncementForm = () => {
           rows={4}
           className="w-full resize-none rounded-lg border border-gray-200 px-3 py-2 text-sm transition-colors outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-200"
         />
+        <div className="flex items-center gap-2">
+          <Calendar className="h-3.5 w-3.5 text-gray-400" />
+          <input
+            type="date"
+            value={customExpiry || defaultExpiryDate}
+            onChange={(e) => setCustomExpiry(e.target.value)}
+            min={new Date().toISOString().split('T')[0]}
+            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-xs text-gray-600 transition-colors outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-200"
+          />
+        </div>
         <button
           type="submit"
           disabled={!title.trim() || !body.trim() || mutation.isPending}

@@ -29,4 +29,5 @@ insert into public.chatbot_knowledge (question, answer, keywords) values
 
 ('How do I comment on a photo in the gallery?',
  'When viewing photos in the gallery or full-screen mode, tap the Comment button below the photo. The comment section will appear inline. Type your comment and press send. You can like, comment, and share directly from the photo viewer.',
- array['comment on photo', 'gallery comment', 'photo comment', 'comment in viewer', 'gallery actions']);
+  array['comment on photo', 'gallery comment', 'photo comment', 'comment in viewer', 'gallery actions'])
+  on conflict (question) do nothing;
