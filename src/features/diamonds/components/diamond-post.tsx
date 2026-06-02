@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import {
   Heart,
@@ -15,13 +15,17 @@ import {
   Check,
   Loader2,
   Users,
+  ShieldAlert,
 } from 'lucide-react';
-import { ClickableImage } from '@/components/ui/image-viewer';
 import { useCurrentUser } from '@/features/auth/api/use-current-user';
+import { useIsAdmin } from '@/features/auth/api/use-is-admin';
 import { useDiamondUpvote } from '../api/use-diamond-upvote';
+import { useDiamondShare } from '../api/use-diamond-share';
 import { useDeleteDiamond } from '../api/use-delete-diamond';
+import { useAdminRemoveDiamond } from '../api/use-admin-remove-diamond';
 import { useUpdateDiamond } from '../api/use-update-diamond';
 import { DiamondCommentSection } from './diamond-comment-section';
+import { DiamondPhotoGallery } from './diamond-photo-gallery';
 import type { DiamondFeedItem } from '../types';
 
 function timeAgo(date: string): string {
@@ -44,8 +48,11 @@ interface DiamondPostProps {
 export const DiamondPost = ({ post, index = 0 }: DiamondPostProps) => {
   const navigate = useNavigate();
   const { user } = useCurrentUser();
+  const { data: isAdmin } = useIsAdmin();
   const { mutate: toggleUpvote, isPending: isUpvoting } = useDiamondUpvote();
+  const { mutate: toggleShare, isPending: isSharing } = useDiamondShare();
   const { mutateAsync: deleteDiamond, isPending: isDeleting } = useDeleteDiamond();
+  const { mutateAsync: adminRemoveDiamond, isPending: isAdminRemoving } = useAdminRemoveDiamond();
   const { mutateAsync: updateDiamond, isPending: isUpdating } = useUpdateDiamond();
 
   const isOwner = user?.id === post.userId;
@@ -55,79 +62,10 @@ export const DiamondPost = ({ post, index = 0 }: DiamondPostProps) => {
   const [editing, setEditing] = useState(false);
   const [editBody, setEditBody] = useState(post.body);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [confirmAdminRemove, setConfirmAdminRemove] = useState(false);
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [heartAnim, setHeartAnim] = useState(false);
   const clickLock = useRef(false);
-
-  const imageGrid = useMemo(() => {
-    if (images.length === 0) return null;
-
-    if (images.length === 1) {
-      return (
-        <ClickableImage
-          src={images[0]}
-          alt=""
-          className="max-h-96 w-full rounded-lg object-cover"
-        />
-      );
-    }
-
-    if (images.length === 2) {
-      return (
-        <div className="grid grid-cols-2 gap-1">
-          {images.map((url, i) => (
-            <ClickableImage
-              key={i}
-              src={url}
-              alt=""
-              className="aspect-square w-full rounded-lg object-cover"
-            />
-          ))}
-        </div>
-      );
-    }
-
-    if (images.length === 3) {
-      return (
-        <div className="grid grid-cols-2 gap-1">
-          <ClickableImage
-            src={images[0]}
-            alt=""
-            className="row-span-2 h-full w-full rounded-l-lg object-cover"
-          />
-          <ClickableImage
-            src={images[1]}
-            alt=""
-            className="aspect-square w-full rounded-tr-lg object-cover"
-          />
-          <ClickableImage
-            src={images[2]}
-            alt=""
-            className="aspect-square w-full rounded-br-lg object-cover"
-          />
-        </div>
-      );
-    }
-
-    return (
-      <div className="grid grid-cols-2 gap-1">
-        {images.slice(0, 4).map((url, i) => (
-          <div key={i} className="group relative overflow-hidden">
-            <ClickableImage
-              src={url}
-              alt=""
-              className="aspect-square w-full rounded-lg object-cover transition-transform duration-500 group-hover:scale-105"
-            />
-            {i === 3 && images.length > 4 && (
-              <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/60 text-lg font-bold text-white backdrop-blur-[2px]">
-                +{images.length - 4}
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-    );
-  }, [images]);
 
   const handleEdit = useCallback(async () => {
     if (!editBody.trim() || editBody === post.body) {
@@ -143,6 +81,12 @@ export const DiamondPost = ({ post, index = 0 }: DiamondPostProps) => {
     setMenuOpen(false);
     setConfirmDelete(false);
   }, [deleteDiamond, post.id]);
+
+  const handleAdminRemove = useCallback(async () => {
+    await adminRemoveDiamond(post.id);
+    setMenuOpen(false);
+    setConfirmAdminRemove(false);
+  }, [adminRemoveDiamond, post.id]);
 
   const handleUpvote = useCallback(() => {
     if (!user || clickLock.current) return;
@@ -163,7 +107,8 @@ export const DiamondPost = ({ post, index = 0 }: DiamondPostProps) => {
     } else {
       await navigator.clipboard.writeText(url);
     }
-  }, [post.id, post.userName, post.body]);
+    toggleShare(post.id);
+  }, [post.id, post.userName, post.body, toggleShare]);
 
   return (
     <div
@@ -238,7 +183,7 @@ export const DiamondPost = ({ post, index = 0 }: DiamondPostProps) => {
             )}
           </div>
         </div>
-        {isOwner && (
+        {(isOwner || isAdmin) && (
           <div className="relative shrink-0">
             <button
               type="button"
@@ -251,29 +196,46 @@ export const DiamondPost = ({ post, index = 0 }: DiamondPostProps) => {
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
                 <div className="absolute top-9 right-0 z-50 min-w-[150px] overflow-hidden rounded-xl bg-white py-1 shadow-lg ring-1 ring-gray-200/60">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEditBody(post.body);
-                      setEditing(true);
-                      setMenuOpen(false);
-                    }}
-                    className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50"
-                  >
-                    <Pencil className="h-3.5 w-3.5 text-gray-400" />
-                    Edit
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setConfirmDelete(true);
-                      setMenuOpen(false);
-                    }}
-                    className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-xs font-medium text-red-600 transition-colors hover:bg-red-50"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                    Delete
-                  </button>
+                  {isOwner && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditBody(post.body);
+                          setEditing(true);
+                          setMenuOpen(false);
+                        }}
+                        className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50"
+                      >
+                        <Pencil className="h-3.5 w-3.5 text-gray-400" />
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setConfirmDelete(true);
+                          setMenuOpen(false);
+                        }}
+                        className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-xs font-medium text-red-600 transition-colors hover:bg-red-50"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        Delete
+                      </button>
+                    </>
+                  )}
+                  {isAdmin && !isOwner && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setConfirmAdminRemove(true);
+                        setMenuOpen(false);
+                      }}
+                      className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-xs font-medium text-red-600 transition-colors hover:bg-red-50"
+                    >
+                      <ShieldAlert className="h-3.5 w-3.5" />
+                      Remove Post
+                    </button>
+                  )}
                 </div>
               </>
             )}
@@ -319,7 +281,11 @@ export const DiamondPost = ({ post, index = 0 }: DiamondPostProps) => {
         post.body && <p className="px-4 py-1 text-sm leading-relaxed text-gray-800">{post.body}</p>
       )}
 
-      {imageGrid && <div className="px-2 pb-0">{imageGrid}</div>}
+      {images.length > 0 && (
+        <div className="px-2 pb-0">
+          <DiamondPhotoGallery images={images} post={post} />
+        </div>
+      )}
 
       {isDirectSolve && post.linkedGrievanceTitle && (
         <div className="mx-3 mt-2 flex items-center gap-2 rounded-lg border border-gray-100 bg-gray-50 px-3 py-2">
@@ -355,7 +321,7 @@ export const DiamondPost = ({ post, index = 0 }: DiamondPostProps) => {
         </div>
       )}
 
-      {/* Facebook-style action bar */}
+      {/* Facebook-style action bar with share count */}
       <div className="mx-4 mt-2 flex items-center border-t border-gray-100 py-1">
         <button
           onClick={handleUpvote}
@@ -385,10 +351,15 @@ export const DiamondPost = ({ post, index = 0 }: DiamondPostProps) => {
 
         <button
           onClick={handleShare}
-          className="flex flex-1 items-center justify-center gap-1.5 rounded py-2 text-xs font-semibold text-gray-500 transition-colors hover:text-gray-700"
+          disabled={isSharing}
+          className="flex flex-1 items-center justify-center gap-1.5 rounded py-2 text-xs font-semibold text-gray-500 transition-colors hover:text-gray-700 disabled:opacity-50"
         >
-          <Share2 className="h-[18px] w-[18px]" strokeWidth={1.5} />
-          <span>Share</span>
+          {isSharing ? (
+            <Loader2 className="h-[18px] w-[18px] animate-spin" />
+          ) : (
+            <Share2 className="h-[18px] w-[18px]" strokeWidth={1.5} />
+          )}
+          <span>Share{post.shareCount > 0 ? ` (${post.shareCount})` : ''}</span>
         </button>
       </div>
 
@@ -399,7 +370,7 @@ export const DiamondPost = ({ post, index = 0 }: DiamondPostProps) => {
         onToggle={() => setCommentsOpen(!commentsOpen)}
       />
 
-      {/* Delete confirmation */}
+      {/* Delete confirmation (owner) */}
       {confirmDelete && (
         <div className="border-t border-red-100 bg-red-50 px-4 py-2.5">
           <p className="mb-2 text-xs font-medium text-red-600">Delete this post?</p>
@@ -423,6 +394,38 @@ export const DiamondPost = ({ post, index = 0 }: DiamondPostProps) => {
                 <Trash2 className="h-3.5 w-3.5" />
               )}
               Delete
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Admin remove confirmation */}
+      {confirmAdminRemove && (
+        <div className="border-t border-red-100 bg-red-50 px-4 py-2.5">
+          <p className="mb-1 text-xs font-medium text-red-600">Remove this post?</p>
+          <p className="mb-2 text-[10px] leading-relaxed text-red-500">
+            This post may contain sensitive content. It will be permanently deleted.
+          </p>
+          <div className="flex items-center justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => setConfirmAdminRemove(false)}
+              className="rounded-lg px-3 py-1.5 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-100"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleAdminRemove}
+              disabled={isAdminRemoving}
+              className="flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-red-700 disabled:opacity-50"
+            >
+              {isAdminRemoving ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <ShieldAlert className="h-3.5 w-3.5" />
+              )}
+              Remove
             </button>
           </div>
         </div>

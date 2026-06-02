@@ -17,6 +17,7 @@ import { useUpdateProfile } from '@/features/gamification/api/use-update-profile
 import { uploadAvatar } from '@/features/gamification/api/use-upload-avatar';
 import { useCurrentUser } from '@/features/auth/api/use-current-user';
 import { useSignOut } from '@/features/auth/api/use-sign-out';
+import { MapDock } from '@/components/layout/map-dock';
 
 const POINTS_BREAKDOWN = [
   { icon: Upload, label: 'Submit a report', points: 1, color: 'text-primary', bg: 'bg-primary/10' },
@@ -83,8 +84,8 @@ export const ProfilePage = () => {
   const isSaving = mutation.isPending;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-gray-50">
-      <div className="mx-auto max-w-2xl px-4 py-6">
+    <div className="min-h-dvh bg-gradient-to-b from-gray-50 via-white to-gray-50">
+      <div className="mx-auto max-w-2xl px-4 py-6 pb-24">
         <div className="mb-4">
           <Button
             variant="ghost"
@@ -208,6 +209,8 @@ export const ProfilePage = () => {
           </button>
         </div>
       </div>
+
+      <MapDock />
     </div>
   );
 };

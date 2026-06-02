@@ -77,8 +77,8 @@ export const MapDock = () => {
   })();
 
   return (
-    <div className="fixed bottom-6 left-1/2 z-50 w-[95%] max-w-xl -translate-x-1/2">
-      <div className="relative rounded-2xl border border-slate-200 bg-white px-4 py-2 shadow-xl">
+    <div className="fixed bottom-0 left-1/2 z-50 w-full max-w-xl -translate-x-1/2">
+      <div className="relative rounded-t-2xl border border-slate-200 bg-white px-4 py-2 shadow-xl">
         {/* Elevated FAB – floats above the dock center */}
         <div className="absolute -top-8 left-1/2 z-10 -translate-x-1/2">
           <button

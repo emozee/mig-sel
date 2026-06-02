@@ -68,6 +68,8 @@ export interface DiamondFeedItem {
   upvoteCount: number;
   commentCount: number;
   isUpvoted: boolean;
+  shareCount: number;
+  isShared: boolean;
 }
 
 export interface PendingDiamondReview {

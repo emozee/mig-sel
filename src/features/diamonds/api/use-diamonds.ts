@@ -55,6 +55,8 @@ export const useDiamonds = (page: number = 1, pageSize: number = 10) => {
       const upvoteCountMap = new Map<number, number>();
       const userUpvotedMap = new Map<number, boolean>();
       const commentCountMap = new Map<number, number>();
+      const shareCountMap = new Map<number, number>();
+      const userSharedMap = new Map<number, boolean>();
 
       // Profiles
       if (userIds.length > 0) {
@@ -182,6 +184,29 @@ export const useDiamonds = (page: number = 1, pageSize: number = 10) => {
         }
       }
 
+      // Share counts + user share status
+      if (diamondIds.length > 0) {
+        const { data: shares } = await supabase
+          .from('diamond_shares')
+          .select('diamond_id, user_id')
+          .in('diamond_id', diamondIds);
+
+        if (shares) {
+          const countMap = new Map<number, number>();
+          const userSet = new Set<string>();
+          for (const s of shares) {
+            countMap.set(s.diamond_id, (countMap.get(s.diamond_id) ?? 0) + 1);
+            if (userId && s.user_id === userId) {
+              userSet.add(String(s.diamond_id));
+            }
+          }
+          for (const id of diamondIds) {
+            shareCountMap.set(id, countMap.get(id) ?? 0);
+            userSharedMap.set(id, userSet.has(String(id)));
+          }
+        }
+      }
+
       const items = data.map<DiamondFeedItem>((row) => {
         const profile = row.user_id ? avatarMap.get(row.user_id) : undefined;
         const grievance = row.linked_grievance_id
@@ -207,6 +232,8 @@ export const useDiamonds = (page: number = 1, pageSize: number = 10) => {
           upvoteCount: upvoteCountMap.get(row.id) ?? 0,
           commentCount: commentCountMap.get(row.id) ?? 0,
           isUpvoted: userUpvotedMap.get(row.id) ?? false,
+          shareCount: shareCountMap.get(row.id) ?? 0,
+          isShared: userSharedMap.get(row.id) ?? false,
         };
       });
 

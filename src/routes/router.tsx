@@ -2,7 +2,6 @@ import { createBrowserRouter, redirect } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { getUserRole } from '@/lib/role-query';
 import { LandingPage } from './landing-page';
-import { LoginPage } from './login-page';
 import { AdminPage } from './admin-page';
 import { InspectorPage } from './inspector-page';
 import { NotFoundPage } from './not-found-page';
@@ -36,10 +35,6 @@ export const router = createBrowserRouter([
       return redirect('/reports-feed');
     },
     element: <LandingPage />,
-  },
-  {
-    path: '/login',
-    element: <LoginPage />,
   },
   {
     path: '/auth/callback',

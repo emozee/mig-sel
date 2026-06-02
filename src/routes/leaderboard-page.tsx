@@ -2,13 +2,14 @@ import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Leaderboard } from '@/features/gamification/components/leaderboard';
+import { MapDock } from '@/components/layout/map-dock';
 
 export const LeaderboardPage = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-gray-50">
-      <div className="mx-auto max-w-2xl px-4 py-6">
+    <div className="min-h-dvh bg-gradient-to-b from-gray-50 via-white to-gray-50">
+      <div className="mx-auto max-w-2xl px-4 py-6 pb-24">
         <div className="mb-4">
           <Button
             variant="ghost"
@@ -32,6 +33,8 @@ export const LeaderboardPage = () => {
           <Leaderboard />
         </div>
       </div>
+
+      <MapDock />
     </div>
   );
 };

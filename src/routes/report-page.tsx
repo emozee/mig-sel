@@ -1,11 +1,13 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router';
+import { toast } from 'sonner';
 import { ArrowLeft, MapPin, Camera, CheckCircle, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useGeoLocation } from '@/features/auth/grievance/hooks/use-geo-location';
 import { uploadGrievanceImage } from '@/features/auth/grievance/components/use-upload-image';
 import { useCreateGrievance } from '@/features/auth/grievance/components/use-create-grievance';
 import { useCurrentUser } from '@/features/auth/api/use-current-user';
+import { MapDock } from '@/components/layout/map-dock';
 
 const CATEGORIES = [
   { value: 'road', label: 'Road Damage' },
@@ -60,7 +62,11 @@ export const ReportPage = () => {
       setMessage({ type: 'success', text: 'Report submitted to GMC successfully!' });
       setTimeout(() => navigate('/map'), 1500);
     } catch (error) {
-      console.error('Submission failed. Category:', category, 'Error:', error);
+      const messageText =
+        error && typeof error === 'object' && 'message' in error
+          ? String((error as { message: string }).message)
+          : 'Failed to submit. Please try again.';
+      toast.error(messageText);
       if (error && typeof error === 'object' && 'message' in error) {
         setMessage({ type: 'error', text: String((error as { message: string }).message) });
       } else {
@@ -92,7 +98,7 @@ export const ReportPage = () => {
         <h1 className="text-lg font-bold">New Report</h1>
       </header>
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto pb-24">
         <div className="mx-auto max-w-lg p-4 md:p-6">
           <form
             className="space-y-6"
@@ -210,6 +216,8 @@ export const ReportPage = () => {
           </form>
         </div>
       </div>
+
+      <MapDock />
     </div>
   );
 };

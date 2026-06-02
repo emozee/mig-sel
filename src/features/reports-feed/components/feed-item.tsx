@@ -99,12 +99,6 @@ export const FeedItem = ({ item }: FeedItemProps) => {
 
   const handleUpvote = (e: React.MouseEvent) => {
     e.stopPropagation();
-    console.log('[handleUpvote] click', {
-      feedId: item.id,
-      isUpvoted: item.isUpvoted,
-      clickLock: clickLock.current,
-      isPending,
-    });
     if (!user || clickLock.current) return;
     clickLock.current = true;
     mutate(
