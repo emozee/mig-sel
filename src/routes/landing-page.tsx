@@ -1,26 +1,24 @@
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useSignInWithGoogle } from '@/features/auth/api/use-sign-in-with-google';
-
-const LeafIcon = () => (
-  <svg
-    width="28"
-    height="28"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.5"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="text-primary"
-  >
-    <path d="M11 20A7 7 0 0 1 9.8 6.9C15.5 4.9 17 3.5 19 2c1 2 2 4.5 2 8 0 5.5-4.78 10-10 10Z" />
-    <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
-  </svg>
-);
+import { useSession } from '@/features/auth/api/use-session';
+const logo = '/3d logo.png';
 
 export const LandingPage = () => {
+  const navigate = useNavigate();
+  const { data: session, isLoading } = useSession();
   const signInWithGoogle = useSignInWithGoogle();
+
+  useEffect(() => {
+    if (!isLoading && session) {
+      const role = session.user?.app_metadata?.role ?? session.user?.user_metadata?.role;
+      if (role === 'admin') navigate('/dashboard', { replace: true });
+      else if (role === 'inspector') navigate('/inspector', { replace: true });
+      else navigate('/reports-feed', { replace: true });
+    }
+  }, [session, isLoading, navigate]);
 
   return (
     <div
@@ -36,7 +34,7 @@ export const LandingPage = () => {
       <div className="relative w-full max-w-sm">
         <div className="mb-8 text-center">
           <div className="mb-4 inline-flex items-center justify-center">
-            <LeafIcon />
+            <img src={logo} alt="Logo" className="h-16 w-auto" />
           </div>
           <h1 className="text-foreground text-2xl font-semibold tracking-tight">mig-sel</h1>
           <p className="text-muted-foreground/60 mt-1.5 text-xs tracking-wide uppercase">
@@ -46,7 +44,7 @@ export const LandingPage = () => {
 
         <Card className="border-white/20 bg-white/20 shadow-xl backdrop-blur-xl">
           <CardHeader className="mb-2">
-            <CardTitle className="text-white">Welcome back</CardTitle>
+            <CardTitle className="text-white">Welcome</CardTitle>
             <CardDescription className="text-white/70">
               Sign in with your Google account to continue.
             </CardDescription>
