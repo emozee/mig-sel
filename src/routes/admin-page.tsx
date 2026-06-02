@@ -9,6 +9,7 @@ import {
   Shield,
   Brain,
   Gem,
+  Megaphone,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DashboardSidebar, type NavView } from '@/components/layout/dashboard-sidebar';
@@ -20,11 +21,14 @@ import { WasteReportingForm } from '@/features/waste/components/waste-reporting-
 import { RoleAssignment } from '@/features/admin/components/role-assignment';
 import { KnowledgeBase } from '@/features/admin/components/knowledge-base';
 import { DiamondReview } from '@/features/diamonds/components/diamond-review';
+import { AnnouncementForm } from '@/features/announcements/components/announcement-form';
+import { AnnouncementList } from '@/features/announcements/components/announcement-list';
 
 const iconMap: Record<NavView, typeof ClipboardList> = {
   complaint: ClipboardList,
   table: Recycle,
   inspector: FileText,
+  official: Megaphone,
   diamond: Gem,
   role: Shield,
   charts: ChartPie,
@@ -43,6 +47,7 @@ export const AdminPage = () => {
     },
     table: { title: 'Waste Management', description: 'Oversight panel for GMC waste management' },
     inspector: { title: 'Inspector', description: 'Submit waste collection records' },
+    official: { title: 'Official', description: 'Manage announcements and official content' },
     diamond: { title: 'Diamond Review', description: 'Review and approve direct-solve requests' },
     role: { title: 'Role Assignment', description: 'Search and update user roles' },
     charts: { title: 'Analytics', description: 'Oversight panel for GMC waste management' },
@@ -122,6 +127,12 @@ export const AdminPage = () => {
             {activeView === 'inspector' && (
               <div className="animate-in fade-in-0 slide-in-from-top-2 duration-500 [animation-delay:200ms]">
                 <WasteReportingForm />
+              </div>
+            )}
+            {activeView === 'official' && (
+              <div className="animate-in fade-in-0 slide-in-from-top-2 space-y-6 duration-500 [animation-delay:200ms]">
+                <AnnouncementForm />
+                <AnnouncementList />
               </div>
             )}
             {activeView === 'role' && <RoleAssignment />}

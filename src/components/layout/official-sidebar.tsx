@@ -1,24 +1,24 @@
 import { useNavigate } from 'react-router-dom';
-import { Recycle, FileText, Map, LogOut, X } from 'lucide-react';
+import { Megaphone, FileText, Map, LogOut, X } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { useSignOut } from '@/features/auth/api/use-sign-out';
 
-export type InspectorNavView = 'reporting' | 'reports';
+export type OfficialNavView = 'announcements' | 'reports';
 
 const navItems = [
-  { id: 'reporting' as const, label: 'Waste Reporting', icon: Recycle },
+  { id: 'announcements' as const, label: 'Announcements', icon: Megaphone },
   { id: 'reports' as const, label: 'My Reports', icon: FileText },
 ];
 
-export const InspectorSidebar = ({
+export const OfficialSidebar = ({
   activeView,
   onNavigate,
   isMobileOpen,
   onMobileClose,
 }: {
-  activeView: InspectorNavView;
-  onNavigate: (view: InspectorNavView) => void;
+  activeView: OfficialNavView;
+  onNavigate: (view: OfficialNavView) => void;
   isMobileOpen?: boolean;
   onMobileClose?: () => void;
 }) => {
@@ -40,7 +40,7 @@ export const InspectorSidebar = ({
         <div className="flex items-center gap-2.5">
           <span className="text-foreground text-lg font-bold tracking-tight">Migsel</span>
           <span className="bg-primary/10 text-primary rounded-md px-1.5 py-0.5 text-[10px] font-bold tracking-wider uppercase">
-            Inspector
+            Official
           </span>
         </div>
         {onMobileClose && (
@@ -56,7 +56,7 @@ export const InspectorSidebar = ({
       <nav className="flex-1 overflow-y-auto p-4">
         <div className="flex flex-col gap-0.5">
           <span className="text-muted-foreground/40 px-3 pb-2 text-[11px] font-semibold tracking-widest uppercase">
-            Inspector Tools
+            Official Tools
           </span>
           {navItems.map((item) => {
             const isActive = activeView === item.id;
@@ -106,7 +106,7 @@ export const InspectorSidebar = ({
             disabled={signOut.isPending}
             className="group text-muted-foreground relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-all duration-300 ease-out outline-none hover:text-red-600"
           >
-            <span className="absolute inset-0 rounded-lg bg-red-50/60 opacity-0 transition-all duration-300 ease-out group-hover:scale-100 group-hover:opacity-100" />
+            <span className="absolute inset-0 rounded-lg bg-slate-100/60 opacity-0 transition-all duration-300 ease-out group-hover:scale-100 group-hover:opacity-100" />
             <div className="relative flex h-5 w-5 items-center justify-center transition-transform duration-300 ease-out group-hover:translate-x-0.5">
               <LogOut className="h-4 w-4" />
             </div>
