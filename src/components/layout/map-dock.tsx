@@ -1,15 +1,6 @@
 import { useNavigate, useLocation } from 'react-router';
 import { useCallback, useState } from 'react';
-import {
-  Map,
-  Gem,
-  FileText,
-  Trophy,
-  Camera,
-  ShoppingBag,
-  User,
-  type LucideIcon,
-} from 'lucide-react';
+import { Map, Gem, FileText, Camera, User, type LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsAdmin } from '@/features/auth/api/use-is-admin';
 import { useIsInspector } from '@/features/auth/api/use-is-inspector';
@@ -65,8 +56,7 @@ export const MapDock = () => {
     if (path.startsWith('/map')) return 'map';
     if (path.startsWith('/reports-feed')) return 'reports-feed';
     if (path.startsWith('/diamond')) return 'diamond';
-    if (path.startsWith('/leaderboard')) return 'leaderboard';
-    if (path.startsWith('/shop')) return 'shop';
+
     if (
       path.startsWith('/profile') ||
       path.startsWith('/dashboard') ||
@@ -78,9 +68,9 @@ export const MapDock = () => {
 
   return (
     <div className="fixed bottom-6 left-1/2 z-50 w-[95%] max-w-xl -translate-x-1/2">
-      <div className="relative rounded-2xl border border-slate-200 bg-white px-4 py-2 shadow-xl">
-        {/* Elevated FAB – floats above the dock center */}
-        <div className="absolute -top-8 left-1/2 z-10 -translate-x-1/2">
+      <div className="relative rounded-2xl border border-slate-200 bg-white px-4 pt-3 pb-2 shadow-xl">
+        {/* Elevated FAB – floats at the dock's top edge */}
+        <div className="absolute -top-5 left-1/2 z-10 -translate-x-1/2">
           <button
             onClick={() => {
               navigate('/report');
@@ -92,62 +82,42 @@ export const MapDock = () => {
         </div>
 
         {/* Navigation row */}
-        <div className="flex items-center">
-          {/* Left group */}
-          <div className="flex flex-1 items-center justify-around">
-            <NavItem
-              icon={Map}
-              label="Map"
-              isActive={activeTab === 'map'}
-              onClick={() => navigate('/map')}
-            />
+        <div className="flex items-center justify-around">
+          <NavItem
+            icon={Map}
+            label="Map"
+            isActive={activeTab === 'map'}
+            onClick={() => navigate('/map')}
+          />
 
-            <NavItem
-              icon={Gem}
-              label="Diamond"
-              isActive={activeTab === 'diamond'}
-              onClick={() => navigate('/diamond')}
-            />
+          <NavItem
+            icon={Gem}
+            label="Diamond"
+            isActive={activeTab === 'diamond'}
+            onClick={() => navigate('/diamond')}
+          />
 
-            <NavItem
-              icon={FileText}
-              label="Reports Feed"
-              isActive={activeTab === 'reports-feed'}
-              onClick={() => navigate('/reports-feed')}
-            />
-          </div>
+          <NavItem
+            icon={FileText}
+            label="Reports Feed"
+            isActive={activeTab === 'reports-feed'}
+            onClick={() => navigate('/reports-feed')}
+          />
 
-          {/* Right group */}
-          <div className="flex flex-1 items-center justify-around">
-            <NavItem
-              icon={Trophy}
-              label="Leaderboard"
-              isActive={activeTab === 'leaderboard'}
-              onClick={() => navigate('/leaderboard')}
-            />
-
-            <NavItem
-              icon={ShoppingBag}
-              label="Shop"
-              isActive={activeTab === 'shop'}
-              onClick={() => navigate('/shop')}
-            />
-
-            <NavItem
-              icon={User}
-              label={isAdmin ? 'Admin' : isInspector ? 'Dashboard' : 'Profile'}
-              isActive={activeTab === 'profile'}
-              onClick={() => {
-                if (isAdmin) {
-                  navigate('/dashboard');
-                } else if (isInspector) {
-                  navigate('/inspector');
-                } else {
-                  navigate('/profile');
-                }
-              }}
-            />
-          </div>
+          <NavItem
+            icon={User}
+            label={isAdmin ? 'Profile' : isInspector ? 'Dashboard' : 'Profile'}
+            isActive={activeTab === 'profile'}
+            onClick={() => {
+              if (isAdmin) {
+                navigate('/profile');
+              } else if (isInspector) {
+                navigate('/inspector');
+              } else {
+                navigate('/profile');
+              }
+            }}
+          />
         </div>
       </div>
     </div>

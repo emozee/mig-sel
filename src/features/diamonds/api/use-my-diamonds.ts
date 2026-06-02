@@ -4,13 +4,14 @@ import { useSession } from '@/features/auth/api/use-session';
 import { diamondKeys } from './use-create-diamond';
 import type { DiamondFeedItem, DiamondStatus, DiamondCollaboratorSummary } from '../types';
 
-export const useDiamonds = (page: number = 1, pageSize: number = 10) => {
+export const useMyDiamonds = (page: number = 1, pageSize: number = 20) => {
   const { data: session } = useSession();
   const userId = session?.user?.id;
 
   return useQuery({
-    queryKey: [...diamondKeys.lists(), page, pageSize],
+    queryKey: [...diamondKeys.lists(), 'my', userId, page, pageSize],
     staleTime: 60_000,
+    enabled: !!userId,
     queryFn: async (): Promise<{ items: DiamondFeedItem[]; count: number }> => {
       const from = (page - 1) * pageSize;
       const to = from + pageSize - 1;
@@ -25,7 +26,7 @@ export const useDiamonds = (page: number = 1, pageSize: number = 10) => {
           'id, user_id, body, image_urls, created_at, linked_grievance_id, status, direct_solve_awarded',
           { count: 'exact', head: false },
         )
-        .neq('status', 'rejected')
+        .eq('user_id', userId!)
         .order('created_at', { ascending: false })
         .range(from, to);
 
@@ -45,7 +46,7 @@ export const useDiamonds = (page: number = 1, pageSize: number = 10) => {
         .filter((id): id is string => !!id);
       const avatarMap = new Map<
         string,
-        { username: string; initials: string; avatar_url?: string; role?: string }
+        { username: string; initials: string; avatar_url?: string }
       >();
       const grievanceMap = new Map<
         string,
@@ -56,11 +57,10 @@ export const useDiamonds = (page: number = 1, pageSize: number = 10) => {
       const userUpvotedMap = new Map<number, boolean>();
       const commentCountMap = new Map<number, number>();
 
-      // Profiles
       if (userIds.length > 0) {
         const { data: profiles } = await supabase
           .from('profiles')
-          .select('id, username, avatar_url, role')
+          .select('id, username, avatar_url')
           .in('id', userIds);
 
         if (profiles) {
@@ -70,13 +70,11 @@ export const useDiamonds = (page: number = 1, pageSize: number = 10) => {
               username: name,
               initials: name.slice(0, 2).toUpperCase(),
               avatar_url: p.avatar_url ?? undefined,
-              role: p.role ?? undefined,
             });
           }
         }
       }
 
-      // Grievance details
       if (grievanceIds.length > 0) {
         const { data: grievances } = await supabase
           .from('grievances')
@@ -95,7 +93,6 @@ export const useDiamonds = (page: number = 1, pageSize: number = 10) => {
         }
       }
 
-      // Collaborators
       if (diamondIds.length > 0) {
         const { data: collabs } = await supabase
           .from('diamond_collaborators')
@@ -108,12 +105,12 @@ export const useDiamonds = (page: number = 1, pageSize: number = 10) => {
 
           const { data: collabProfiles } = await supabase
             .from('profiles')
-            .select('id, username, avatar_url, role')
+            .select('id, username, avatar_url')
             .in('id', collabUserIds);
 
           const collabProfileMap = new Map<
             string,
-            { name: string; initials: string; avatar?: string; role?: string }
+            { name: string; initials: string; avatar?: string }
           >();
           if (collabProfiles) {
             for (const p of collabProfiles) {
@@ -122,7 +119,6 @@ export const useDiamonds = (page: number = 1, pageSize: number = 10) => {
                 name,
                 initials: name.slice(0, 2).toUpperCase(),
                 avatar: p.avatar_url ?? undefined,
-                role: p.role ?? undefined,
               });
             }
           }
@@ -138,13 +134,11 @@ export const useDiamonds = (page: number = 1, pageSize: number = 10) => {
               userName: profile.name,
               userInitials: profile.initials,
               avatarUrl: profile.avatar,
-              role: profile.role,
             });
           }
         }
       }
 
-      // Upvote counts + user upvote status
       if (diamondIds.length > 0) {
         const { data: upvotes } = await supabase
           .from('diamond_upvotes')
@@ -167,7 +161,6 @@ export const useDiamonds = (page: number = 1, pageSize: number = 10) => {
         }
       }
 
-      // Comment counts
       if (diamondIds.length > 0) {
         const { data: comments } = await supabase
           .from('diamond_comments')
@@ -199,7 +192,6 @@ export const useDiamonds = (page: number = 1, pageSize: number = 10) => {
           userName: profile?.username ?? 'Unknown',
           userInitials: profile?.initials ?? '??',
           avatarUrl: profile?.avatar_url,
-          userRole: profile?.role,
           linkedGrievanceId: row.linked_grievance_id ?? undefined,
           linkedGrievanceTitle: grievance?.title,
           linkedGrievanceImage: grievance?.image,

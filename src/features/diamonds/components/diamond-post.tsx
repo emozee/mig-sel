@@ -15,6 +15,7 @@ import {
   Check,
   Loader2,
   Users,
+  BadgeCheck,
 } from 'lucide-react';
 import { ClickableImage } from '@/components/ui/image-viewer';
 import { useCurrentUser } from '@/features/auth/api/use-current-user';
@@ -186,6 +187,9 @@ export const DiamondPost = ({ post, index = 0 }: DiamondPostProps) => {
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <span className="text-sm font-bold text-gray-900">{post.userName}</span>
+            {post.userRole === 'official' && (
+              <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-blue-500" />
+            )}
             <span className="text-[11px] text-gray-400">· {timeAgo(post.createdAt)}</span>
           </div>
           <div className="mt-0.5 flex flex-wrap items-center gap-1.5">

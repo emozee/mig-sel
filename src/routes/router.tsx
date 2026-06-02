@@ -16,9 +16,14 @@ import { DiamondPage } from './diamond-page';
 import { ChatPage } from './chat-page';
 import { ShopPage } from './shop-page';
 import { ProfilePage } from './profile-page';
+import { ProfileReportsPage } from './profile-reports-page';
+import { ProfileReportDetailPage } from './profile-report-detail-page';
+import { ProfileUpdatesPage } from './profile-updates-page';
+import { AnnouncementsPage } from './announcements-page';
 import { ProtectedRoute } from '@/components/layout/protected-route';
 import { AdminRoute } from '@/components/layout/admin-route';
 import { InspectorRoute } from '@/components/layout/inspector-route';
+import { OfficialRoute } from '@/components/layout/official-route';
 
 export const router = createBrowserRouter([
   {
@@ -83,7 +88,22 @@ export const router = createBrowserRouter([
   {
     path: '/profile',
     element: <ProtectedRoute />,
-    children: [{ index: true, element: <ProfilePage /> }],
+    children: [
+      { index: true, element: <ProfilePage /> },
+      { path: 'reports', element: <ProfileReportsPage /> },
+      { path: 'reports/:id', element: <ProfileReportDetailPage /> },
+      { path: 'updates', element: <ProfileUpdatesPage /> },
+    ],
+  },
+  {
+    path: '/announcements',
+    element: <ProtectedRoute />,
+    children: [
+      {
+        element: <OfficialRoute />,
+        children: [{ index: true, element: <AnnouncementsPage /> }],
+      },
+    ],
   },
   {
     path: '/inspector',

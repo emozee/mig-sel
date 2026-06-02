@@ -21,10 +21,13 @@ export const useDiamondComments = (diamondId: number) => {
       const userIds = [...new Set(data.map((r) => r.user_id))];
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('id, username, avatar_url')
+        .select('id, username, avatar_url, role')
         .in('id', userIds);
 
-      const profileMap = new Map<string, { name: string; initials: string; avatar?: string }>();
+      const profileMap = new Map<
+        string,
+        { name: string; initials: string; avatar?: string; role?: string }
+      >();
       if (profiles) {
         for (const p of profiles) {
           const name = p.username ?? 'Unknown';
@@ -32,6 +35,7 @@ export const useDiamondComments = (diamondId: number) => {
             name,
             initials: name.slice(0, 2).toUpperCase(),
             avatar: p.avatar_url ?? undefined,
+            role: p.role ?? undefined,
           });
         }
       }
@@ -49,6 +53,7 @@ export const useDiamondComments = (diamondId: number) => {
           userName: profile?.name ?? 'Unknown',
           userInitials: profile?.initials ?? '??',
           avatarUrl: profile?.avatar,
+          userRole: profile?.role,
         };
       });
     },

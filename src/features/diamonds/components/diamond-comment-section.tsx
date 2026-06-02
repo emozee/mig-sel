@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Send, X, Trash2, Pencil, Check, Loader2 } from 'lucide-react';
+import { Send, X, Trash2, Pencil, Check, Loader2, BadgeCheck } from 'lucide-react';
 import { useCurrentUser } from '@/features/auth/api/use-current-user';
 import {
   useDiamondComments,
@@ -104,6 +104,9 @@ export const DiamondCommentSection = ({
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline gap-1.5">
                     <span className="text-[11px] font-semibold text-gray-900">{c.userName}</span>
+                    {c.userRole === 'official' && (
+                      <BadgeCheck className="h-3 w-3 shrink-0 text-blue-500" />
+                    )}
                     <span className="text-[10px] text-gray-400">
                       {new Date(c.createdAt).toLocaleDateString(undefined, {
                         month: 'short',

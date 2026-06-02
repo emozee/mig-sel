@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router';
 import { ArrowLeft, Gem } from 'lucide-react';
 import { DiamondCreator } from '@/features/diamonds/components/diamond-creator';
 import { DiamondFeed } from '@/features/diamonds/components/diamond-feed';
+import { AnnouncementsBanner } from '@/features/announcements/components/announcements-banner';
 import { MapDock } from '@/components/layout/map-dock';
 
 export const DiamondPage = () => {
@@ -23,6 +24,7 @@ export const DiamondPage = () => {
       </div>
 
       <div className="mx-auto max-w-lg space-y-3 px-3 pt-3 pb-24">
+        <AnnouncementsBanner />
         <DiamondCreator />
         <DiamondFeed />
       </div>
