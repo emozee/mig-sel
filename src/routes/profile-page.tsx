@@ -25,6 +25,7 @@ export const ProfilePage = () => {
 
   const isOfficial = profile?.role === 'official';
   const isAdmin = profile?.role === 'admin';
+  const isInspector = profile?.role === 'inspector';
   const updatesCount = myDiamonds?.count ?? 0;
 
   const activities = [
@@ -186,6 +187,17 @@ export const ProfilePage = () => {
               </button>
             </div>
           </div>
+        )}
+
+        {/* Inspector Portal */}
+        {isInspector && (
+          <button
+            onClick={() => navigate('/inspector')}
+            className="border-primary/20 text-primary hover:bg-primary/5 mb-3 flex w-full items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-semibold transition-colors"
+          >
+            <Building2 className="h-4 w-4" />
+            Inspector Portal
+          </button>
         )}
 
         {/* Admin Dashboard */}

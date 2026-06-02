@@ -2,8 +2,6 @@ import { useNavigate, useLocation } from 'react-router';
 import { useCallback, useState } from 'react';
 import { Map, Gem, FileText, Camera, User, type LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useIsAdmin } from '@/features/auth/api/use-is-admin';
-import { useIsInspector } from '@/features/auth/api/use-is-inspector';
 
 interface NavItemProps {
   icon: LucideIcon;
@@ -48,9 +46,6 @@ const NavItem = ({ icon: Icon, label, isActive, onClick, className = '' }: NavIt
 export const MapDock = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { data: isAdmin } = useIsAdmin();
-  const { data: isInspector } = useIsInspector();
-
   const activeTab = (() => {
     const path = location.pathname;
     if (path.startsWith('/map')) return 'map';
@@ -106,17 +101,9 @@ export const MapDock = () => {
 
           <NavItem
             icon={User}
-            label={isAdmin ? 'Profile' : isInspector ? 'Dashboard' : 'Profile'}
+            label="Profile"
             isActive={activeTab === 'profile'}
-            onClick={() => {
-              if (isAdmin) {
-                navigate('/profile');
-              } else if (isInspector) {
-                navigate('/inspector');
-              } else {
-                navigate('/profile');
-              }
-            }}
+            onClick={() => navigate('/profile')}
           />
         </div>
       </div>
