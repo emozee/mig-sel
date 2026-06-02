@@ -9,7 +9,7 @@ const MOCK_GOAL: ImpactGoal = {
   current: 15,
   target: 30,
   unit: 'issues resolved',
-  location: 'Sarpang',
+  location: 'Bhutan',
 };
 
 export const communityKeys = {

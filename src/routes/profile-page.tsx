@@ -1,5 +1,4 @@
 import { useNavigate } from 'react-router';
-import { AnnouncementForm } from '@/features/announcements/components/announcement-form';
 import {
   ArrowLeft,
   FileText,
@@ -7,7 +6,6 @@ import {
   Trophy,
   ShoppingBag,
   Building2,
-  Megaphone,
   ChevronRight,
   Sparkles,
 } from 'lucide-react';
@@ -63,7 +61,7 @@ export const ProfilePage = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate('/community')}
+            onClick={() => navigate('/reports-feed')}
             className="text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="mr-1 h-4 w-4" />
@@ -145,49 +143,15 @@ export const ProfilePage = () => {
           </div>
         </div>
 
-        {/* Official Portal */}
+        {/* Official Dashboard */}
         {isOfficial && (
-          <div className="mb-6">
-            <h3 className="text-muted-foreground mb-3 text-xs font-semibold tracking-wider uppercase">
-              Official Portal
-            </h3>
-            <div className="bg-card shadow-card divide-y rounded-xl border">
-              <details className="group">
-                <summary className="hover:bg-muted/50 flex w-full cursor-pointer items-center gap-3 px-4 py-3.5 text-left transition-colors [&::-webkit-details-marker]:hidden">
-                  <div className="bg-primary/10 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg">
-                    <Building2 className="text-primary h-4 w-4" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-foreground text-sm font-semibold">Official Portal</p>
-                  </div>
-                  <ChevronRight className="text-muted-foreground h-4 w-4 transition-transform group-open:rotate-90" />
-                </summary>
-                <div className="border-t px-4 py-3">
-                  <button
-                    onClick={() => navigate('/dashboard')}
-                    className="text-muted-foreground hover:bg-muted/50 mb-3 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors"
-                  >
-                    <Building2 className="h-4 w-4" />
-                    Dashboard
-                  </button>
-                  <AnnouncementForm />
-                </div>
-              </details>
-              <button
-                onClick={() => navigate('/announcements')}
-                className="hover:bg-muted/50 flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors"
-              >
-                <div className="bg-primary/10 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg">
-                  <Megaphone className="text-primary h-4 w-4" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-foreground text-sm font-semibold">Announcements</p>
-                  <p className="text-muted-foreground text-xs">View all posts</p>
-                </div>
-                <ChevronRight className="text-muted-foreground h-4 w-4" />
-              </button>
-            </div>
-          </div>
+          <button
+            onClick={() => navigate('/official')}
+            className="border-primary/20 text-primary hover:bg-primary/5 mb-3 flex w-full items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-semibold transition-colors"
+          >
+            <Building2 className="h-4 w-4" />
+            Official Dashboard
+          </button>
         )}
 
         {/* Inspector Portal */}

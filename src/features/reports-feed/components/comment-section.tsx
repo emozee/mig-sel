@@ -278,7 +278,7 @@ function CommentRow({
           <div className="flex items-baseline gap-2">
             <span className="text-sm font-semibold text-gray-900">{comment.user_name}</span>
             {(comment as { user_role?: string }).user_role === 'official' && (
-              <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-blue-500" />
+              <BadgeCheck className="text-primary h-3.5 w-3.5 shrink-0" />
             )}
             <span className="text-xs text-gray-400">
               {new Date(comment.created_at).toLocaleDateString(undefined, {
