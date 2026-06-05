@@ -24,6 +24,7 @@ import {
   computeFileHash,
 } from '@/features/auth/grievance/api/find-duplicate-image';
 import type { DuplicateImageResult } from '@/features/auth/grievance/api/find-duplicate-image';
+import { ImageLightbox } from '@/features/auth/grievance/components/image-lightbox';
 import { MapDock } from '@/components/layout/map-dock';
 
 const CATEGORIES = [
@@ -312,9 +313,8 @@ export const ReportPage = () => {
                       className="border-outline-variant flex items-start gap-3 rounded-lg border p-2 text-sm"
                     >
                       {g.image_url && (
-                        <img
+                        <ImageLightbox
                           src={g.image_url}
-                          alt=""
                           className="h-10 w-10 shrink-0 rounded object-cover"
                         />
                       )}
@@ -372,9 +372,8 @@ export const ReportPage = () => {
                       className="border-outline-variant flex items-start gap-3 rounded-lg border p-2 text-sm"
                     >
                       {d.image_url && (
-                        <img
+                        <ImageLightbox
                           src={d.image_url}
-                          alt=""
                           className="h-10 w-10 shrink-0 rounded object-cover"
                         />
                       )}

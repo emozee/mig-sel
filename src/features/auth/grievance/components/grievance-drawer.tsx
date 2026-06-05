@@ -23,6 +23,7 @@ import {
   computeFileHash,
 } from '@/features/auth/grievance/api/find-duplicate-image';
 import type { DuplicateImageResult } from '@/features/auth/grievance/api/find-duplicate-image';
+import { ImageLightbox } from './image-lightbox';
 
 const CATEGORIES = [
   { value: 'road', label: 'Road Damage' },
@@ -258,9 +259,8 @@ export const GrievanceDrawer = ({ onClose }: Props) => {
                     className="border-outline-variant flex items-start gap-3 rounded-lg border p-2 text-sm"
                   >
                     {g.image_url && (
-                      <img
+                      <ImageLightbox
                         src={g.image_url}
-                        alt=""
                         className="h-10 w-10 shrink-0 rounded object-cover"
                       />
                     )}
@@ -268,6 +268,63 @@ export const GrievanceDrawer = ({ onClose }: Props) => {
                       <p className="truncate font-medium">{g.title}</p>
                       <p className="text-muted-foreground text-xs">
                         {g.distance_meters.toFixed(1)}m away &middot; {g.category}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <DialogFooter className="gap-2 sm:gap-0">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowNearbyDialog(false);
+                    setNearbyGrievances([]);
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="default"
+                  onClick={() => {
+                    setShowNearbyDialog(false);
+                    setNearbyGrievances([]);
+                    doUploadClassifyAndCreate();
+                  }}
+                >
+                  Submit anyway
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </DialogRoot>
+
+          <DialogRoot open={showDuplicateImageDialog} onOpenChange={setShowDuplicateImageDialog}>
+            <DialogContent className="max-w-sm">
+              <DialogHeader>
+                <DialogTitle>Same photo already submitted</DialogTitle>
+                <DialogDescription>
+                  This exact photo was already used for{' '}
+                  {duplicateImages.length === 1 ? 'a report' : `${duplicateImages.length} reports`}{' '}
+                  within 10m of your location. You can still submit — an admin will review it.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="max-h-36 space-y-2 overflow-y-auto">
+                {duplicateImages.map((d) => (
+                  <div
+                    key={d.id}
+                    className="border-outline-variant flex items-start gap-3 rounded-lg border p-2 text-sm"
+                  >
+                    {d.image_url && (
+                      <ImageLightbox
+                        src={d.image_url}
+                        className="h-10 w-10 shrink-0 rounded object-cover"
+                      />
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-medium">{d.title}</p>
+                      <p className="text-muted-foreground text-xs">
+                        {d.distance_meters.toFixed(1)}m away &middot; {d.category}
                       </p>
                     </div>
                   </div>
