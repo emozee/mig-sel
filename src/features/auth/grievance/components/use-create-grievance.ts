@@ -10,6 +10,7 @@ interface GrievanceInput {
   longitude: number;
   image_url: string;
   reporter_id: string | null;
+  image_hash?: string;
 }
 
 export const useCreateGrievance = () => {
