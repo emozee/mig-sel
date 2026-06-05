@@ -37,9 +37,7 @@ export const LandingPage = () => {
             <img src={logo} alt="Logo" className="h-16 w-auto" />
           </div>
           <h1 className="text-foreground text-2xl font-semibold tracking-tight">mig-sel</h1>
-          <p className="text-muted-foreground/60 mt-1.5 text-xs tracking-wide uppercase">
-            GMC Resonance
-          </p>
+          <p className="mt-1.5 text-xs tracking-wide text-black uppercase">GMC Resonance</p>
         </div>
 
         <Card className="border-white/20 bg-white/20 shadow-xl backdrop-blur-xl">

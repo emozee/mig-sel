@@ -55,6 +55,7 @@ export const useApproveComplaint = () => {
       await queryClient.invalidateQueries({ queryKey: grievanceKeys.all });
       await queryClient.invalidateQueries({ queryKey: leaderboardKeys.all() });
       await queryClient.invalidateQueries({ queryKey: profileKeys.current() });
+      await queryClient.invalidateQueries({ queryKey: ['my-reports'] });
     },
   });
 };
