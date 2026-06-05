@@ -19,6 +19,11 @@ import { checkNearbyGrievances } from '@/features/auth/grievance/api/check-nearb
 import type { NearbyGrievance } from '@/features/auth/grievance/api/check-nearby-grievances';
 import { classifyGrievanceImage } from '@/features/auth/grievance/api/classify-grievance-image';
 import type { ClassificationResult } from '@/features/auth/grievance/api/classify-grievance-image';
+import {
+  findDuplicateImage,
+  computeFileHash,
+} from '@/features/auth/grievance/api/find-duplicate-image';
+import type { DuplicateImageResult } from '@/features/auth/grievance/api/find-duplicate-image';
 import { MapDock } from '@/components/layout/map-dock';
 
 const CATEGORIES = [
@@ -50,6 +55,9 @@ export const ReportPage = () => {
     null,
   );
   const [pendingImageUrl, setPendingImageUrl] = useState<string | null>(null);
+  const [fileHash, setFileHash] = useState<string | null>(null);
+  const [showDuplicateImageDialog, setShowDuplicateImageDialog] = useState(false);
+  const [duplicateImages, setDuplicateImages] = useState<DuplicateImageResult[]>([]);
 
   const createGrievance = async (imageUrl: string) => {
     await mutation.mutateAsync({
@@ -60,6 +68,7 @@ export const ReportPage = () => {
       longitude: gpsCoords!.lng,
       image_url: imageUrl,
       reporter_id: user?.id ?? null,
+      image_hash: fileHash ?? undefined,
     });
   };
 
@@ -88,10 +97,23 @@ export const ReportPage = () => {
       }
     } catch (err) {
       console.error('Nearby check failed, proceeding without warning:', err);
-    } finally {
-      setIsChecking(false);
     }
 
+    if (fileHash) {
+      try {
+        const dup = await findDuplicateImage(fileHash, gpsCoords.lat, gpsCoords.lng, 10);
+
+        if (dup.length > 0) {
+          setDuplicateImages(dup);
+          setShowDuplicateImageDialog(true);
+          return;
+        }
+      } catch (err) {
+        console.error('Duplicate image check failed, proceeding without warning:', err);
+      }
+    }
+
+    setIsChecking(false);
     await doUploadClassifyAndCreate();
   };
 
@@ -147,6 +169,12 @@ export const ReportPage = () => {
     }
     setMessage(null);
     setSelectedFile(files[0]);
+    setFileHash(null);
+    computeFileHash(files[0])
+      .then(setFileHash)
+      .catch(() => {
+        /* hash is best-effort */
+      });
   };
 
   return (
@@ -316,6 +344,66 @@ export const ReportPage = () => {
                       setShowNearbyDialog(false);
                       setNearbyGrievances([]);
                       doUploadClassifyAndCreate();
+                    }}
+                  >
+                    Submit anyway
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </DialogRoot>
+
+            <DialogRoot open={showDuplicateImageDialog} onOpenChange={setShowDuplicateImageDialog}>
+              <DialogContent className="max-w-sm">
+                <DialogHeader>
+                  <DialogTitle>Same photo already submitted</DialogTitle>
+                  <DialogDescription>
+                    This exact photo was already used for{' '}
+                    {duplicateImages.length === 1
+                      ? 'a report'
+                      : `${duplicateImages.length} reports`}{' '}
+                    within 10m of your location. You can still submit — an admin will review it.
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="max-h-36 space-y-2 overflow-y-auto">
+                  {duplicateImages.map((d) => (
+                    <div
+                      key={d.id}
+                      className="border-outline-variant flex items-start gap-3 rounded-lg border p-2 text-sm"
+                    >
+                      {d.image_url && (
+                        <img
+                          src={d.image_url}
+                          alt=""
+                          className="h-10 w-10 shrink-0 rounded object-cover"
+                        />
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-medium">{d.title}</p>
+                        <p className="text-muted-foreground text-xs">
+                          {d.distance_meters.toFixed(1)}m away &middot; {d.category}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <DialogFooter className="gap-2 sm:gap-0">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setShowDuplicateImageDialog(false);
+                      setDuplicateImages([]);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="default"
+                    onClick={async () => {
+                      setShowDuplicateImageDialog(false);
+                      setDuplicateImages([]);
+                      await doUploadClassifyAndCreate();
                     }}
                   >
                     Submit anyway
