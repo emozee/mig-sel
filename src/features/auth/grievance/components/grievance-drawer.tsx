@@ -14,6 +14,8 @@ import { useGeoLocation } from '../hooks/use-geo-location';
 import { uploadGrievanceImage } from './use-upload-image';
 import { useCreateGrievance } from './use-create-grievance';
 import { useCurrentUser } from '@/features/auth/api/use-current-user';
+import { checkNearbyGrievances } from '@/features/auth/grievance/api/check-nearby-grievances';
+import type { NearbyGrievance } from '@/features/auth/grievance/api/check-nearby-grievances';
 
 const CATEGORIES = [
   { value: 'road', label: 'Road Damage' },
@@ -39,6 +41,9 @@ export const GrievanceDrawer = ({ onClose }: Props) => {
   const [isUploading, setIsUploading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [showPermissionDialog, setShowPermissionDialog] = useState(false);
+  const [showNearbyDialog, setShowNearbyDialog] = useState(false);
+  const [nearbyGrievances, setNearbyGrievances] = useState<NearbyGrievance[]>([]);
+  const [isChecking, setIsChecking] = useState(false);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const mutation = useCreateGrievance();
 
@@ -47,35 +52,18 @@ export const GrievanceDrawer = ({ onClose }: Props) => {
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('other');
 
-  const submitReport = async () => {
-    setMessage(null);
-
-    if (!selectedFile) {
-      setMessage({ type: 'error', text: 'Please upload a photo to submit a report' });
-      return;
-    }
-
-    if (!gpsCoords) {
-      setMessage({
-        type: 'error',
-        text: permissionDenied
-          ? 'Location permission denied. Enable it in your browser settings.'
-          : 'Location not available. Please wait for GPS detection.',
-      });
-      return;
-    }
-
+  const doSubmit = async () => {
     setIsUploading(true);
 
     try {
-      const imageUrl = await uploadGrievanceImage(selectedFile);
+      const imageUrl = await uploadGrievanceImage(selectedFile!);
 
       await mutation.mutateAsync({
         title: title || 'Community Report',
         description: description || '',
         category: category || 'other',
-        latitude: gpsCoords.lat,
-        longitude: gpsCoords.lng,
+        latitude: gpsCoords!.lat,
+        longitude: gpsCoords!.lng,
         image_url: imageUrl,
         reporter_id: user?.id ?? null,
       });
@@ -96,6 +84,43 @@ export const GrievanceDrawer = ({ onClose }: Props) => {
     } finally {
       setIsUploading(false);
     }
+  };
+
+  const submitReport = async () => {
+    setMessage(null);
+
+    if (!selectedFile) {
+      setMessage({ type: 'error', text: 'Please upload a photo to submit a report' });
+      return;
+    }
+
+    if (!gpsCoords) {
+      setMessage({
+        type: 'error',
+        text: permissionDenied
+          ? 'Location permission denied. Enable it in your browser settings.'
+          : 'Location not available. Please wait for GPS detection.',
+      });
+      return;
+    }
+
+    setIsChecking(true);
+
+    try {
+      const nearby = await checkNearbyGrievances(gpsCoords.lat, gpsCoords.lng, 10);
+
+      if (nearby.length > 0) {
+        setNearbyGrievances(nearby);
+        setShowNearbyDialog(true);
+        return;
+      }
+    } catch {
+      // If the check fails (e.g. function not available), proceed silently
+    } finally {
+      setIsChecking(false);
+    }
+
+    await doSubmit();
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -159,6 +184,64 @@ export const GrievanceDrawer = ({ onClose }: Props) => {
               </p>
             </div>
           </div>
+
+          <DialogRoot open={showNearbyDialog} onOpenChange={setShowNearbyDialog}>
+            <DialogContent className="max-w-sm">
+              <DialogHeader>
+                <DialogTitle>Nearby reports found</DialogTitle>
+                <DialogDescription>
+                  {nearbyGrievances.length}{' '}
+                  {nearbyGrievances.length === 1 ? 'report is' : 'reports are'} already submitted
+                  within 10m of your location.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="max-h-48 space-y-2 overflow-y-auto">
+                {nearbyGrievances.map((g) => (
+                  <div
+                    key={g.id}
+                    className="border-outline-variant flex items-start gap-3 rounded-lg border p-2 text-sm"
+                  >
+                    {g.image_url && (
+                      <img
+                        src={g.image_url}
+                        alt=""
+                        className="h-10 w-10 shrink-0 rounded object-cover"
+                      />
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-medium">{g.title}</p>
+                      <p className="text-muted-foreground text-xs">
+                        {g.distance_meters.toFixed(1)}m away &middot; {g.category}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <DialogFooter className="gap-2 sm:gap-0">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowNearbyDialog(false);
+                    setNearbyGrievances([]);
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="default"
+                  onClick={() => {
+                    setShowNearbyDialog(false);
+                    setNearbyGrievances([]);
+                    doSubmit();
+                  }}
+                >
+                  Submit anyway
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </DialogRoot>
 
           {!permissionDenied && (
             <DialogRoot open={showPermissionDialog} onOpenChange={setShowPermissionDialog}>
@@ -272,11 +355,11 @@ export const GrievanceDrawer = ({ onClose }: Props) => {
           )}
 
           <Button
-            disabled={isUploading || !selectedFile}
+            disabled={isUploading || isChecking || !selectedFile}
             type="submit"
             className="bg-primary text-primary-foreground h-12 w-full rounded-lg font-bold shadow-lg"
           >
-            {isUploading ? 'Submitting...' : 'Submit Report'}
+            {isChecking ? 'Checking nearby...' : isUploading ? 'Submitting...' : 'Submit Report'}
           </Button>
         </form>
       </div>
