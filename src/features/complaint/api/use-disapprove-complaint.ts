@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { complaintKeys } from './use-complaints';
 import { communityKeys } from '@/features/reports-feed/api/use-reports-feed';
@@ -13,25 +12,14 @@ export const useDisapproveComplaint = () => {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      console.log('useDisapproveComplaint called with id:', id);
-      window.alert('Mutation running for: ' + id);
-
       const { error: delErr } = await supabase
         .from('grievances')
         .update({ deleted_at: new Date().toISOString() })
         .eq('id', id);
 
-      console.log('Update error:', delErr);
-      window.alert('Update done: ' + (delErr ? delErr.message : 'OK'));
+      if (delErr) throw delErr;
 
-      if (delErr) throw new Error(`Soft-delete failed: ${delErr.message}`);
-
-      const { error: feedErr } = await supabase
-        .from('community_feed')
-        .delete()
-        .eq('grievance_id', id);
-      console.log('Feed delete result:', feedErr);
-      window.alert('Feed delete done: ' + (feedErr ? feedErr.message : 'OK'));
+      await supabase.from('community_feed').delete().eq('grievance_id', id);
     },
     onMutate: async (id: string) => {
       await queryClient.cancelQueries({ queryKey: complaintKeys.all });
@@ -41,15 +29,10 @@ export const useDisapproveComplaint = () => {
       );
       return { previous };
     },
-    onError: (err, _id, context) => {
-      console.error('Disapprove failed:', err);
-      toast.error(`Delete failed: ${err instanceof Error ? err.message : String(err)}`);
+    onError: (_err, _id, context) => {
       if (context?.previous) {
         queryClient.setQueryData(complaintKeys.all, context.previous);
       }
-    },
-    onSuccess: () => {
-      toast.success('Report deleted');
     },
     onSettled: async () => {
       await queryClient.invalidateQueries({ queryKey: complaintKeys.all });
