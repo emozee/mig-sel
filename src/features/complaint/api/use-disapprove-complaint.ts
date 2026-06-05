@@ -12,60 +12,11 @@ export const useDisapproveComplaint = () => {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { data: grievance } = await supabase
-        .from('grievances')
-        .select('reporter_id, bonus_awarded')
-        .eq('id', id)
-        .single();
+      const { error } = await supabase.rpc('disapprove_grievance', {
+        grievance_id: id,
+      });
 
-      if (!grievance) throw new Error('Grievance not found');
-
-      // 1. Best-effort point deduction — never block the soft-delete
-      if (grievance.bonus_awarded > 0 && grievance.reporter_id) {
-        const { error: pointsError } = await supabase.rpc('adjust_points', {
-          p_reporter_id: grievance.reporter_id,
-          p_grievance_id: id,
-          p_delta: -grievance.bonus_awarded,
-          p_new_value: 0,
-        });
-
-        if (pointsError) {
-          console.error('adjust_points RPC failed, trying direct update:', pointsError);
-          // Fallback: directly deduct points from profile
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('points')
-            .eq('id', grievance.reporter_id)
-            .maybeSingle();
-
-          if (profile) {
-            const { error: directError } = await supabase
-              .from('profiles')
-              .update({ points: Math.max(0, (profile.points ?? 0) - grievance.bonus_awarded) })
-              .eq('id', grievance.reporter_id);
-
-            if (directError) {
-              console.error('Direct point deduction also failed:', directError);
-            }
-          }
-        }
-      }
-
-      // 2. Soft-delete the grievance so user can see it was removed
-      const { error: softDeleteError } = await supabase
-        .from('grievances')
-        .update({ deleted_at: new Date().toISOString() })
-        .eq('id', id);
-
-      if (softDeleteError) throw softDeleteError;
-
-      // 3. Remove the corresponding feed entry
-      const { error: feedError } = await supabase
-        .from('community_feed')
-        .delete()
-        .eq('grievance_id', id);
-
-      if (feedError) throw feedError;
+      if (error) throw error;
     },
     onMutate: async (id: string) => {
       await queryClient.cancelQueries({ queryKey: complaintKeys.all });
