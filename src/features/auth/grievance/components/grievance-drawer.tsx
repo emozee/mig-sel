@@ -92,15 +92,15 @@ export const GrievanceDrawer = ({ onClose }: Props) => {
     setIsChecking(true);
 
     try {
-      const nearby = await checkNearbyGrievances(gpsCoords.lat, gpsCoords.lng, 10);
+      const nearby = await checkNearbyGrievances(gpsCoords.lat, gpsCoords.lng, 10, category);
 
       if (nearby.length > 0) {
         setNearbyGrievances(nearby);
         setShowNearbyDialog(true);
         return;
       }
-    } catch {
-      // If the check fails (e.g. function not available), proceed silently
+    } catch (err) {
+      console.error('Nearby check failed, proceeding without warning:', err);
     } finally {
       setIsChecking(false);
     }

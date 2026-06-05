@@ -79,15 +79,15 @@ export const ReportPage = () => {
     setIsChecking(true);
 
     try {
-      const nearby = await checkNearbyGrievances(gpsCoords.lat, gpsCoords.lng, 10);
+      const nearby = await checkNearbyGrievances(gpsCoords.lat, gpsCoords.lng, 10, category);
 
       if (nearby.length > 0) {
         setNearbyGrievances(nearby);
         setShowNearbyDialog(true);
         return;
       }
-    } catch {
-      // If check fails, proceed silently
+    } catch (err) {
+      console.error('Nearby check failed, proceeding without warning:', err);
     } finally {
       setIsChecking(false);
     }
