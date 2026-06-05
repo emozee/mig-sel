@@ -13,61 +13,14 @@ export const useDisapproveComplaint = () => {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      // 1. Try to call the atomic function first
-      const { error: rpcError } = await supabase.rpc('disapprove_grievance', {
-        grievance_id: id,
-      });
-
-      if (!rpcError) return;
-
-      console.error('disapprove_grievance RPC failed, falling back to direct update:', rpcError);
-
-      // 2. Fallback: do it manually
-      const { data: grievance } = await supabase
-        .from('grievances')
-        .select('reporter_id, bonus_awarded')
-        .eq('id', id)
-        .single();
-
-      if (!grievance) throw new Error('Grievance not found');
-
-      // Best-effort point deduction
-      if (grievance.bonus_awarded > 0 && grievance.reporter_id) {
-        const { error: adjustErr } = await supabase.rpc('adjust_points', {
-          p_reporter_id: grievance.reporter_id,
-          p_grievance_id: id,
-          p_delta: -grievance.bonus_awarded,
-          p_new_value: 0,
-        });
-        if (adjustErr) {
-          console.error('adjust_points RPC failed:', adjustErr);
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('points')
-            .eq('id', grievance.reporter_id)
-            .maybeSingle();
-          if (profile) {
-            await supabase
-              .from('profiles')
-              .update({ points: Math.max(0, (profile.points ?? 0) - grievance.bonus_awarded) })
-              .eq('id', grievance.reporter_id);
-          }
-        }
-      }
-
-      // Soft-delete
       const { error: delErr } = await supabase
         .from('grievances')
         .update({ deleted_at: new Date().toISOString() })
         .eq('id', id);
-      if (delErr) throw delErr;
 
-      // Remove feed entry
-      const { error: feedErr } = await supabase
-        .from('community_feed')
-        .delete()
-        .eq('grievance_id', id);
-      if (feedErr) console.error('Feed delete failed:', feedErr);
+      if (delErr) throw new Error(`Soft-delete failed: ${delErr.message}`);
+
+      await supabase.from('community_feed').delete().eq('grievance_id', id);
     },
     onMutate: async (id: string) => {
       await queryClient.cancelQueries({ queryKey: complaintKeys.all });
@@ -78,11 +31,14 @@ export const useDisapproveComplaint = () => {
       return { previous };
     },
     onError: (err, _id, context) => {
-      console.error('Disapprove mutation failed:', err);
-      toast.error(`Delete failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      console.error('Disapprove failed:', err);
+      toast.error(`Delete failed: ${err instanceof Error ? err.message : String(err)}`);
       if (context?.previous) {
         queryClient.setQueryData(complaintKeys.all, context.previous);
       }
+    },
+    onSuccess: () => {
+      toast.success('Report deleted');
     },
     onSettled: async () => {
       await queryClient.invalidateQueries({ queryKey: complaintKeys.all });
