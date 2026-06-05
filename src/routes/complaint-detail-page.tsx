@@ -183,7 +183,7 @@ export const ComplaintDetailPage = () => {
               </Link>
             </Button>
 
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
               <div>
                 <h1 className="text-foreground text-2xl font-bold tracking-tight">
                   {complaint.title}
@@ -197,7 +197,7 @@ export const ComplaintDetailPage = () => {
                   })}
                 </p>
               </div>
-              <div className="flex shrink-0 items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 {/* Approval status */}
                 {complaint.approved ? (
                   <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-3 py-1 text-xs font-bold text-green-700 shadow-sm">
@@ -311,7 +311,7 @@ export const ComplaintDetailPage = () => {
                   <p className="leading-relaxed">{complaint.description}</p>
                 </Field>
 
-                <div className="grid grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-6">
                   <Field label="Category">
                     <span>{CATEGORY_LABELS[complaint.category]}</span>
                   </Field>
@@ -323,7 +323,7 @@ export const ComplaintDetailPage = () => {
                   </Field>
                 </div>
 
-                <div className="grid grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-6">
                   <Field label="Latitude">
                     <span className="font-mono text-xs">{complaint.latitude}</span>
                   </Field>
@@ -371,7 +371,7 @@ export const ComplaintDetailPage = () => {
                     complaint.status === 'in-progress' || complaint.status === 'resolved';
                   const hasResolved = complaint.status === 'resolved';
                   return (
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
                       <div className="rounded-lg border border-green-200 bg-green-50 p-3">
                         <p className="text-[10px] font-bold tracking-wide text-gray-400 uppercase">
                           Submission

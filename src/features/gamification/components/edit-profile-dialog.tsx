@@ -65,8 +65,8 @@ export const EditProfileDialog = () => {
   return (
     <DialogRoot open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          <Camera className="mr-1.5 h-4 w-4" />
+        <Button variant="outline" size="sm" className="h-7 rounded-full px-3 py-1 text-[11px]">
+          <Camera className="mr-1 h-3.5 w-3.5" />
           Edit Profile
         </Button>
       </DialogTrigger>
