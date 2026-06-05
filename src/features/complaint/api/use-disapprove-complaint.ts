@@ -20,7 +20,7 @@ export const useDisapproveComplaint = () => {
 
       if (!grievance) throw new Error('Grievance not found');
 
-      // 1. Deduct bonus points awarded
+      // 1. Best-effort point deduction — never block the soft-delete
       if (grievance.bonus_awarded > 0 && grievance.reporter_id) {
         const { error: pointsError } = await supabase.rpc('adjust_points', {
           p_reporter_id: grievance.reporter_id,
@@ -30,6 +30,7 @@ export const useDisapproveComplaint = () => {
         });
 
         if (pointsError) {
+          console.error('adjust_points RPC failed, trying direct update:', pointsError);
           // Fallback: directly deduct points from profile
           const { data: profile } = await supabase
             .from('profiles')
@@ -43,7 +44,9 @@ export const useDisapproveComplaint = () => {
               .update({ points: Math.max(0, (profile.points ?? 0) - grievance.bonus_awarded) })
               .eq('id', grievance.reporter_id);
 
-            if (directError) throw directError;
+            if (directError) {
+              console.error('Direct point deduction also failed:', directError);
+            }
           }
         }
       }
