@@ -13,17 +13,25 @@ export const useApproveComplaint = () => {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { data: grievance } = await supabase
+      const { data: grievance, error: fetchError } = await supabase
         .from('grievances')
         .select('reporter_id')
         .eq('id', id)
         .single();
 
+      if (fetchError) throw fetchError;
       if (!grievance) throw new Error('Grievance not found');
 
-      const { error } = await supabase.from('grievances').update({ approved: true }).eq('id', id);
+      const { data: updated, error: updateError } = await supabase
+        .from('grievances')
+        .update({ approved: true })
+        .eq('id', id)
+        .select('approved');
 
-      if (error) throw error;
+      if (updateError) throw updateError;
+      if (!updated || updated.length === 0) {
+        throw new Error('Approve update did not match any rows');
+      }
 
       await awardPointsForSubmission(grievance.reporter_id, id);
     },
@@ -35,7 +43,8 @@ export const useApproveComplaint = () => {
       );
       return { previous };
     },
-    onError: (_, __, context) => {
+    onError: (error, _, context) => {
+      console.error('Approve grievance failed:', error);
       if (context?.previous) {
         queryClient.setQueryData(complaintKeys.all, context.previous);
       }
@@ -46,6 +55,7 @@ export const useApproveComplaint = () => {
       await queryClient.invalidateQueries({ queryKey: grievanceKeys.all });
       await queryClient.invalidateQueries({ queryKey: leaderboardKeys.all() });
       await queryClient.invalidateQueries({ queryKey: profileKeys.current() });
+      await queryClient.invalidateQueries({ queryKey: ['my-reports'] });
     },
   });
 };
