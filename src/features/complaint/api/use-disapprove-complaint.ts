@@ -12,14 +12,44 @@ export const useDisapproveComplaint = () => {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error: delErr } = await supabase
+      const { data: grievance } = await supabase
         .from('grievances')
-        .update({ deleted_at: new Date().toISOString() })
-        .eq('id', id);
+        .select('reporter_id, bonus_awarded')
+        .eq('id', id)
+        .single();
 
-      if (delErr) throw delErr;
+      if (!grievance) throw new Error('Grievance not found');
 
-      await supabase.from('community_feed').delete().eq('grievance_id', id);
+      if (grievance.bonus_awarded > 0 && grievance.reporter_id) {
+        const { error: pointsError } = await supabase.rpc('adjust_points', {
+          p_reporter_id: grievance.reporter_id,
+          p_grievance_id: id,
+          p_delta: -grievance.bonus_awarded,
+          p_new_value: 0,
+        });
+
+        if (pointsError) {
+          // Fallback: directly deduct points from profile
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('points')
+            .eq('id', grievance.reporter_id)
+            .maybeSingle();
+
+          if (profile) {
+            const { error: directError } = await supabase
+              .from('profiles')
+              .update({ points: Math.max(0, (profile.points ?? 0) - grievance.bonus_awarded) })
+              .eq('id', grievance.reporter_id);
+
+            if (directError) throw directError;
+          }
+        }
+      }
+
+      const { error } = await supabase.from('grievances').delete().eq('id', id);
+
+      if (error) throw error;
     },
     onMutate: async (id: string) => {
       await queryClient.cancelQueries({ queryKey: complaintKeys.all });
@@ -29,7 +59,7 @@ export const useDisapproveComplaint = () => {
       );
       return { previous };
     },
-    onError: (_err, _id, context) => {
+    onError: (_, __, context) => {
       if (context?.previous) {
         queryClient.setQueryData(complaintKeys.all, context.previous);
       }

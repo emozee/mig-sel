@@ -1081,27 +1081,15 @@ export const ComplaintMonitor = () => {
               </button>
               <button
                 type="button"
-                onClick={async () => {
-                  const id = disapproveConfirmId;
+                onClick={() => {
+                  disapproveComplaint.mutate(disapproveConfirmId);
                   setDisapproveConfirmId(null);
-                  try {
-                    const { error } = await supabase
-                      .from('grievances')
-                      .update({ deleted_at: new Date().toISOString() })
-                      .eq('id', id);
-                    if (error) throw error;
-                    await supabase.from('community_feed').delete().eq('grievance_id', id);
-                    queryClient.invalidateQueries({ queryKey: complaintKeys.all });
-                    queryClient.invalidateQueries({ queryKey: communityKeys.all });
-                    queryClient.invalidateQueries({ queryKey: grievanceKeys.all });
-                    queryClient.invalidateQueries({ queryKey: ['my-reports'] });
-                  } catch (err) {
-                    alert('Delete failed: ' + (err instanceof Error ? err.message : String(err)));
-                  }
                 }}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-red-700"
+                disabled={disapproveComplaint.isPending}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-red-700 disabled:opacity-50"
               >
-                Yes, Delete Permanently
+                {disapproveComplaint.isPending && <Loader2 className="h-3 w-3 animate-spin" />}
+                {disapproveComplaint.isPending ? 'Removing...' : 'Yes, Delete Permanently'}
               </button>
             </div>
           </div>

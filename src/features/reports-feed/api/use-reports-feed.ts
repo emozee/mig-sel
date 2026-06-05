@@ -37,7 +37,6 @@ export const useReportsFeed = (page: number = 1, pageSize: number = 5) => {
           { count: 'exact', head: false },
         )
         .eq('grievance.approved', true)
-        .is('grievance.deleted_at', null)
         .order('created_at', { ascending: false })
         .range(from, to);
 

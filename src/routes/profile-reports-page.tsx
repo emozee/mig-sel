@@ -1,19 +1,8 @@
-import { useState } from 'react';
-import {
-  ArrowLeft,
-  FileText,
-  MapPin,
-  Clock,
-  MoveRight,
-  CheckCheck,
-  AlertTriangle,
-  X,
-} from 'lucide-react';
+import { ArrowLeft, FileText, MapPin, Clock, MoveRight, CheckCheck } from 'lucide-react';
 import { useNavigate } from 'react-router';
-import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { useMyReports, useDismissDeletedReport } from '@/features/complaint/api/use-my-reports';
+import { useMyReports } from '@/features/complaint/api/use-my-reports';
 
 const statusIcon = {
   submitted: Clock,
@@ -30,11 +19,6 @@ const statusColors = {
 export const ProfileReportsPage = () => {
   const navigate = useNavigate();
   const { data: reports = [], isLoading } = useMyReports();
-  const dismissMutation = useDismissDeletedReport();
-  const [dismissingId, setDismissingId] = useState<string | null>(null);
-
-  const activeReports = reports.filter((r: { deleted_at: string | null }) => !r.deleted_at);
-  const deletedReports = reports.filter((r: { deleted_at: string | null }) => r.deleted_at);
 
   return (
     <div className="bg-background min-h-screen">
@@ -54,13 +38,7 @@ export const ProfileReportsPage = () => {
         <div className="mb-6">
           <h1 className="text-foreground text-2xl font-bold">My Reports</h1>
           <p className="text-muted-foreground mt-1 text-sm">
-            {activeReports.length} {activeReports.length === 1 ? 'report' : 'reports'} active
-            {deletedReports.length > 0 && (
-              <span className="text-muted-foreground/60">
-                {' '}
-                &middot; {deletedReports.length} removed by admin
-              </span>
-            )}
+            {reports.length} {reports.length === 1 ? 'report' : 'reports'} submitted
           </p>
         </div>
 
@@ -83,7 +61,7 @@ export const ProfileReportsPage = () => {
           </div>
         ) : (
           <div className="space-y-3">
-            {activeReports.map((report) => {
+            {reports.map((report) => {
               const Icon = statusIcon[report.status as keyof typeof statusIcon] ?? FileText;
               return (
                 <button
@@ -136,56 +114,6 @@ export const ProfileReportsPage = () => {
                 </button>
               );
             })}
-
-            {deletedReports.length > 0 && (
-              <div className="pt-6">
-                <h2 className="text-muted-foreground mb-3 text-xs font-bold tracking-wider uppercase">
-                  Removed by admin
-                </h2>
-                <div className="space-y-2">
-                  {deletedReports.map((report) => (
-                    <div
-                      key={report.id}
-                      className="bg-card shadow-card flex items-start gap-3 rounded-xl border border-red-200 p-4 opacity-70"
-                    >
-                      <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-red-100">
-                        <AlertTriangle className="h-4 w-4 text-red-600" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-foreground text-sm font-medium">{report.title}</p>
-                        <p className="text-muted-foreground mt-0.5 text-xs leading-relaxed">
-                          This report was removed by an admin. No further action is needed from you.
-                        </p>
-                        <p className="text-muted-foreground/60 mt-1 text-[10px]">
-                          {new Date(report.created_at).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric',
-                          })}
-                        </p>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        disabled={dismissingId === report.id}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setDismissingId(report.id);
-                          dismissMutation.mutate(report.id, {
-                            onSuccess: () => toast.success('Report dismissed'),
-                            onError: () => toast.error('Failed to dismiss'),
-                            onSettled: () => setDismissingId(null),
-                          });
-                        }}
-                        className="text-muted-foreground hover:text-foreground h-8 w-8 shrink-0"
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         )}
       </div>

@@ -18,7 +18,6 @@ export const useComplaints = () => {
         .select(
           'id, title, description, category, status, urgency, latitude, longitude, image_url, resolved_image_url, created_at, resolved_at, parent_id, reporter_id, approved, bonus_awarded',
         )
-        .is('deleted_at', null)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
