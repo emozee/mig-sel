@@ -16,6 +16,8 @@ import { useCreateGrievance } from './use-create-grievance';
 import { useCurrentUser } from '@/features/auth/api/use-current-user';
 import { checkNearbyGrievances } from '@/features/auth/grievance/api/check-nearby-grievances';
 import type { NearbyGrievance } from '@/features/auth/grievance/api/check-nearby-grievances';
+import { classifyGrievanceImage } from '@/features/auth/grievance/api/classify-grievance-image';
+import type { ClassificationResult } from '@/features/auth/grievance/api/classify-grievance-image';
 
 const CATEGORIES = [
   { value: 'road', label: 'Road Damage' },
@@ -51,42 +53,25 @@ export const GrievanceDrawer = ({ onClose }: Props) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('other');
+  const [showSpamDialog, setShowSpamDialog] = useState(false);
+  const [classificationResult, setClassificationResult] = useState<ClassificationResult | null>(
+    null,
+  );
+  const [pendingImageUrl, setPendingImageUrl] = useState<string | null>(null);
 
-  const doSubmit = async () => {
-    setIsUploading(true);
-
-    try {
-      const imageUrl = await uploadGrievanceImage(selectedFile!);
-
-      await mutation.mutateAsync({
-        title: title || 'Community Report',
-        description: description || '',
-        category: category || 'other',
-        latitude: gpsCoords!.lat,
-        longitude: gpsCoords!.lng,
-        image_url: imageUrl,
-        reporter_id: user?.id ?? null,
-      });
-
-      setMessage({ type: 'success', text: 'Report submitted to GMC successfully!' });
-      setTimeout(() => onClose(), 1500);
-    } catch (error) {
-      const messageText =
-        error && typeof error === 'object' && 'message' in error
-          ? String((error as { message: string }).message)
-          : 'Failed to submit. Please try again.';
-      toast.error(messageText);
-      if (error && typeof error === 'object' && 'message' in error) {
-        setMessage({ type: 'error', text: String((error as { message: string }).message) });
-      } else {
-        setMessage({ type: 'error', text: 'Failed to submit. Please try again.' });
-      }
-    } finally {
-      setIsUploading(false);
-    }
+  const createGrievance = async (imageUrl: string) => {
+    await mutation.mutateAsync({
+      title: title || 'Community Report',
+      description: description || '',
+      category: category || 'other',
+      latitude: gpsCoords!.lat,
+      longitude: gpsCoords!.lng,
+      image_url: imageUrl,
+      reporter_id: user?.id ?? null,
+    });
   };
 
-  const submitReport = async () => {
+  const doSubmit = async () => {
     setMessage(null);
 
     if (!selectedFile) {
@@ -120,7 +105,49 @@ export const GrievanceDrawer = ({ onClose }: Props) => {
       setIsChecking(false);
     }
 
-    await doSubmit();
+    await doUploadClassifyAndCreate();
+  };
+
+  const doUploadClassifyAndCreate = async () => {
+    setIsUploading(true);
+
+    try {
+      const imageUrl = await uploadGrievanceImage(selectedFile!);
+
+      const result = await classifyGrievanceImage(imageUrl);
+
+      const isDefinitelySpam =
+        !result.is_grievance &&
+        result.top_label !== 'unknown' &&
+        result.top_label !== 'error' &&
+        result.top_label !== 'loading' &&
+        !result.error;
+
+      if (isDefinitelySpam) {
+        setClassificationResult(result);
+        setPendingImageUrl(imageUrl);
+        setShowSpamDialog(true);
+        return;
+      }
+
+      await createGrievance(imageUrl);
+
+      setMessage({ type: 'success', text: 'Report submitted to GMC successfully!' });
+      setTimeout(() => onClose(), 1500);
+    } catch (error) {
+      const messageText =
+        error && typeof error === 'object' && 'message' in error
+          ? String((error as { message: string }).message)
+          : 'Failed to submit. Please try again.';
+      toast.error(messageText);
+      if (error && typeof error === 'object' && 'message' in error) {
+        setMessage({ type: 'error', text: String((error as { message: string }).message) });
+      } else {
+        setMessage({ type: 'error', text: 'Failed to submit. Please try again.' });
+      }
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -149,7 +176,7 @@ export const GrievanceDrawer = ({ onClose }: Props) => {
           className="space-y-6"
           onSubmit={(e) => {
             e.preventDefault();
-            submitReport();
+            doSubmit();
           }}
         >
           <div
@@ -234,7 +261,79 @@ export const GrievanceDrawer = ({ onClose }: Props) => {
                   onClick={() => {
                     setShowNearbyDialog(false);
                     setNearbyGrievances([]);
-                    doSubmit();
+                    doUploadClassifyAndCreate();
+                  }}
+                >
+                  Submit anyway
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </DialogRoot>
+
+          <DialogRoot open={showSpamDialog} onOpenChange={setShowSpamDialog}>
+            <DialogContent className="max-w-sm">
+              <DialogHeader>
+                <DialogTitle>Photo may not show an issue</DialogTitle>
+                <DialogDescription>
+                  Our AI analysis suggests this photo may not show a valid civic issue
+                  {classificationResult ? (
+                    <>
+                      {' '}
+                      (detected as: <strong>{classificationResult.top_label}</strong>)
+                    </>
+                  ) : null}
+                  . You can still submit — an admin will review it.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="text-muted-foreground space-y-1 text-xs">
+                {classificationResult?.scores &&
+                  Object.entries(classificationResult.scores)
+                    .sort(([, a], [, b]) => b - a)
+                    .slice(0, 3)
+                    .map(([label, score]) => (
+                      <div key={label} className="flex items-center justify-between">
+                        <span className="truncate">{label}</span>
+                        <span className="ml-2 shrink-0 font-mono">{(score * 100).toFixed(0)}%</span>
+                      </div>
+                    ))}
+              </div>
+
+              <DialogFooter className="gap-2 sm:gap-0">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowSpamDialog(false);
+                    setClassificationResult(null);
+                    setPendingImageUrl(null);
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="default"
+                  onClick={async () => {
+                    setShowSpamDialog(false);
+                    setIsUploading(true);
+                    try {
+                      await createGrievance(pendingImageUrl!);
+                      setMessage({
+                        type: 'success',
+                        text: 'Report submitted to GMC successfully!',
+                      });
+                      setTimeout(() => onClose(), 1500);
+                    } catch (error) {
+                      const messageText =
+                        error && typeof error === 'object' && 'message' in error
+                          ? String((error as { message: string }).message)
+                          : 'Failed to submit. Please try again.';
+                      toast.error(messageText);
+                      setMessage({ type: 'error', text: messageText });
+                    } finally {
+                      setIsUploading(false);
+                      setPendingImageUrl(null);
+                      setClassificationResult(null);
+                    }
                   }}
                 >
                   Submit anyway
