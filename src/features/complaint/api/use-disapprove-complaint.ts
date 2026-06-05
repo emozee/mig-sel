@@ -27,7 +27,24 @@ export const useDisapproveComplaint = () => {
           p_delta: -grievance.bonus_awarded,
           p_new_value: 0,
         });
-        if (pointsError) throw pointsError;
+
+        if (pointsError) {
+          // Fallback: directly deduct points from profile
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('points')
+            .eq('id', grievance.reporter_id)
+            .maybeSingle();
+
+          if (profile) {
+            const { error: directError } = await supabase
+              .from('profiles')
+              .update({ points: Math.max(0, (profile.points ?? 0) - grievance.bonus_awarded) })
+              .eq('id', grievance.reporter_id);
+
+            if (directError) throw directError;
+          }
+        }
       }
 
       const { error } = await supabase.from('grievances').delete().eq('id', id);
@@ -53,6 +70,7 @@ export const useDisapproveComplaint = () => {
       await queryClient.invalidateQueries({ queryKey: grievanceKeys.all });
       await queryClient.invalidateQueries({ queryKey: leaderboardKeys.all() });
       await queryClient.invalidateQueries({ queryKey: profileKeys.current() });
+      await queryClient.invalidateQueries({ queryKey: ['my-reports'] });
     },
   });
 };
