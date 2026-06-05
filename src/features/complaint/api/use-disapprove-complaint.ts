@@ -13,14 +13,25 @@ export const useDisapproveComplaint = () => {
 
   return useMutation({
     mutationFn: async (id: string) => {
+      console.log('useDisapproveComplaint called with id:', id);
+      window.alert('Mutation running for: ' + id);
+
       const { error: delErr } = await supabase
         .from('grievances')
         .update({ deleted_at: new Date().toISOString() })
         .eq('id', id);
 
+      console.log('Update error:', delErr);
+      window.alert('Update done: ' + (delErr ? delErr.message : 'OK'));
+
       if (delErr) throw new Error(`Soft-delete failed: ${delErr.message}`);
 
-      await supabase.from('community_feed').delete().eq('grievance_id', id);
+      const { error: feedErr } = await supabase
+        .from('community_feed')
+        .delete()
+        .eq('grievance_id', id);
+      console.log('Feed delete result:', feedErr);
+      window.alert('Feed delete done: ' + (feedErr ? feedErr.message : 'OK'));
     },
     onMutate: async (id: string) => {
       await queryClient.cancelQueries({ queryKey: complaintKeys.all });
