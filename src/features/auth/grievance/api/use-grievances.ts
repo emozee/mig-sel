@@ -33,6 +33,7 @@ export const useGrievances = () => {
           'id, title, description, category, status, latitude, longitude, image_url, resolved_image_url, created_at, resolved_at, parent_id, reporter_id',
         )
         .eq('approved', true)
+        .is('deleted_at', null)
         .order('created_at', { ascending: false });
 
       if (error) throw error;

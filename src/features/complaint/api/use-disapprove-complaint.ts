@@ -20,6 +20,7 @@ export const useDisapproveComplaint = () => {
 
       if (!grievance) throw new Error('Grievance not found');
 
+      // 1. Deduct bonus points awarded
       if (grievance.bonus_awarded > 0 && grievance.reporter_id) {
         const { error: pointsError } = await supabase.rpc('adjust_points', {
           p_reporter_id: grievance.reporter_id,
@@ -47,9 +48,21 @@ export const useDisapproveComplaint = () => {
         }
       }
 
-      const { error } = await supabase.from('grievances').delete().eq('id', id);
+      // 2. Soft-delete the grievance so user can see it was removed
+      const { error: softDeleteError } = await supabase
+        .from('grievances')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', id);
 
-      if (error) throw error;
+      if (softDeleteError) throw softDeleteError;
+
+      // 3. Remove the corresponding feed entry
+      const { error: feedError } = await supabase
+        .from('community_feed')
+        .delete()
+        .eq('grievance_id', id);
+
+      if (feedError) throw feedError;
     },
     onMutate: async (id: string) => {
       await queryClient.cancelQueries({ queryKey: complaintKeys.all });
