@@ -73,11 +73,11 @@ export const ProfilePage = () => {
         <div className="bg-card shadow-card mb-6 overflow-hidden rounded-xl border">
           {/* Gradient banner */}
           <div className="from-primary/5 via-primary/10 to-primary/5 relative bg-gradient-to-r px-6 pb-4">
-            <div className="absolute top-4 right-4">
+            <div className="flex justify-end pt-1">
               <EditProfileDialog />
             </div>
 
-            <div className="flex items-end gap-5 pt-10">
+            <div className="-mt-0.5 flex items-end gap-5">
               {/* Avatar */}
               <div className="relative shrink-0">
                 <div className="bg-muted shadow-elevated flex h-20 w-20 items-center justify-center overflow-hidden rounded-xl border-4 border-white">
