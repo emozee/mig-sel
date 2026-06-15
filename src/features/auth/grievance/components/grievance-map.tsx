@@ -22,6 +22,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useMapFilters, type MapFilters, type MapStyleOption } from '../hooks/use-map-filters';
 import { DirectionsControl } from './directions-control';
+import { DropOffMarkers } from './drop-off-markers';
 import { ImageLightbox } from './image-lightbox';
 import {
   DialogRoot,
@@ -1241,6 +1242,12 @@ export const GrievanceMap = ({
               destination={directionsTarget}
               currentCoords={detectedCoords}
               onClose={() => setDirectionsTarget(null)}
+            />
+          )}
+
+          {filters.showDropOffPoints && (
+            <DropOffMarkers
+              onDirectionsTarget={(lat, lng, title) => setDirectionsTarget({ lat, lng, title })}
             />
           )}
 
