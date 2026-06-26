@@ -532,6 +532,7 @@ export const ComplaintDetailPage = () => {
                           <img
                             src={imagePreview}
                             alt="Preview"
+                            loading="lazy"
                             className="aspect-square w-full rounded-lg object-cover"
                           />
                           <button

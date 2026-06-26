@@ -1,15 +1,12 @@
-import { useNavigate } from 'react-router-dom';
-import { Megaphone, FileText, Map, LogOut, X } from 'lucide-react';
+import { useNavigate } from 'react-router';
+import { Megaphone, Map, LogOut, X } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { useSignOut } from '@/features/auth/api/use-sign-out';
 
-export type OfficialNavView = 'announcements' | 'reports';
+export type OfficialNavView = 'announcements';
 
-const navItems = [
-  { id: 'announcements' as const, label: 'Announcements', icon: Megaphone },
-  { id: 'reports' as const, label: 'My Reports', icon: FileText },
-];
+const navItems = [{ id: 'announcements' as const, label: 'Announcements', icon: Megaphone }];
 
 export const OfficialSidebar = ({
   activeView,

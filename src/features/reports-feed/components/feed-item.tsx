@@ -119,6 +119,7 @@ export const FeedItem = ({ item }: FeedItemProps) => {
           <img
             src={item.avatarUrl}
             alt={item.userName}
+            loading="lazy"
             className="h-9 w-9 shrink-0 rounded-full object-cover"
           />
         ) : (
@@ -195,7 +196,7 @@ export const FeedItem = ({ item }: FeedItemProps) => {
         <div className={fullView ? '' : 'flex-1 overflow-hidden'}>
           <img
             src={item.image_url}
-            alt=""
+            alt="Activity photo"
             loading="lazy"
             className={`w-full ${fullView ? '' : 'h-full object-cover'}`}
           />
@@ -320,14 +321,14 @@ export const FeedItem = ({ item }: FeedItemProps) => {
               {item.image_url && (
                 <img
                   src={item.image_url}
-                  alt=""
+                  alt="Activity photo"
                   loading="lazy"
                   className="max-h-full max-w-full rounded-lg object-contain"
                 />
               )}
             </div>
 
-            {/* Bottom sheet – stats + comments */}
+            {/* Bottom sheet */}
             <div className="flex shrink-0 flex-col bg-white px-3 pt-2">
               {/* Action text */}
               <div className="flex items-start gap-2 pb-1">
@@ -491,7 +492,8 @@ export const FeedItem = ({ item }: FeedItemProps) => {
                     <div className="relative inline-flex">
                       <img
                         src={ivImagePreview}
-                        alt=""
+                        alt="Image preview"
+                        loading="lazy"
                         className="h-16 w-16 rounded-lg object-cover"
                       />
                       <button

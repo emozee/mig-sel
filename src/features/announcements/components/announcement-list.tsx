@@ -20,7 +20,7 @@ export const AnnouncementList = () => {
   const deleteMutation = useDeleteAnnouncement();
   const updateMutation = useUpdateAnnouncement();
 
-  const isOfficial = profile?.role === 'official';
+  const isOfficialOrAdmin = profile?.role === 'official' || profile?.role === 'admin';
 
   if (isLoading) {
     return (
@@ -42,7 +42,7 @@ export const AnnouncementList = () => {
     return (
       <div className="rounded-xl border border-gray-100 bg-white p-8 text-center shadow-sm">
         <p className="text-sm font-medium text-gray-500">No announcements yet.</p>
-        {isOfficial && (
+        {isOfficialOrAdmin && (
           <p className="mt-1 text-xs text-gray-400">Use the form above to post an announcement.</p>
         )}
       </div>
@@ -53,7 +53,7 @@ export const AnnouncementList = () => {
     <div className="space-y-3">
       {announcements.map((a) => {
         const isImportant = a.type === 'important_notice';
-        const isOwn = isOfficial && a.author_id === profile?.id;
+        const isOwn = isOfficialOrAdmin && a.author_id === profile?.id;
         const expired = a.expires_at && new Date(a.expires_at) < new Date();
 
         return (

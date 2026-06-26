@@ -59,7 +59,8 @@ export const DiamondCommentSection = ({
             {latestComment.avatarUrl ? (
               <img
                 src={latestComment.avatarUrl}
-                alt=""
+                alt={latestComment.userName ?? 'Commenter avatar'}
+                loading="lazy"
                 className="h-5 w-5 shrink-0 rounded-full object-cover"
               />
             ) : (
@@ -93,7 +94,8 @@ export const DiamondCommentSection = ({
                 {c.avatarUrl ? (
                   <img
                     src={c.avatarUrl}
-                    alt=""
+                    alt={c.userName ?? 'Commenter avatar'}
+                    loading="lazy"
                     className="h-6 w-6 shrink-0 rounded-full object-cover"
                   />
                 ) : (
@@ -171,7 +173,7 @@ export const DiamondCommentSection = ({
                   {c.imageUrl && (
                     <img
                       src={c.imageUrl}
-                      alt=""
+                      alt="Comment image"
                       loading="lazy"
                       className="mt-1 max-h-20 rounded-lg object-cover"
                     />

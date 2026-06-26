@@ -7,6 +7,7 @@ import { useSearchKnowledge } from '@/features/chatbot/api/use-knowledge';
 import { MapDock } from '@/components/layout/map-dock';
 
 interface Message {
+  id: number;
   role: 'bot' | 'user';
   text: string;
 }
@@ -14,10 +15,13 @@ interface Message {
 const DEFAULT_RESPONSE =
   "I'm not sure about that. Try asking about: reports feed, map, shop, points, profile, or leaderboard.";
 
+let msgCounter = 0;
+
 export const ChatPage = () => {
   const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([
     {
+      id: ++msgCounter,
       role: 'bot',
       text: "Hi! I'm the mig-sel assistant. Ask me about reporting issues, points, or anything else!",
     },
@@ -30,7 +34,7 @@ export const ChatPage = () => {
   const { data: knowledgeResult, isFetching } = useSearchKnowledge(pendingQuery);
 
   const addBotResponse = useCallback((text: string) => {
-    setMessages((prev) => [...prev, { role: 'bot', text }]);
+    setMessages((prev) => [...prev, { id: ++msgCounter, role: 'bot', text }]);
   }, []);
 
   useEffect(() => {
@@ -47,18 +51,20 @@ export const ChatPage = () => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isFetching]);
 
-  const handleSubmit = useCallback(
-    (e: React.FormEvent) => {
-      e.preventDefault();
-      if (!input.trim() || isFetching) return;
+  const isFetchingRef = useRef(false);
+  useEffect(() => {
+    isFetchingRef.current = isFetching;
+  }, [isFetching]);
 
-      const userText = input.trim();
-      setInput('');
-      setMessages((prev) => [...prev, { role: 'user', text: userText }]);
-      setPendingQuery(userText);
-    },
-    [input, isFetching],
-  );
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim() || isFetchingRef.current) return;
+
+    const userText = input.trim();
+    setInput('');
+    setMessages((prev) => [...prev, { id: ++msgCounter, role: 'user', text: userText }]);
+    setPendingQuery(userText);
+  };
 
   return (
     <div className="flex min-h-dvh flex-col bg-gray-50">
@@ -77,9 +83,9 @@ export const ChatPage = () => {
 
       <div className="mx-auto flex w-full max-w-lg flex-1 flex-col px-3 py-3 pb-24">
         <div className="flex-1 space-y-3 overflow-y-auto">
-          {messages.map((msg, i) => (
+          {messages.map((msg) => (
             <div
-              key={i}
+              key={msg.id}
               className={`flex items-start gap-2 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
             >
               <div

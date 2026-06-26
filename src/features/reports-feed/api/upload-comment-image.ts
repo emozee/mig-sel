@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { optimizeStorageUrl } from '@/lib/images';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
@@ -32,5 +33,5 @@ export const uploadCommentImage = async (file: File): Promise<string> => {
   }
 
   const { data } = supabase.storage.from('grievances').getPublicUrl(filePath);
-  return data.publicUrl;
+  return optimizeStorageUrl(data.publicUrl, 'grievances');
 };

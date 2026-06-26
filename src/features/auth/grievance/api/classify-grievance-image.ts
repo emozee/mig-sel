@@ -14,8 +14,6 @@ export const classifyGrievanceImage = async (imageUrl: string): Promise<Classifi
   });
 
   if (error) {
-    // If the Edge Function doesn't exist or fails, return a no-op result
-    console.error('Image classification failed:', error);
     return {
       is_grievance: true,
       scores: {},

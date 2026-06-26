@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import { toast } from 'sonner';
 import { useCurrentUser } from '@/features/auth/api/use-current-user';
 import { communityKeys } from './use-reports-feed';
 import type { ActivityItem } from '../types';
@@ -12,7 +13,7 @@ interface FeedData {
 export const useDeleteFeedItem = () => {
   const queryClient = useQueryClient();
   const { user } = useCurrentUser();
-  const feedPrefix = communityKeys.feed(user?.id).slice(0, 3);
+  const feedPrefix = communityKeys.feedList(user?.id);
 
   return useMutation({
     mutationFn: async (feedId: number) => {
@@ -32,6 +33,7 @@ export const useDeleteFeedItem = () => {
       return { prev };
     },
     onError: (_err, _vars, ctx) => {
+      toast.error('Failed to delete feed item.');
       if (ctx?.prev) {
         for (const [key, data] of ctx.prev) {
           queryClient.setQueryData(key, data);

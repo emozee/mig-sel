@@ -244,7 +244,7 @@ function ClusterPopup({
             {g.image_url && (
               <ImageLightbox
                 src={g.image_url}
-                alt=""
+                alt={g.title ?? 'Complaint photo'}
                 className="mt-1.5 h-20 w-full rounded-lg object-cover"
               />
             )}

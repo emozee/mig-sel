@@ -126,7 +126,8 @@ export const CollaboratorPicker = ({ selected, onAdd, onRemove }: CollaboratorPi
                   {u.avatar_url ? (
                     <img
                       src={u.avatar_url}
-                      alt=""
+                      alt={u.username ?? 'User avatar'}
+                      loading="lazy"
                       className="h-8 w-8 shrink-0 rounded-full object-cover"
                     />
                   ) : (

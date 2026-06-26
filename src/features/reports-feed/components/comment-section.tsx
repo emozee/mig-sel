@@ -112,7 +112,12 @@ export const CommentSection = ({ item }: CommentSectionProps) => {
           >
             {imagePreview && (
               <div className="relative inline-flex">
-                <img src={imagePreview} alt="" className="h-16 w-16 rounded-lg object-cover" />
+                <img
+                  src={imagePreview}
+                  alt="Image preview"
+                  loading="lazy"
+                  className="h-16 w-16 rounded-lg object-cover"
+                />
                 <button
                   type="button"
                   onClick={() => {

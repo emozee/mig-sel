@@ -24,6 +24,7 @@ export const useSearchUser = (email: string | null) => {
       return result?.[0] ?? null;
     },
     enabled: !!email,
+    staleTime: 60_000,
     retry: false,
   });
 };

@@ -23,7 +23,7 @@ export const useUserGrievances = (search?: string) => {
         query = query.ilike('title', `%${search.trim()}%`);
       }
 
-      const { data, error } = await query;
+      const { data, error } = await query.limit(50);
       if (error) throw error;
       return (data ?? []) as UserGrievance[];
     },

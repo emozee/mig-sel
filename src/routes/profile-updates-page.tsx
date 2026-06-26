@@ -1,13 +1,19 @@
-import { ArrowLeft, Sparkles } from 'lucide-react';
+import { useState } from 'react';
+import { ArrowLeft, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { DiamondPost } from '@/features/diamonds/components/diamond-post';
 import { useMyDiamonds } from '@/features/diamonds/api/use-my-diamonds';
 
+const PAGE_SIZE = 6;
+
 export const ProfileUpdatesPage = () => {
   const navigate = useNavigate();
-  const { data, isLoading } = useMyDiamonds();
+  const [page, setPage] = useState(1);
+  const { data, isLoading } = useMyDiamonds(page, PAGE_SIZE);
   const items = data?.items ?? [];
+  const total = data?.count ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
     <div className="bg-background min-h-screen">
@@ -16,7 +22,7 @@ export const ProfileUpdatesPage = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate('/profile')}
+            onClick={() => navigate(-1)}
             className="text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="mr-1 h-4 w-4" />
@@ -27,7 +33,7 @@ export const ProfileUpdatesPage = () => {
         <div className="mb-6">
           <h1 className="text-foreground text-2xl font-bold">My Updates</h1>
           <p className="text-muted-foreground mt-1 text-sm">
-            {items.length} {items.length === 1 ? 'post' : 'posts'} published
+            {total} {total === 1 ? 'post' : 'posts'} published
           </p>
         </div>
 
@@ -49,11 +55,45 @@ export const ProfileUpdatesPage = () => {
             </Button>
           </div>
         ) : (
-          <div className="space-y-4">
-            {items.map((post, i) => (
-              <DiamondPost key={post.id} post={post} index={i} />
-            ))}
-          </div>
+          <>
+            <div className="space-y-4">
+              {items.map((post, i) => (
+                <DiamondPost key={post.id} post={post} index={i} />
+              ))}
+            </div>
+
+            {totalPages > 1 && (
+              <div className="mt-6 flex items-center justify-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page <= 1}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                  <Button
+                    key={p}
+                    variant={p === page ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setPage(p)}
+                    className="min-w-[36px]"
+                  >
+                    {p}
+                  </Button>
+                ))}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page >= totalPages}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

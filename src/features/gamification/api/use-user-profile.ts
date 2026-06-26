@@ -26,5 +26,6 @@ export const useUserProfile = () => {
       return data as UserProfile;
     },
     enabled: !!session?.user?.id,
+    staleTime: 120_000,
   });
 };

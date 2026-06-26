@@ -96,8 +96,8 @@ export const ReportPage = () => {
         setShowNearbyDialog(true);
         return;
       }
-    } catch (err) {
-      console.error('Nearby check failed, proceeding without warning:', err);
+    } catch {
+      // Nearby check failed, proceeding without warning
     }
 
     if (fileHash) {
@@ -109,8 +109,8 @@ export const ReportPage = () => {
           setShowDuplicateImageDialog(true);
           return;
         }
-      } catch (err) {
-        console.error('Duplicate image check failed, proceeding without warning:', err);
+      } catch {
+        // Duplicate image check failed, proceeding without warning
       }
     }
 

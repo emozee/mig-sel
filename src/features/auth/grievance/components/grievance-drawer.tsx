@@ -109,8 +109,8 @@ export const GrievanceDrawer = ({ onClose }: Props) => {
         setShowNearbyDialog(true);
         return;
       }
-    } catch (err) {
-      console.error('Nearby check failed, proceeding without warning:', err);
+    } catch {
+      // Nearby check failed, proceeding without warning
     }
 
     if (fileHash) {
@@ -122,8 +122,8 @@ export const GrievanceDrawer = ({ onClose }: Props) => {
           setShowDuplicateImageDialog(true);
           return;
         }
-      } catch (err) {
-        console.error('Duplicate image check failed, proceeding without warning:', err);
+      } catch {
+        // Duplicate image check failed, proceeding without warning
       }
     }
 
@@ -375,7 +375,8 @@ export const GrievanceDrawer = ({ onClose }: Props) => {
                     {d.image_url && (
                       <img
                         src={d.image_url}
-                        alt=""
+                        alt={d.title ?? 'Complaint image'}
+                        loading="lazy"
                         className="h-10 w-10 shrink-0 rounded object-cover"
                       />
                     )}
