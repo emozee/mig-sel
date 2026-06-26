@@ -18,8 +18,8 @@ export const AnnouncementForm = () => {
     return d.toISOString().split('T')[0];
   }, [type]);
 
-  const isOfficial = profile?.role === 'official';
-  if (!isOfficial) return null;
+  const isOfficialOrAdmin = profile?.role === 'official' || profile?.role === 'admin';
+  if (!isOfficialOrAdmin) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

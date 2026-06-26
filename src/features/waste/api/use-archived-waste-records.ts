@@ -43,7 +43,8 @@ export const useArchivedWasteRecords = () => {
           'id, category, quantity, unit, reported_at, collected_at, deleted_at, deletion_reason, edit_count, notes',
         )
         .not('deleted_at', 'is', null)
-        .order('deleted_at', { ascending: false });
+        .order('deleted_at', { ascending: false })
+        .limit(200);
 
       if (error) throw error;
       return (data as RawRecord[]).map(mapRecord);

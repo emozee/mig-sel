@@ -108,7 +108,12 @@ export const DiamondCreator = () => {
         <div className="mt-3 grid grid-cols-3 gap-2 px-4">
           {previews.map((src, i) => (
             <div key={src} className="group relative aspect-square overflow-hidden rounded-lg">
-              <img src={src} alt="" loading="lazy" className="h-full w-full object-cover" />
+              <img
+                src={src}
+                alt={'Upload preview ' + (i + 1)}
+                loading="lazy"
+                className="h-full w-full object-cover"
+              />
               <button
                 type="button"
                 onClick={() => handleRemoveImage(i)}

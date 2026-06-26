@@ -30,7 +30,7 @@ export const useUpdateAnnouncement = () => {
         .from('announcements')
         .update(updates)
         .eq('id', id)
-        .select()
+        .select('id, title, body, type, author_id, is_pinned, expires_at, created_at, updated_at')
         .single();
 
       if (error) throw error;

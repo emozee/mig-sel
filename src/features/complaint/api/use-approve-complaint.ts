@@ -1,10 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import { toast } from 'sonner';
 import { complaintKeys } from './use-complaints';
-import { communityKeys } from '@/features/reports-feed/api/use-reports-feed';
-import { grievanceKeys } from '@/features/auth/grievance/api/use-grievances';
-import { leaderboardKeys } from '@/features/gamification/api/use-leaderboard';
-import { profileKeys } from '@/features/gamification/api/use-user-profile';
 import { awardPointsForSubmission } from '@/features/complaint/utils/award-points';
 import type { Complaint } from '@/features/complaint/types';
 
@@ -43,18 +40,14 @@ export const useApproveComplaint = () => {
       );
       return { previous };
     },
-    onError: (error, _, context) => {
-      console.error('Approve grievance failed:', error);
+    onError: (_error, _, context) => {
+      toast.error('Failed to approve complaint.');
       if (context?.previous) {
         queryClient.setQueryData(complaintKeys.all, context.previous);
       }
     },
     onSettled: async () => {
       await queryClient.invalidateQueries({ queryKey: complaintKeys.all });
-      await queryClient.invalidateQueries({ queryKey: communityKeys.all });
-      await queryClient.invalidateQueries({ queryKey: grievanceKeys.all });
-      await queryClient.invalidateQueries({ queryKey: leaderboardKeys.all() });
-      await queryClient.invalidateQueries({ queryKey: profileKeys.current() });
       await queryClient.invalidateQueries({ queryKey: ['my-reports'] });
     },
   });

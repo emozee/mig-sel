@@ -18,8 +18,6 @@ import { supabase } from '@/lib/supabase';
 import { useQueryClient } from '@tanstack/react-query';
 import { useComplaints, complaintKeys } from '@/features/complaint/api/use-complaints';
 import { grievanceKeys } from '@/features/auth/grievance/api/use-grievances';
-import { leaderboardKeys } from '@/features/gamification/api/use-leaderboard';
-import { profileKeys } from '@/features/gamification/api/use-user-profile';
 import { communityKeys } from '@/features/reports-feed/api/use-reports-feed';
 import { ImageLightbox } from '@/features/auth/grievance/components/image-lightbox';
 import { Pagination } from '@/components/ui/pagination';
@@ -121,10 +119,8 @@ export const ComplaintMonitor = () => {
         );
       }
 
-      queryClient.invalidateQueries({ queryKey: grievanceKeys.all });
-      queryClient.invalidateQueries({ queryKey: leaderboardKeys.all() });
-      queryClient.invalidateQueries({ queryKey: profileKeys.current() });
       queryClient.invalidateQueries({ queryKey: complaintKeys.all });
+      queryClient.invalidateQueries({ queryKey: grievanceKeys.all });
       queryClient.invalidateQueries({ queryKey: communityKeys.all });
     } catch (err: unknown) {
       queryClient.invalidateQueries({ queryKey: complaintKeys.all });
@@ -693,6 +689,7 @@ export const ComplaintMonitor = () => {
                               src={complaint.image_url}
                               alt={complaint.title}
                               onClick={() => setPreviewComplaint(complaint)}
+                              loading="lazy"
                               className="h-14 w-28 cursor-pointer rounded-lg border border-slate-200/60 object-cover shadow-xs transition-all hover:scale-105 hover:ring-2 hover:ring-slate-300"
                               onError={(e) => {
                                 const target = e.currentTarget;

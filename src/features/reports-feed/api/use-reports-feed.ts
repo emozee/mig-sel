@@ -16,6 +16,7 @@ export const communityKeys = {
   all: ['reports-feed'] as const,
   feed: (userId?: string, page?: number, pageSize?: number) =>
     [...communityKeys.all, 'feed', userId, page, pageSize] as const,
+  feedList: (userId?: string) => [...communityKeys.all, 'feed', userId] as const,
   goal: () => [...communityKeys.all, 'goal'] as const,
 };
 
@@ -42,7 +43,6 @@ export const useReportsFeed = (page: number = 1, pageSize: number = 5) => {
 
       if (error) {
         if (error.code === '42P01') {
-          console.warn('community_feed table not yet created in DB');
           return { items: [], count: 0 };
         }
         throw error;
@@ -73,9 +73,7 @@ export const useReportsFeed = (page: number = 1, pageSize: number = 5) => {
           .eq('user_id', user.id)
           .in('feed_id', ids);
 
-        if (upvoteError) {
-          console.warn('community_feed_upvotes query failed:', upvoteError.message);
-        } else if (upvotes) {
+        if (!upvoteError && upvotes) {
           upvotedIds = new Set(upvotes.map((u) => u.feed_id));
         }
       }
@@ -115,5 +113,6 @@ export const useReportsGoal = () => {
       await new Promise((r) => setTimeout(r, 200));
       return MOCK_GOAL;
     },
+    staleTime: Infinity,
   });
 };

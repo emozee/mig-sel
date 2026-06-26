@@ -1,4 +1,4 @@
-import { createBrowserRouter, redirect } from 'react-router-dom';
+import { createBrowserRouter, redirect } from 'react-router';
 import { supabase } from '@/lib/supabase';
 import { getUserRole } from '@/lib/role-query';
 import { LandingPage } from './landing-page';

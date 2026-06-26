@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { Recycle, FileText, Map, LogOut, X } from 'lucide-react';
 
 import { cn } from '@/lib/utils';

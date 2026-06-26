@@ -120,7 +120,7 @@ export const DiamondPhotoGallery = ({ images, post }: DiamondPhotoGalleryProps) 
       {images.length === 0 ? null : images.length === 1 ? (
         <img
           src={images[0]}
-          alt=""
+          alt="Photo"
           loading="lazy"
           className="max-h-96 w-full cursor-pointer rounded-lg object-cover"
           onClick={() => handleOpen(0)}
@@ -131,7 +131,7 @@ export const DiamondPhotoGallery = ({ images, post }: DiamondPhotoGalleryProps) 
             <img
               key={i}
               src={url}
-              alt=""
+              alt={'Photo ' + (i + 1)}
               loading="lazy"
               className="aspect-square w-full cursor-pointer rounded-lg object-cover"
               onClick={() => handleOpen(i)}
@@ -142,21 +142,21 @@ export const DiamondPhotoGallery = ({ images, post }: DiamondPhotoGalleryProps) 
         <div className="grid grid-cols-2 gap-1">
           <img
             src={images[0]}
-            alt=""
+            alt="Photo 1"
             loading="lazy"
             className="row-span-2 h-full w-full cursor-pointer rounded-l-lg object-cover"
             onClick={() => handleOpen(0)}
           />
           <img
             src={images[1]}
-            alt=""
+            alt="Photo 2"
             loading="lazy"
             className="aspect-square w-full cursor-pointer rounded-tr-lg object-cover"
             onClick={() => handleOpen(1)}
           />
           <img
             src={images[2]}
-            alt=""
+            alt="Photo 3"
             loading="lazy"
             className="aspect-square w-full cursor-pointer rounded-br-lg object-cover"
             onClick={() => handleOpen(2)}
@@ -168,7 +168,7 @@ export const DiamondPhotoGallery = ({ images, post }: DiamondPhotoGalleryProps) 
             <div key={i} className="group relative overflow-hidden">
               <img
                 src={url}
-                alt=""
+                alt={'Photo ' + (i + 1)}
                 loading="lazy"
                 className="aspect-square w-full cursor-pointer rounded-lg object-cover transition-transform duration-500 group-hover:scale-105"
                 onClick={() => handleOpen(i)}
@@ -268,7 +268,7 @@ export const DiamondPhotoGallery = ({ images, post }: DiamondPhotoGalleryProps) 
             )}
             <img
               src={currentImage}
-              alt=""
+              alt="Current photo"
               loading="lazy"
               className="max-h-[70vh] max-w-[95vw] cursor-zoom-in rounded-lg object-contain transition-transform"
               onClick={(e) => {
@@ -344,7 +344,12 @@ export const DiamondPhotoGallery = ({ images, post }: DiamondPhotoGalleryProps) 
                         : 'h-8 w-8 opacity-50 hover:opacity-100'
                     }`}
                   >
-                    <img src={url} alt="" loading="lazy" className="h-full w-full object-cover" />
+                    <img
+                      src={url}
+                      alt={'Thumbnail ' + (i + 1)}
+                      loading="lazy"
+                      className="h-full w-full object-cover"
+                    />
                   </button>
                 ))}
               </div>

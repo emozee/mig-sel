@@ -79,6 +79,7 @@ export function ImageLightbox({ src, alt, className }: ImageLightboxProps) {
             id="lightbox-img"
             src={src}
             alt={alt ?? ''}
+            loading="lazy"
             onClick={(e) => {
               e.stopPropagation();
               handleFullscreenToggle();
