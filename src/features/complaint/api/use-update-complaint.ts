@@ -2,10 +2,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import type { Complaint } from '@/features/complaint/types';
 import { complaintKeys } from './use-complaints';
-import { communityKeys } from '@/features/reports-feed/api/use-reports-feed';
-import { grievanceKeys } from '@/features/auth/grievance/api/use-grievances';
-import { leaderboardKeys } from '@/features/gamification/api/use-leaderboard';
-import { profileKeys } from '@/features/gamification/api/use-user-profile';
 import { awardPointsForStatus } from '@/features/complaint/utils/award-points';
 
 export const useUpdateComplaint = () => {
@@ -20,11 +16,13 @@ export const useUpdateComplaint = () => {
 
       const { id, ...fields } = updates;
 
-      const { data: current } = await supabase
+      const { data: current, error: fetchError } = await supabase
         .from('grievances')
         .select('status, reporter_id')
         .eq('id', id)
         .single();
+
+      if (fetchError) throw new Error('Grievance not found');
 
       if (fields.status && fields.status !== current?.status) {
         if (fields.status === 'resolved') {
@@ -36,7 +34,7 @@ export const useUpdateComplaint = () => {
         .from('grievances')
         .update(fields)
         .eq('id', id)
-        .select();
+        .select('id, title, status');
 
       if (error) throw error;
       if (!data || data.length === 0) {
@@ -54,10 +52,6 @@ export const useUpdateComplaint = () => {
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: complaintKeys.all });
-      await queryClient.invalidateQueries({ queryKey: communityKeys.all });
-      await queryClient.invalidateQueries({ queryKey: grievanceKeys.all });
-      await queryClient.invalidateQueries({ queryKey: leaderboardKeys.all() });
-      await queryClient.invalidateQueries({ queryKey: profileKeys.current() });
       await queryClient.invalidateQueries({ queryKey: ['my-reports'] });
     },
   });

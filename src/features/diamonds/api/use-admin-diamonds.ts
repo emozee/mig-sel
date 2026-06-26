@@ -1,10 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { diamondKeys } from './use-create-diamond';
-import { complaintKeys } from '@/features/complaint/api/use-complaints';
 import { grievanceKeys } from '@/features/auth/grievance/api/use-grievances';
-import { leaderboardKeys } from '@/features/gamification/api/use-leaderboard';
-import { profileKeys } from '@/features/gamification/api/use-user-profile';
 import { communityKeys } from '@/features/reports-feed/api/use-reports-feed';
 import type { PendingDiamondReview } from '../types';
 
@@ -30,10 +27,7 @@ export const useAcceptDiamond = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: diamondKeys.all });
-      queryClient.invalidateQueries({ queryKey: complaintKeys.all });
       queryClient.invalidateQueries({ queryKey: grievanceKeys.all });
-      queryClient.invalidateQueries({ queryKey: leaderboardKeys.all() });
-      queryClient.invalidateQueries({ queryKey: profileKeys.current() });
       queryClient.invalidateQueries({ queryKey: communityKeys.all });
     },
   });

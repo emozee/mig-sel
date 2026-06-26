@@ -122,6 +122,7 @@ export const DiamondPost = ({ post, index = 0 }: DiamondPostProps) => {
           <img
             src={post.avatarUrl}
             alt={post.userName}
+            loading="lazy"
             className="h-10 w-10 shrink-0 rounded-full object-cover ring-2 ring-gray-100"
           />
         ) : (
@@ -165,8 +166,9 @@ export const DiamondPost = ({ post, index = 0 }: DiamondPostProps) => {
                       <img
                         key={c.userId}
                         src={c.avatarUrl}
-                        alt=""
+                        alt={c.userName ?? 'Collaborator avatar'}
                         title={c.userName}
+                        loading="lazy"
                         className="h-4 w-4 rounded-full object-cover ring-1 ring-white"
                       />
                     ) : (
@@ -296,7 +298,8 @@ export const DiamondPost = ({ post, index = 0 }: DiamondPostProps) => {
           {post.linkedGrievanceImage ? (
             <img
               src={post.linkedGrievanceImage}
-              alt=""
+              alt={post.linkedGrievanceTitle ?? 'Linked complaint'}
+              loading="lazy"
               className="h-9 w-9 shrink-0 rounded-lg object-cover ring-1 ring-gray-200"
             />
           ) : (

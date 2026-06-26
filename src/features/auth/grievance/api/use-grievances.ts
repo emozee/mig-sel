@@ -27,24 +27,23 @@ export const useGrievances = () => {
     queryKey: grievanceKeys.lists(),
     staleTime: 300_000,
     queryFn: async (): Promise<GrievanceRow[]> => {
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
       const { data, error } = await supabase
         .from('grievances')
         .select(
           'id, title, description, category, status, latitude, longitude, image_url, resolved_image_url, created_at, resolved_at, parent_id, reporter_id',
         )
         .eq('approved', true)
-        .order('created_at', { ascending: false });
+        .or(
+          `status.in.(pending,in_progress,submitted),and(status.in.(resolved,closed),resolved_at.gte.${sevenDaysAgo.toISOString()})`,
+        )
+        .order('created_at', { ascending: false })
+        .limit(200);
 
       if (error) throw error;
-
-      const oneWeekAgo = new Date();
-      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-
-      return (data ?? []).filter((g) => {
-        if (g.status !== 'resolved' && g.status !== 'closed') return true;
-        if (!g.resolved_at) return true;
-        return new Date(g.resolved_at) >= oneWeekAgo;
-      });
+      return data ?? [];
     },
   });
 };

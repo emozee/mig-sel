@@ -37,7 +37,7 @@ export const UserSettingsDialog = ({ open, onOpenChange }: UserSettingsDialogPro
             {profile?.avatar_url ? (
               <img
                 src={profile.avatar_url}
-                alt=""
+                alt={profile?.username ?? 'Your avatar'}
                 loading="lazy"
                 className="h-full w-full rounded-full object-cover"
               />

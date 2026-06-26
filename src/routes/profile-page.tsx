@@ -19,7 +19,7 @@ import { MapDock } from '@/components/layout/map-dock';
 export const ProfilePage = () => {
   const navigate = useNavigate();
   const { data: profile } = useUserProfile();
-  const { data: myReports = [] } = useMyReports();
+  const { data: myReportsResult } = useMyReports(1, 1);
   const { data: myDiamonds } = useMyDiamonds(1, 1);
 
   const isOfficial = profile?.role === 'official';
@@ -31,7 +31,7 @@ export const ProfilePage = () => {
     {
       icon: FileText,
       label: 'My Reports',
-      sub: `${myReports.length} total`,
+      sub: `${myReportsResult?.total ?? 0} total`,
       href: '/profile/reports',
     },
     {
@@ -61,7 +61,7 @@ export const ProfilePage = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate('/reports-feed')}
+            onClick={() => navigate(-1)}
             className="text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="mr-1 h-4 w-4" />
@@ -82,7 +82,12 @@ export const ProfilePage = () => {
               <div className="relative shrink-0">
                 <div className="bg-muted shadow-elevated flex h-20 w-20 items-center justify-center overflow-hidden rounded-xl border-4 border-white">
                   {profile?.avatar_url ? (
-                    <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
+                    <img
+                      src={profile.avatar_url}
+                      alt={profile.username ?? 'Your avatar'}
+                      loading="lazy"
+                      className="h-full w-full object-cover"
+                    />
                   ) : (
                     <div className="from-primary/10 to-primary/5 text-primary flex h-full w-full items-center justify-center bg-gradient-to-br text-xl font-bold">
                       {(profile?.username ?? 'U').charAt(0).toUpperCase()}

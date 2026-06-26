@@ -83,7 +83,12 @@ export const EditProfileDialog = () => {
             <div className="relative">
               <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-gray-100">
                 {avatarPreview ? (
-                  <img src={avatarPreview} alt="Avatar" className="h-full w-full object-cover" />
+                  <img
+                    src={avatarPreview}
+                    alt="Avatar"
+                    loading="lazy"
+                    className="h-full w-full object-cover"
+                  />
                 ) : (
                   <Camera className="h-8 w-8 text-gray-400" />
                 )}

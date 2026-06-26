@@ -61,9 +61,7 @@ export const MapDock = () => {
         {/* Elevated FAB – floats above the dock center */}
         <div className="absolute -top-8 left-1/2 z-10 -translate-x-1/2">
           <button
-            onClick={() => {
-              navigate('/report');
-            }}
+            onClick={() => navigate('/report', { replace: true })}
             className="bg-primary hover:bg-primary/90 flex items-center justify-center rounded-full p-3.5 text-white shadow-xl transition-transform hover:scale-105 active:scale-95"
           >
             <Camera className="h-6 w-6" />
@@ -76,28 +74,28 @@ export const MapDock = () => {
             icon={Map}
             label="Map"
             isActive={activeTab === 'map'}
-            onClick={() => navigate('/map')}
+            onClick={() => navigate('/map', { replace: true })}
           />
 
           <NavItem
             icon={Gem}
             label="Diamond"
             isActive={activeTab === 'diamond'}
-            onClick={() => navigate('/diamond')}
+            onClick={() => navigate('/diamond', { replace: true })}
           />
 
           <NavItem
             icon={FileText}
             label="Reports Feed"
             isActive={activeTab === 'reports-feed'}
-            onClick={() => navigate('/reports-feed')}
+            onClick={() => navigate('/reports-feed', { replace: true })}
           />
 
           <NavItem
             icon={User}
             label="Profile"
             isActive={activeTab === 'profile'}
-            onClick={() => navigate('/profile')}
+            onClick={() => navigate('/profile', { replace: true })}
           />
         </div>
       </div>

@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import { toast } from 'sonner';
 import { diamondKeys } from './use-create-diamond';
 
 export const useDiamondShare = () => {
@@ -15,18 +16,18 @@ export const useDiamondShare = () => {
       return data[0] as { new_share_count: number; is_shared: boolean };
     },
     onMutate: async (diamondId) => {
-      const queryKey = [...diamondKeys.lists()];
-      await queryClient.cancelQueries({ queryKey: [queryKey[0], queryKey[1]] });
+      const queryKey = diamondKeys.lists();
+      await queryClient.cancelQueries({ queryKey });
 
       const prev = queryClient.getQueriesData<{
         items: Array<{ id: number; shareCount: number; isShared: boolean }>;
         count: number;
-      }>({ queryKey: [queryKey[0], queryKey[1]] });
+      }>({ queryKey });
 
       queryClient.setQueriesData<{
         items: Array<{ id: number; shareCount: number; isShared: boolean }>;
         count: number;
-      }>({ queryKey: [queryKey[0], queryKey[1]] }, (old) => {
+      }>({ queryKey }, (old) => {
         if (!old) return old;
         return {
           ...old,
@@ -45,6 +46,7 @@ export const useDiamondShare = () => {
       return { prev };
     },
     onError: (_error, _vars, ctx) => {
+      toast.error('Failed to toggle share.');
       if (ctx?.prev) {
         for (const [key, data] of ctx.prev) {
           queryClient.setQueryData(key, data);

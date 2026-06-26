@@ -21,7 +21,7 @@ export const useCreateGrievance = () => {
       const { data, error } = await supabase
         .from('grievances')
         .insert({ ...input, status: 'pending', approved: false })
-        .select()
+        .select('id, title, status, created_at')
         .single();
 
       if (error) throw error;
