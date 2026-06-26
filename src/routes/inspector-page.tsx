@@ -28,7 +28,8 @@ export const InspectorPage = () => {
   const navigate = useNavigate();
   const [activeView, setActiveView] = useState<InspectorNavView>('reporting');
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { data: reports = [], isLoading } = useMyReports();
+  const { data: reportsResult, isLoading } = useMyReports();
+  const reports = reportsResult?.reports ?? [];
 
   const pageMeta: Record<InspectorNavView, { title: string; description: string }> = {
     reporting: {

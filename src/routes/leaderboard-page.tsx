@@ -1,5 +1,5 @@
 import { ArrowLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Leaderboard } from '@/features/gamification/components/leaderboard';
 import { MapDock } from '@/components/layout/map-dock';

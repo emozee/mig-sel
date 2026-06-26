@@ -22,7 +22,8 @@ export const GrievancePicker = ({ selectedId, onSelect }: GrievancePickerProps) 
           {selected.image_url ? (
             <img
               src={selected.image_url}
-              alt=""
+              alt={selected.title ?? 'Complaint image'}
+              loading="lazy"
               className="h-6 w-6 shrink-0 rounded object-cover"
             />
           ) : (
@@ -94,7 +95,8 @@ export const GrievancePicker = ({ selectedId, onSelect }: GrievancePickerProps) 
               {g.image_url ? (
                 <img
                   src={g.image_url}
-                  alt=""
+                  alt={g.title ?? 'Complaint thumbnail'}
+                  loading="lazy"
                   className="h-8 w-8 shrink-0 rounded-lg object-cover"
                 />
               ) : (

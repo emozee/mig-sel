@@ -13,5 +13,6 @@ export const useSession = () => {
       if (error) throw error;
       return data.session;
     },
+    staleTime: 300_000,
   });
 };

@@ -151,7 +151,8 @@ function DiamondReviewCard({
                   <img
                     key={i}
                     src={url}
-                    alt=""
+                    alt={'Review photo ' + (i + 1)}
+                    loading="lazy"
                     className="h-20 w-20 rounded-lg object-cover ring-1 ring-gray-200"
                     onError={(e) => {
                       (e.currentTarget as HTMLImageElement).style.display = 'none';
@@ -171,7 +172,12 @@ function DiamondReviewCard({
                 >
                   <div className="flex items-center gap-2">
                     {c.avatarUrl ? (
-                      <img src={c.avatarUrl} alt="" className="h-6 w-6 rounded-full object-cover" />
+                      <img
+                        src={c.avatarUrl}
+                        alt={c.userName ?? 'User avatar'}
+                        loading="lazy"
+                        className="h-6 w-6 rounded-full object-cover"
+                      />
                     ) : (
                       <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-200 text-[9px] font-bold text-gray-500">
                         {c.userInitials}

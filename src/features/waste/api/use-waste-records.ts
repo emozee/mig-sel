@@ -43,7 +43,8 @@ export const useWasteRecords = () => {
           'id, category, quantity, unit, reported_at, collected_at, deleted_at, deletion_reason, edit_count, notes',
         )
         .is('deleted_at', null)
-        .order('reported_at', { ascending: false });
+        .order('reported_at', { ascending: false })
+        .limit(200);
 
       if (error) throw error;
       return (data as RawRecord[]).map(mapRecord);

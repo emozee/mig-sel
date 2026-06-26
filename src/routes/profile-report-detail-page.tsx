@@ -52,6 +52,7 @@ export const ProfileReportDetailPage = () => {
       return data ?? null;
     },
     enabled: !!report?.reporter_id,
+    staleTime: 300_000,
   });
 
   if (isLoading) {
@@ -88,7 +89,7 @@ export const ProfileReportDetailPage = () => {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => navigate('/profile/reports')}
+          onClick={() => navigate(-1)}
           className="text-gray-500 hover:text-gray-800"
         >
           <ArrowLeft className="mr-1 h-4 w-4" />
@@ -105,6 +106,7 @@ export const ProfileReportDetailPage = () => {
               <img
                 src={profile.avatar_url}
                 alt={userName}
+                loading="lazy"
                 className="h-9 w-9 shrink-0 rounded-full object-cover"
               />
             ) : (

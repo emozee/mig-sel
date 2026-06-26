@@ -9,6 +9,7 @@ export const leaderboardKeys = {
 export const useLeaderboard = () => {
   return useQuery({
     queryKey: leaderboardKeys.all(),
+    staleTime: 120_000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('profiles')
