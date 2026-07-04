@@ -34,7 +34,7 @@ export const useReportsFeed = (page: number = 1, pageSize: number = 5) => {
       const { data, error, count } = await supabase
         .from('community_feed')
         .select(
-          'id, user_name, user_initials, action_text, location, image_url, created_at, upvote_count, comment_count, user_id, status, grievance:grievances!inner(approved, status, latitude, longitude)',
+          'id, grievance_id, user_name, user_initials, action_text, location, image_url, created_at, upvote_count, comment_count, user_id, status, grievance:grievances!inner(approved, status, latitude, longitude)',
           { count: 'exact', head: false },
         )
         .eq('grievance.approved', true)
@@ -80,6 +80,7 @@ export const useReportsFeed = (page: number = 1, pageSize: number = 5) => {
 
       const items = (data || []).map<ActivityItem>((row) => ({
         id: row.id,
+        grievanceId: row.grievance_id ?? undefined,
         userName: row.user_name,
         userInitials: row.user_initials,
         action: row.action_text,

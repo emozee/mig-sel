@@ -2,6 +2,7 @@ export type FeedStatus = 'pending' | 'in-progress' | 'resolved' | 'public';
 
 export interface ActivityItem {
   id: number;
+  grievanceId?: string;
   userName: string;
   userInitials: string;
   action: string;

@@ -19,7 +19,7 @@ export const useComplaints = () => {
           'id, title, description, category, status, urgency, latitude, longitude, image_url, resolved_image_url, created_at, resolved_at, parent_id, reporter_id, approved, bonus_awarded',
         )
         .order('created_at', { ascending: false })
-        .limit(100);
+        .limit(500);
 
       if (error) throw error;
       return data as Complaint[];

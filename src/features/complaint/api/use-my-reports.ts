@@ -34,19 +34,23 @@ export const useMyReports = (page = 1, pageSize = 10) => {
       const from = (page - 1) * pageSize;
       const to = from + pageSize - 1;
 
-      const { count: total } = await supabase
-        .from('grievances')
-        .select('id', { count: 'exact', head: true })
-        .eq('reporter_id', session.user.id);
+      const [countResult, dataResult] = await Promise.all([
+        supabase
+          .from('grievances')
+          .select('id', { count: 'exact', head: true })
+          .eq('reporter_id', session.user.id),
+        supabase
+          .from('grievances')
+          .select(
+            'id, title, description, status, category, image_url, latitude, longitude, created_at',
+          )
+          .eq('reporter_id', session.user.id)
+          .order('created_at', { ascending: false })
+          .range(from, to),
+      ]);
 
-      const { data, error } = await supabase
-        .from('grievances')
-        .select(
-          'id, title, description, status, category, image_url, latitude, longitude, created_at',
-        )
-        .eq('reporter_id', session.user.id)
-        .order('created_at', { ascending: false })
-        .range(from, to);
+      const total = countResult.count;
+      const { data, error } = dataResult;
 
       if (error) throw error;
       return {

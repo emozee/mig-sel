@@ -550,19 +550,47 @@ export const ComplaintMonitor = () => {
                   <th className="bg-slate-50/75 px-4 py-3.5 text-xs font-semibold tracking-wider text-slate-500 uppercase">
                     Actions
                   </th>
-                ) : null}
+                ) : (
+                  <th className="bg-slate-50/75 px-4 py-3.5 text-xs font-semibold tracking-wider text-slate-500 uppercase">
+                    Delete
+                  </th>
+                )}
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
-                <tr>
-                  <td colSpan={colCount} className="px-4 py-16 text-center">
-                    <div className="flex flex-col items-center justify-center gap-2 text-slate-400">
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                      <span className="text-xs">Loading grievances...</span>
-                    </div>
-                  </td>
-                </tr>
+                <>
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <tr key={i} className="animate-pulse">
+                      <td className="px-4 py-3">
+                        <div className="h-4 w-3/4 rounded bg-slate-200" />
+                        <div className="mt-1.5 h-3 w-1/2 rounded bg-slate-100" />
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="h-5 w-16 rounded-full bg-slate-200" />
+                      </td>
+                      {activeTab !== 'unapproved' && (
+                        <>
+                          <td className="px-4 py-3">
+                            <div className="h-7 w-20 rounded-lg bg-slate-200" />
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="h-7 w-24 rounded-lg bg-slate-200" />
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="h-5 w-16 rounded bg-slate-200" />
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="h-7 w-16 rounded-full bg-slate-200" />
+                          </td>
+                        </>
+                      )}
+                      <td className="px-4 py-3">
+                        <div className="h-14 w-28 rounded-lg bg-slate-200" />
+                      </td>
+                    </tr>
+                  ))}
+                </>
               ) : paginated.length === 0 ? (
                 <tr>
                   <td colSpan={colCount} className="px-4 py-16 text-center text-sm text-slate-300">
@@ -672,6 +700,17 @@ export const ComplaintMonitor = () => {
                             </span>
                             <span className="text-[10px] text-slate-400">/ 4 pts</span>
                           </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <button
+                            type="button"
+                            onClick={() => setDisapproveConfirmId(complaint.id)}
+                            className="inline-flex cursor-pointer items-center gap-1 rounded-full bg-red-100 px-3 py-1.5 text-xs font-bold text-red-700 transition-all hover:bg-red-200"
+                            title="Permanently delete this report"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                            Delete
+                          </button>
                         </td>
                       </>
                     )}

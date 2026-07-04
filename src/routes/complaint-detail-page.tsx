@@ -205,28 +205,26 @@ export const ComplaintDetailPage = () => {
                     Approved
                   </span>
                 ) : (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() => approveComplaint.mutate(complaint.id)}
-                      disabled={approveComplaint.isPending}
-                      className="inline-flex cursor-pointer items-center gap-1 rounded-lg bg-amber-50 px-3 py-2 text-xs font-bold text-amber-700 shadow-sm transition-all hover:bg-amber-100 disabled:opacity-50"
-                    >
-                      <UserCheck className="h-3 w-3" />
-                      {approveComplaint.isPending ? 'Approving...' : 'Approve'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowDisapproveConfirm(true)}
-                      disabled={disapproveComplaint.isPending}
-                      className="inline-flex cursor-pointer items-center gap-1 rounded-lg bg-red-50 px-3 py-2 text-xs font-bold text-red-700 shadow-sm transition-all hover:bg-red-100 disabled:opacity-50"
-                      title="Permanently delete this report"
-                    >
-                      <Trash2 className="h-3 w-3" />
-                      {disapproveComplaint.isPending ? 'Removing...' : 'Disapprove'}
-                    </button>
-                  </>
+                  <button
+                    type="button"
+                    onClick={() => approveComplaint.mutate(complaint.id)}
+                    disabled={approveComplaint.isPending}
+                    className="inline-flex cursor-pointer items-center gap-1 rounded-lg bg-amber-50 px-3 py-2 text-xs font-bold text-amber-700 shadow-sm transition-all hover:bg-amber-100 disabled:opacity-50"
+                  >
+                    <UserCheck className="h-3 w-3" />
+                    {approveComplaint.isPending ? 'Approving...' : 'Approve'}
+                  </button>
                 )}
+                <button
+                  type="button"
+                  onClick={() => setShowDisapproveConfirm(true)}
+                  disabled={disapproveComplaint.isPending}
+                  className="inline-flex cursor-pointer items-center gap-1 rounded-lg bg-red-50 px-3 py-2 text-xs font-bold text-red-700 shadow-sm transition-all hover:bg-red-100 disabled:opacity-50"
+                  title="Permanently delete this report"
+                >
+                  <Trash2 className="h-3 w-3" />
+                  {disapproveComplaint.isPending ? 'Removing...' : 'Delete'}
+                </button>
                 {/* Urgency dropdown */}
                 <div ref={urgencyRef} className="relative">
                   <button

@@ -37,7 +37,7 @@ export const useGrievances = () => {
         )
         .eq('approved', true)
         .or(
-          `status.in.(pending,in_progress,submitted),and(status.in.(resolved,closed),resolved_at.gte.${sevenDaysAgo.toISOString()})`,
+          `status.in.(pending,in-progress,submitted),and(status.in.(resolved,closed),resolved_at.gte.${sevenDaysAgo.toISOString()})`,
         )
         .order('created_at', { ascending: false })
         .limit(200);

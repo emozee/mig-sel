@@ -6,7 +6,7 @@ import type { DiamondComment } from '../types';
 export const useDiamondComments = (diamondId: number) => {
   return useQuery({
     queryKey: [...diamondKeys.all, 'comments', diamondId],
-    staleTime: 30_000,
+    staleTime: 60_000,
     enabled: !!diamondId,
     queryFn: async (): Promise<DiamondComment[]> => {
       const { data, error } = await supabase
