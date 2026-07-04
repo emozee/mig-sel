@@ -30,6 +30,7 @@ export const useCreateGrievance = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: grievanceKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: ['my-reports'] });
     },
   });
 };

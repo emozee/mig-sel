@@ -5,6 +5,21 @@ import { grievanceKeys } from '@/features/auth/grievance/api/use-grievances';
 import { communityKeys } from '@/features/reports-feed/api/use-reports-feed';
 import type { PendingDiamondReview } from '../types';
 
+function mapPendingDiamond(row: Record<string, unknown>): PendingDiamondReview {
+  return {
+    id: row.id as number,
+    userId: (row.user_id ?? row.userId) as string,
+    body: row.body as string,
+    imageUrls: (row.image_urls ?? row.imageUrls ?? []) as string[],
+    linkedGrievanceId: (row.linked_grievance_id ?? row.linkedGrievanceId) as string | undefined,
+    createdAt: (row.created_at ?? row.createdAt) as string,
+    userName: (row.user_name ?? row.userName) as string,
+    userAvatar: (row.user_avatar ?? row.userAvatar) as string | undefined,
+    collaboratorCount: (row.collaborator_count ?? row.collaboratorCount ?? 0) as number,
+    grievanceTitle: (row.grievance_title ?? row.grievanceTitle) as string,
+  };
+}
+
 export const usePendingDiamonds = () => {
   return useQuery({
     queryKey: [...diamondKeys.all, 'pending'],
@@ -12,7 +27,7 @@ export const usePendingDiamonds = () => {
     queryFn: async (): Promise<PendingDiamondReview[]> => {
       const { data, error } = await supabase.rpc('get_pending_diamonds');
       if (error) throw error;
-      return (data ?? []) as unknown as PendingDiamondReview[];
+      return (data ?? []).map(mapPendingDiamond);
     },
   });
 };
