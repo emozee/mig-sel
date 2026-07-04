@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { complaintKeys } from './use-complaints';
+import { communityKeys } from '@/features/reports-feed/api/use-reports-feed';
 import type { Complaint } from '@/features/complaint/types';
 
 export const useDisapproveComplaint = () => {
@@ -44,6 +45,13 @@ export const useDisapproveComplaint = () => {
         }
       }
 
+      const { error: feedError } = await supabase
+        .from('community_feed')
+        .delete()
+        .eq('grievance_id', id);
+
+      if (feedError) throw feedError;
+
       const { error } = await supabase.from('grievances').delete().eq('id', id);
 
       if (error) throw error;
@@ -65,6 +73,7 @@ export const useDisapproveComplaint = () => {
     onSettled: async () => {
       await queryClient.invalidateQueries({ queryKey: complaintKeys.all });
       await queryClient.invalidateQueries({ queryKey: ['my-reports'] });
+      await queryClient.invalidateQueries({ queryKey: communityKeys.all });
     },
   });
 };

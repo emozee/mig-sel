@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { useCurrentUser } from '@/features/auth/api/use-current-user';
 import { communityKeys } from './use-reports-feed';
+import { complaintKeys } from '@/features/complaint/api/use-complaints';
 import type { ActivityItem } from '../types';
 
 interface FeedData {
@@ -16,11 +17,19 @@ export const useDeleteFeedItem = () => {
   const feedPrefix = communityKeys.feedList(user?.id);
 
   return useMutation({
-    mutationFn: async (feedId: number) => {
+    mutationFn: async ({ feedId, grievanceId }: { feedId: number; grievanceId?: string }) => {
+      if (grievanceId) {
+        const { error: grievanceError } = await supabase
+          .from('grievances')
+          .delete()
+          .eq('id', grievanceId);
+        if (grievanceError) throw grievanceError;
+      }
+
       const { error } = await supabase.from('community_feed').delete().eq('id', feedId);
       if (error) throw error;
     },
-    onMutate: async (feedId) => {
+    onMutate: async ({ feedId }) => {
       await queryClient.cancelQueries({ queryKey: feedPrefix });
       const prev = queryClient.getQueriesData<FeedData>({ queryKey: feedPrefix });
       queryClient.setQueriesData<FeedData>({ queryKey: feedPrefix }, (old) => {
@@ -42,6 +51,8 @@ export const useDeleteFeedItem = () => {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: feedPrefix });
+      queryClient.invalidateQueries({ queryKey: complaintKeys.all });
+      queryClient.invalidateQueries({ queryKey: ['my-reports'] });
     },
   });
 };
