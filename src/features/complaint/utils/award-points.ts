@@ -48,19 +48,27 @@ export async function awardPointsForSubmission(
 
   const currentPoints = profile?.points ?? 0;
 
-  const { error } = await supabase
+  const { data: updated, error: updateError } = await supabase
     .from('profiles')
-    .upsert({ id: reporterId, points: currentPoints + 1 });
+    .update({ points: currentPoints + 1 })
+    .eq('id', reporterId)
+    .select('id');
 
-  if (error) throw error;
+  if (updateError) throw updateError;
 
-  // Track bonus_awarded so merge revocation works correctly
+  if (!updated || updated.length === 0) {
+    const { error: insertError } = await supabase
+      .from('profiles')
+      .insert({ id: reporterId, points: 1 });
+
+    if (insertError) throw insertError;
+  }
+
   if (grievanceId) {
     const { error: bonusError } = await supabase
       .from('grievances')
       .update({ bonus_awarded: 1 })
       .eq('id', grievanceId);
-
     if (bonusError) throw bonusError;
   }
 }

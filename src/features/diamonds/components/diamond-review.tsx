@@ -94,11 +94,7 @@ function DiamondReviewCard({
   const { mutate: removeCollab } = useAdminRemoveCollaborator();
   const [removingId, setRemovingId] = useState<string | null>(null);
 
-  const rawDiamond = diamond as Record<string, unknown>;
-  const reviewImages: string[] =
-    (rawDiamond.image_urls as string[] | undefined) ??
-    (rawDiamond.imageUrls as string[] | undefined) ??
-    [];
+  const reviewImages = diamond.imageUrls;
 
   const handleRemoveCollab = (userId: string) => {
     setRemovingId(userId);

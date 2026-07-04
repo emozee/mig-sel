@@ -50,6 +50,7 @@ interface FeedItemProps {
 
 export const FeedItem = ({ item }: FeedItemProps) => {
   const { user } = useCurrentUser();
+  const { data: isCurrentUserAdmin } = useIsAdmin();
   const navigate = useNavigate();
   const { mutate: deleteFeedItem } = useDeleteFeedItem();
   const { mutate, isPending } = useToggleUpvote();
@@ -62,7 +63,7 @@ export const FeedItem = ({ item }: FeedItemProps) => {
 
   const handleDelete = () => {
     if (!confirm('Delete this post?')) return;
-    deleteFeedItem(item.id);
+    deleteFeedItem({ feedId: item.id, grievanceId: item.grievanceId });
     setMenuOpen(false);
   };
 
@@ -153,27 +154,27 @@ export const FeedItem = ({ item }: FeedItemProps) => {
               {menuOpen && (
                 <div className="absolute top-8 right-0 z-50 w-40 overflow-hidden rounded-xl bg-white py-1 shadow-lg ring-1 ring-gray-200/60">
                   {isOwner && (
-                    <>
-                      <button
-                        onClick={handleEdit}
-                        className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-50"
-                      >
-                        <Edit3 className="h-3.5 w-3.5" />
-                        Edit
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDelete();
-                        }}
-                        className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-semibold text-red-600 transition-colors hover:bg-red-50"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                        Delete
-                      </button>
-                      <div className="mx-2 my-1 border-t border-gray-100" />
-                    </>
+                    <button
+                      onClick={handleEdit}
+                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+                    >
+                      <Edit3 className="h-3.5 w-3.5" />
+                      Edit
+                    </button>
                   )}
+                  {isCurrentUserAdmin && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete();
+                      }}
+                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-semibold text-red-600 transition-colors hover:bg-red-50"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      Delete
+                    </button>
+                  )}
+                  <div className="mx-2 my-1 border-t border-gray-100" />
                   <button
                     onClick={handleFindOnMap}
                     className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-50"

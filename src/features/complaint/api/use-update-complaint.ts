@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import { toast } from 'sonner';
 import type { Complaint } from '@/features/complaint/types';
 import { complaintKeys } from './use-complaints';
 import { awardPointsForStatus } from '@/features/complaint/utils/award-points';
@@ -38,12 +39,7 @@ export const useUpdateComplaint = () => {
 
       if (error) throw error;
       if (!data || data.length === 0) {
-        throw new Error(
-          'No matching grievance found to update. This is likely due to database ' +
-            'Row-Level Security (RLS) — the grievances table needs an UPDATE policy ' +
-            'that allows the current user to modify records. ' +
-            'Run the RLS migration in supabase/migrations/ to fix this.',
-        );
+        throw new Error('No matching grievance found to update.');
       }
 
       if (fields.status && current && fields.status !== current.status) {
@@ -51,8 +47,12 @@ export const useUpdateComplaint = () => {
       }
     },
     onSuccess: async () => {
+      toast.success('Complaint updated.');
       await queryClient.invalidateQueries({ queryKey: complaintKeys.all });
       await queryClient.invalidateQueries({ queryKey: ['my-reports'] });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to update complaint.');
     },
   });
 };
