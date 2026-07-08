@@ -1,14 +1,13 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { X, Send, Bot, User, Loader2 } from 'lucide-react';
 import { useSearchKnowledge } from '../api/use-knowledge';
+import { Linkify } from '@/components/ui/linkify';
+import { DEFAULT_RESPONSE, SUGGESTED_QUESTIONS } from '../utils/constants';
 
 interface Message {
   role: 'bot' | 'user';
   text: string;
 }
-
-const DEFAULT_RESPONSE =
-  "I'm not sure about that. Try asking about: reports feed, map, shop, points, profile, or leaderboard.";
 
 export const FloatingChat = () => {
   const [open, setOpen] = useState(false);
@@ -20,33 +19,61 @@ export const FloatingChat = () => {
   ]);
   const [input, setInput] = useState('');
   const [pendingQuery, setPendingQuery] = useState('');
-  const endRef = useRef<HTMLDivElement>(null);
-  const processedRef = useRef<string>('');
+  const submitCountRef = useRef(0);
+  const lastProcessedRef = useRef(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-  const { data: knowledgeResult, isFetching } = useSearchKnowledge(pendingQuery);
+  const { data: knowledgeResult, isFetching, isError } = useSearchKnowledge(pendingQuery);
 
   const addBotResponse = useCallback((text: string) => {
     setMessages((prev) => [...prev, { role: 'bot', text }]);
   }, []);
 
+  const handleSuggestion = useCallback((question: string) => {
+    setInput('');
+    submitCountRef.current++;
+    setMessages((prev) => [...prev, { role: 'user', text: question }]);
+    setPendingQuery(question);
+  }, []);
+
   useEffect(() => {
     if (!pendingQuery || isFetching) return;
-    if (processedRef.current === pendingQuery) return;
+    if (lastProcessedRef.current === submitCountRef.current) return;
 
-    processedRef.current = pendingQuery;
-    const response = knowledgeResult?.answer ?? DEFAULT_RESPONSE;
-    addBotResponse(response);
+    lastProcessedRef.current = submitCountRef.current;
+
+    if (isError) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      addBotResponse('Sorry, I had trouble looking that up. Please try again.');
+      setPendingQuery('');
+      return;
+    }
+
+    if (!knowledgeResult) {
+      addBotResponse(DEFAULT_RESPONSE);
+      setPendingQuery('');
+      return;
+    }
+
+    const score = knowledgeResult.score ?? 0;
+    let text = knowledgeResult.answer;
+
+    if (score < 0.35) {
+      text = `Did you mean: "${knowledgeResult.question}"?\n\n${text}`;
+    }
+
+    addBotResponse(text);
     setPendingQuery('');
-  }, [pendingQuery, isFetching, knowledgeResult, addBotResponse]);
-
-  useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isFetching]);
+  }, [pendingQuery, isFetching, isError, knowledgeResult, addBotResponse]);
 
   useEffect(() => {
     if (open) inputRef.current?.focus();
   }, [open]);
+
+  useEffect(() => {
+    scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, isFetching]);
 
   const handleSubmit = useCallback(
     (e: React.FormEvent) => {
@@ -55,11 +82,14 @@ export const FloatingChat = () => {
 
       const userText = input.trim();
       setInput('');
+      submitCountRef.current++;
       setMessages((prev) => [...prev, { role: 'user', text: userText }]);
       setPendingQuery(userText);
     },
     [input, isFetching],
   );
+
+  const showSuggestions = messages.length <= 1 && !isFetching;
 
   return (
     <div className="flex flex-col items-end gap-2">
@@ -79,7 +109,7 @@ export const FloatingChat = () => {
             </button>
           </div>
 
-          <div className="flex max-h-52 flex-col gap-2 overflow-y-auto px-3 py-2">
+          <div className="flex max-h-64 flex-col gap-2 overflow-y-auto px-3 py-2">
             {messages.map((msg, i) => (
               <div
                 key={i}
@@ -99,21 +129,47 @@ export const FloatingChat = () => {
                       : 'bg-primary rounded-tr-sm text-white'
                   }`}
                 >
-                  {msg.text}
+                  {msg.role === 'bot' ? <Linkify>{msg.text}</Linkify> : msg.text}
                 </div>
               </div>
             ))}
+
+            {showSuggestions && (
+              <div className="flex flex-wrap gap-1 px-0.5">
+                {SUGGESTED_QUESTIONS.map((q) => (
+                  <button
+                    key={q}
+                    type="button"
+                    onClick={() => handleSuggestion(q)}
+                    className="hover:border-primary hover:text-primary rounded-full border border-gray-200 bg-white px-2 py-1 text-[10px] text-gray-500 transition-colors"
+                  >
+                    {q}
+                  </button>
+                ))}
+              </div>
+            )}
+
             {isFetching && (
               <div className="flex items-start gap-1.5">
                 <div className="bg-primary/10 text-primary flex h-5 w-5 shrink-0 items-center justify-center rounded-full">
                   <Bot className="h-3 w-3" />
                 </div>
                 <div className="rounded-2xl rounded-tl-sm bg-gray-50 px-2.5 py-1.5">
-                  <span className="text-[11px] text-gray-400">Typing...</span>
+                  <span className="inline-flex items-center gap-1 text-[11px] text-gray-400">
+                    <span className="animate-typing-dot h-1.5 w-1.5 rounded-full bg-gray-400" />
+                    <span
+                      className="animate-typing-dot h-1.5 w-1.5 rounded-full bg-gray-400"
+                      style={{ animationDelay: '0.2s' }}
+                    />
+                    <span
+                      className="animate-typing-dot h-1.5 w-1.5 rounded-full bg-gray-400"
+                      style={{ animationDelay: '0.4s' }}
+                    />
+                  </span>
                 </div>
               </div>
             )}
-            <div ref={endRef} />
+            <div ref={scrollRef} />
           </div>
 
           <form
