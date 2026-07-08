@@ -4,6 +4,8 @@ import { ArrowLeft, Send, Bot, User } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useSearchKnowledge } from '@/features/chatbot/api/use-knowledge';
+import { Linkify } from '@/components/ui/linkify';
+import { DEFAULT_RESPONSE, SUGGESTED_QUESTIONS } from '@/features/chatbot/utils/constants';
 import { MapDock } from '@/components/layout/map-dock';
 
 interface Message {
@@ -11,9 +13,6 @@ interface Message {
   role: 'bot' | 'user';
   text: string;
 }
-
-const DEFAULT_RESPONSE =
-  "I'm not sure about that. Try asking about: reports feed, map, shop, points, profile, or leaderboard.";
 
 let msgCounter = 0;
 
@@ -29,23 +28,51 @@ export const ChatPage = () => {
   const [input, setInput] = useState('');
   const [pendingQuery, setPendingQuery] = useState('');
   const endRef = useRef<HTMLDivElement>(null);
-  const processedRef = useRef<string>('');
+  const submitCountRef = useRef(0);
+  const lastProcessedRef = useRef(0);
 
-  const { data: knowledgeResult, isFetching } = useSearchKnowledge(pendingQuery);
+  const { data: knowledgeResult, isFetching, isError } = useSearchKnowledge(pendingQuery);
 
   const addBotResponse = useCallback((text: string) => {
     setMessages((prev) => [...prev, { id: ++msgCounter, role: 'bot', text }]);
   }, []);
 
+  const handleSuggestion = useCallback((question: string) => {
+    setInput('');
+    submitCountRef.current++;
+    setMessages((prev) => [...prev, { id: ++msgCounter, role: 'user', text: question }]);
+    setPendingQuery(question);
+  }, []);
+
   useEffect(() => {
     if (!pendingQuery || isFetching) return;
-    if (processedRef.current === pendingQuery) return;
+    if (lastProcessedRef.current === submitCountRef.current) return;
 
-    processedRef.current = pendingQuery;
-    const response = knowledgeResult?.answer ?? DEFAULT_RESPONSE;
-    addBotResponse(response);
+    lastProcessedRef.current = submitCountRef.current;
+
+    if (isError) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      addBotResponse('Sorry, I had trouble looking that up. Please try again.');
+      setPendingQuery('');
+      return;
+    }
+
+    if (!knowledgeResult) {
+      addBotResponse(DEFAULT_RESPONSE);
+      setPendingQuery('');
+      return;
+    }
+
+    const score = knowledgeResult.score ?? 0;
+    let text = knowledgeResult.answer;
+
+    if (score < 0.35) {
+      text = `Did you mean: "${knowledgeResult.question}"?\n\n${text}`;
+    }
+
+    addBotResponse(text);
     setPendingQuery('');
-  }, [pendingQuery, isFetching, knowledgeResult, addBotResponse]);
+  }, [pendingQuery, isFetching, isError, knowledgeResult, addBotResponse]);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -62,9 +89,12 @@ export const ChatPage = () => {
 
     const userText = input.trim();
     setInput('');
+    submitCountRef.current++;
     setMessages((prev) => [...prev, { id: ++msgCounter, role: 'user', text: userText }]);
     setPendingQuery(userText);
   };
+
+  const showSuggestions = messages.length <= 1 && !isFetching;
 
   return (
     <div className="flex min-h-dvh flex-col bg-gray-50">
@@ -102,17 +132,43 @@ export const ChatPage = () => {
                     : 'bg-primary rounded-tr-sm text-white'
                 }`}
               >
-                {msg.text}
+                {msg.role === 'bot' ? <Linkify>{msg.text}</Linkify> : msg.text}
               </div>
             </div>
           ))}
+
+          {showSuggestions && (
+            <div className="flex flex-wrap gap-1.5">
+              {SUGGESTED_QUESTIONS.map((q) => (
+                <button
+                  key={q}
+                  type="button"
+                  onClick={() => handleSuggestion(q)}
+                  className="hover:border-primary hover:text-primary rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs text-gray-500 shadow-sm transition-colors"
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
+          )}
+
           {isFetching && (
             <div className="flex items-start gap-2">
               <div className="bg-primary/10 text-primary flex h-7 w-7 shrink-0 items-center justify-center rounded-full">
                 <Bot className="h-4 w-4" />
               </div>
               <div className="rounded-2xl rounded-tl-sm bg-white px-3.5 py-2 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-                <span className="text-sm text-gray-400">Typing...</span>
+                <span className="inline-flex items-center gap-1 text-sm text-gray-400">
+                  <span className="animate-typing-dot h-1.5 w-1.5 rounded-full bg-gray-400" />
+                  <span
+                    className="animate-typing-dot h-1.5 w-1.5 rounded-full bg-gray-400"
+                    style={{ animationDelay: '0.2s' }}
+                  />
+                  <span
+                    className="animate-typing-dot h-1.5 w-1.5 rounded-full bg-gray-400"
+                    style={{ animationDelay: '0.4s' }}
+                  />
+                </span>
               </div>
             </div>
           )}
