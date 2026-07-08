@@ -5,4 +5,5 @@ export interface KnowledgeItem {
   keywords: string[];
   created_at: string;
   updated_at?: string;
+  score?: number;
 }
