@@ -39,6 +39,8 @@ export const useSearchKnowledge = (query: string) => {
   return useQuery({
     queryKey: knowledgeKeys.search(query),
     staleTime: 300_000,
+    retry: 1,
+    refetchOnWindowFocus: false,
     queryFn: async (): Promise<KnowledgeItem | null> => {
       if (!query.trim()) return null;
 
@@ -58,6 +60,7 @@ export const useSearchKnowledge = (query: string) => {
         keywords: (best.keywords as string[]) ?? [],
         created_at: '',
         updated_at: undefined,
+        score: (best.similarity_score as number) ?? 0,
       };
     },
     enabled: query.trim().length > 0,
