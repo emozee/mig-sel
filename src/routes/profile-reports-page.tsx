@@ -13,7 +13,7 @@ import {
   Minimize2,
 } from 'lucide-react';
 import { useNavigate } from 'react-router';
-import { cn } from '@/lib/utils';
+import { cn, goBackSafe } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useMyReports } from '@/features/complaint/api/use-my-reports';
 
@@ -113,7 +113,7 @@ export const ProfileReportsPage = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate(-1)}
+            onClick={() => goBackSafe(navigate)}
             className="text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="mr-1 h-4 w-4" />

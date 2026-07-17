@@ -2,6 +2,7 @@ import { useParams, useNavigate } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, MapPin, Calendar, FileText } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { goBackSafe } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useComplaint } from '@/features/complaint/api/use-complaint';
 import { ImageLightbox } from '@/features/auth/grievance/components/image-lightbox';
@@ -89,7 +90,7 @@ export const ProfileReportDetailPage = () => {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => navigate(-1)}
+          onClick={() => goBackSafe(navigate)}
           className="text-gray-500 hover:text-gray-800"
         >
           <ArrowLeft className="mr-1 h-4 w-4" />
