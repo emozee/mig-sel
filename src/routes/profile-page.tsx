@@ -9,6 +9,7 @@ import {
   ChevronRight,
   Sparkles,
 } from 'lucide-react';
+import { goBackSafe } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useUserProfile } from '@/features/gamification/api/use-user-profile';
 import { useMyReports } from '@/features/complaint/api/use-my-reports';
@@ -23,7 +24,7 @@ export const ProfilePage = () => {
   const { data: myDiamonds } = useMyDiamonds(1, 1);
 
   const isOfficial = profile?.role === 'official';
-  const isAdmin = profile?.role === 'admin';
+  const isAdmin = profile?.role === 'admin' || profile?.role === 'super_admin';
   const isInspector = profile?.role === 'inspector';
   const updatesCount = myDiamonds?.count ?? 0;
 
@@ -61,7 +62,7 @@ export const ProfilePage = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate(-1)}
+            onClick={() => goBackSafe(navigate)}
             className="text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="mr-1 h-4 w-4" />
@@ -170,14 +171,14 @@ export const ProfilePage = () => {
           </button>
         )}
 
-        {/* Admin Dashboard */}
+        {/* Admin / Super Admin Dashboard */}
         {isAdmin && (
           <button
             onClick={() => navigate('/dashboard')}
             className="border-primary/20 text-primary hover:bg-primary/5 flex w-full items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-semibold transition-colors"
           >
             <Building2 className="h-4 w-4" />
-            Admin Dashboard
+            {profile?.role === 'super_admin' ? 'Super Admin Dashboard' : 'Admin Dashboard'}
           </button>
         )}
       </div>

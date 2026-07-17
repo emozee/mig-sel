@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { Search, Shield, Mail, User, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { useSearchUser } from '@/features/admin/api/use-search-user';
 import { useUpdateUserRole } from '@/features/admin/api/use-update-user-role';
+import { useUserRole } from '@/features/auth/api/use-user-role';
 import { Input } from '@/components/ui/input';
 
-const ROLE_OPTIONS = [
+const BASE_ROLE_OPTIONS = [
   { value: 'user', label: 'User' },
   { value: 'inspector', label: 'Inspector' },
   { value: 'admin', label: 'Admin' },
@@ -20,9 +21,14 @@ const extractErrorMessage = (err: unknown): string => {
 };
 
 export const RoleAssignment = () => {
+  const { isSuperAdmin } = useUserRole();
   const [searchInput, setSearchInput] = useState('');
   const [submittedEmail, setSubmittedEmail] = useState<string | null>(null);
   const [selectedRole, setSelectedRole] = useState('user');
+
+  const ROLE_OPTIONS = isSuperAdmin
+    ? [...BASE_ROLE_OPTIONS, { value: 'super_admin', label: 'Super Admin' }]
+    : BASE_ROLE_OPTIONS;
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [updateError, setUpdateError] = useState<string | null>(null);
 

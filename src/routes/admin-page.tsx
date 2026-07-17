@@ -10,6 +10,11 @@ import {
   Brain,
   Gem,
   Megaphone,
+  Users,
+  UserCheck,
+  UserX,
+  RefreshCw,
+  MapPin,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DashboardSidebar, type NavView } from '@/components/layout/dashboard-sidebar';
@@ -23,6 +28,17 @@ import { KnowledgeBase } from '@/features/admin/components/knowledge-base';
 import { DiamondReview } from '@/features/diamonds/components/diamond-review';
 import { AnnouncementForm } from '@/features/announcements/components/announcement-form';
 import { AnnouncementList } from '@/features/announcements/components/announcement-list';
+import { useUserCounts, useUserGrowth } from '@/features/auth/api/use-user-counts';
+import { useUserLocations } from '@/features/auth/api/use-user-locations';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+} from 'recharts';
 
 const iconMap: Record<NavView, typeof ClipboardList> = {
   complaint: ClipboardList,
@@ -30,6 +46,7 @@ const iconMap: Record<NavView, typeof ClipboardList> = {
   inspector: FileText,
   official: Megaphone,
   diamond: Gem,
+  users: Users,
   role: Shield,
   charts: ChartPie,
   knowledge: Brain,
@@ -49,10 +66,19 @@ export const AdminPage = () => {
     inspector: { title: 'Inspector', description: 'Submit waste collection records' },
     official: { title: 'Official', description: 'Manage announcements and official content' },
     diamond: { title: 'Diamond Review', description: 'Review and approve direct-solve requests' },
+    users: { title: 'User Analytics', description: 'View user registration and activity stats' },
     role: { title: 'Role Assignment', description: 'Search and update user roles' },
     charts: { title: 'Analytics', description: 'Oversight panel for GMC waste management' },
     knowledge: { title: 'Knowledge Base', description: 'Manage chatbot Q&A pairs' },
   };
+
+  const {
+    data: userCounts,
+    isLoading: userCountsLoading,
+    refetch: refetchUserCounts,
+  } = useUserCounts();
+  const { data: userGrowth } = useUserGrowth();
+  const { data: userLocations } = useUserLocations();
 
   const { title: pageTitle } = pageMeta[activeView];
   const pageDescription =
@@ -177,6 +203,199 @@ export const AdminPage = () => {
               {activeView === 'table' && <WasteRecord />}
               {activeView === 'complaint' && <ComplaintMonitor />}
             </div>
+            {activeView === 'users' && (
+              <div className="animate-in fade-in-0 slide-in-from-bottom-2 space-y-6 duration-500 [animation-delay:200ms]">
+                <div className="flex items-center justify-between">
+                  <p className="text-muted-foreground/60 text-xs font-semibold tracking-widest uppercase">
+                    Overview
+                  </p>
+                  <button
+                    onClick={() => refetchUserCounts()}
+                    disabled={userCountsLoading}
+                    className="hover:bg-accent inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all"
+                  >
+                    <RefreshCw className={`h-4 w-4 ${userCountsLoading ? 'animate-spin' : ''}`} />
+                    Refresh
+                  </button>
+                </div>
+
+                {userCountsLoading ? (
+                  <div className="grid gap-6 sm:grid-cols-3">
+                    {[1, 2, 3].map((i) => (
+                      <div
+                        key={i}
+                        className="animate-pulse rounded-xl border border-white/20 bg-white/60 p-6 shadow-xs backdrop-blur-sm"
+                      >
+                        <div className="mb-3 h-4 w-24 rounded bg-slate-200" />
+                        <div className="h-8 w-16 rounded bg-slate-200" />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="grid gap-6 sm:grid-cols-3">
+                    {[
+                      {
+                        label: 'Total Users',
+                        value: userCounts?.total ?? 0,
+                        icon: Users,
+                        color: 'bg-blue-500/10 text-blue-600',
+                      },
+                      {
+                        label: 'Active Users',
+                        value: userCounts?.active ?? 0,
+                        icon: UserCheck,
+                        color: 'bg-emerald-500/10 text-emerald-600',
+                      },
+                      {
+                        label: 'Inactive Users',
+                        value: userCounts?.inactive ?? 0,
+                        icon: UserX,
+                        color: 'bg-amber-500/10 text-amber-600',
+                      },
+                    ].map((card) => (
+                      <div
+                        key={card.label}
+                        className="rounded-xl border border-white/20 bg-white/60 p-6 shadow-xs backdrop-blur-sm"
+                      >
+                        <div className="mb-4 flex items-center gap-3">
+                          <div
+                            className={`flex h-10 w-10 items-center justify-center rounded-lg ${card.color}`}
+                          >
+                            <card.icon className="h-5 w-5" />
+                          </div>
+                          <span className="text-muted-foreground text-xs font-semibold tracking-widest uppercase">
+                            {card.label}
+                          </span>
+                        </div>
+                        <p className="text-foreground text-3xl font-bold tracking-tight">
+                          {card.value}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {userCounts && userCounts.total > 0 && (
+                  <div className="rounded-xl border border-white/20 bg-white/60 p-6 shadow-xs backdrop-blur-sm">
+                    <h2 className="text-foreground mb-2 text-sm font-semibold">
+                      User Status Breakdown
+                    </h2>
+                    <div className="flex h-4 w-full overflow-hidden rounded-full bg-slate-200">
+                      <div
+                        className="bg-emerald-500 transition-all duration-700"
+                        style={{ width: `${(userCounts.active / userCounts.total) * 100}%` }}
+                      />
+                      <div
+                        className="bg-amber-500 transition-all duration-700"
+                        style={{ width: `${(userCounts.inactive / userCounts.total) * 100}%` }}
+                      />
+                    </div>
+                    <div className="mt-3 flex gap-6 text-xs">
+                      <div className="flex items-center gap-2">
+                        <div className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                        <span className="text-muted-foreground">
+                          Active ({Math.round((userCounts.active / userCounts.total) * 100)}%)
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="h-2.5 w-2.5 rounded-full bg-amber-500" />
+                        <span className="text-muted-foreground">
+                          Inactive ({Math.round((userCounts.inactive / userCounts.total) * 100)}%)
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {userGrowth && userGrowth.length > 0 && (
+                  <div className="rounded-xl border border-white/20 bg-white/60 p-6 shadow-xs backdrop-blur-sm">
+                    <h2 className="text-foreground mb-4 text-sm font-semibold">
+                      User Growth (signups per month)
+                    </h2>
+                    <div className="h-64">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={userGrowth}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                          <XAxis dataKey="month" tick={{ fontSize: 12 }} stroke="#94a3b8" />
+                          <YAxis allowDecimals={false} tick={{ fontSize: 12 }} stroke="#94a3b8" />
+                          <Tooltip
+                            contentStyle={{
+                              backgroundColor: 'rgba(255,255,255,0.9)',
+                              border: '1px solid #e2e8f0',
+                              borderRadius: '8px',
+                              fontSize: '13px',
+                            }}
+                          />
+                          <Line
+                            type="monotone"
+                            dataKey="count"
+                            stroke="#6366f1"
+                            strokeWidth={2}
+                            dot={{ fill: '#6366f1', r: 4 }}
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                )}
+
+                {userLocations &&
+                userLocations.length > 0 &&
+                userLocations.some((l) => l.location !== 'Unknown') ? (
+                  <div className="rounded-xl border border-white/20 bg-white/60 p-6 shadow-xs backdrop-blur-sm">
+                    <h2 className="text-foreground mb-4 text-sm font-semibold">
+                      Users by Location
+                    </h2>
+                    <div className="space-y-3">
+                      {userLocations
+                        .filter((l) => l.location !== 'Unknown')
+                        .map((loc) => {
+                          const maxCount = Math.max(
+                            ...userLocations
+                              .filter((l) => l.location !== 'Unknown')
+                              .map((l) => l.count),
+                          );
+                          return (
+                            <div key={loc.location} className="flex items-center gap-3">
+                              <span className="w-32 truncate text-sm font-medium capitalize">
+                                {loc.location}
+                              </span>
+                              <div className="flex flex-1 items-center gap-2">
+                                <div
+                                  className="bg-primary/70 h-5 rounded-md transition-all duration-500"
+                                  style={{
+                                    width: `${(loc.count / maxCount) * 100}%`,
+                                    minWidth: loc.count > 0 ? '4px' : '0',
+                                  }}
+                                />
+                                <span className="text-muted-foreground min-w-[2rem] text-right text-xs font-semibold">
+                                  {loc.count}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="rounded-xl border border-white/20 bg-white/60 p-6 shadow-xs backdrop-blur-sm">
+                    <h2 className="text-foreground mb-4 text-sm font-semibold">
+                      Users by Location
+                    </h2>
+                    <div className="flex flex-col items-center justify-center py-8 text-center">
+                      <MapPin className="text-muted-foreground/30 h-10 w-10" />
+                      <p className="text-muted-foreground mt-3 text-sm">
+                        Location data not captured yet
+                      </p>
+                      <p className="text-muted-foreground/60 mt-1 max-w-md text-xs">
+                        When users grant location permission on their next login, their Dzongkhag
+                        will be detected automatically.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
             {activeView === 'knowledge' && (
               <div className="animate-in fade-in-0 slide-in-from-top-2 duration-500 [animation-delay:200ms]">
                 <KnowledgeBase />
