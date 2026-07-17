@@ -9,6 +9,7 @@ import {
   LogOut,
   Gem,
   Megaphone,
+  Users,
   X,
 } from 'lucide-react';
 import { useNavigate } from 'react-router';
@@ -24,7 +25,8 @@ export type NavView =
   | 'role'
   | 'charts'
   | 'knowledge'
-  | 'diamond';
+  | 'diamond'
+  | 'users';
 
 const navItems = [
   { id: 'complaint' as const, label: 'Complaint Monitoring', icon: ClipboardList },
@@ -32,6 +34,7 @@ const navItems = [
   { id: 'inspector' as const, label: 'Inspector', icon: FileText },
   { id: 'official' as const, label: 'Official', icon: Megaphone },
   { id: 'diamond' as const, label: 'Diamond Review', icon: Gem },
+  { id: 'users' as const, label: 'User Analytics', icon: Users },
   { id: 'role' as const, label: 'Role Assignment', icon: Shield },
   { id: 'charts' as const, label: 'Analytics', icon: ChartLine },
   { id: 'knowledge' as const, label: 'Knowledge Base', icon: Brain },

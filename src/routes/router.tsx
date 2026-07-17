@@ -36,7 +36,7 @@ export const router = createBrowserRouter([
 
       const role = await getUserRole(session);
 
-      if (role === 'admin') return redirect('/dashboard');
+      if (role === 'admin' || role === 'super_admin') return redirect('/dashboard');
       if (role === 'inspector') return redirect('/inspector');
       if (role === 'official') return redirect('/official');
       return redirect('/reports-feed');

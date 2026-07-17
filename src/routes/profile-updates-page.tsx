@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ArrowLeft, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router';
+import { goBackSafe } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { DiamondPost } from '@/features/diamonds/components/diamond-post';
 import { useMyDiamonds } from '@/features/diamonds/api/use-my-diamonds';
@@ -22,7 +23,7 @@ export const ProfileUpdatesPage = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate(-1)}
+            onClick={() => goBackSafe(navigate)}
             className="text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="mr-1 h-4 w-4" />
