@@ -20,7 +20,7 @@ export const AnnouncementList = () => {
   const deleteMutation = useDeleteAnnouncement();
   const updateMutation = useUpdateAnnouncement();
 
-  const isOfficialOrAdmin = profile?.role === 'official' || profile?.role === 'admin';
+  const isOfficialOrAdmin = ['official', 'admin', 'super_admin'].includes(profile?.role ?? '');
 
   if (isLoading) {
     return (

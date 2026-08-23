@@ -34,15 +34,21 @@ export const InspectorSidebar = ({
       )}
     >
       <div className="flex h-16 shrink-0 items-center gap-3 border-b px-5">
-        <div className="flex items-center justify-center">
-          <img src="/3d logo.png" alt="Logo" className="h-10 w-auto rounded-lg object-contain" />
-        </div>
-        <div className="flex items-center gap-2.5">
-          <span className="text-foreground text-lg font-bold tracking-tight">Migsel</span>
-          <span className="bg-primary/10 text-primary rounded-md px-1.5 py-0.5 text-[10px] font-bold tracking-wider uppercase">
-            Inspector
-          </span>
-        </div>
+        <button
+          onClick={() => navigate('/map')}
+          className="flex cursor-pointer items-center gap-3 rounded-lg outline-none transition-transform duration-200 ease-out hover:scale-[1.04] active:scale-95 focus-visible:ring-2"
+          title="Go to map"
+        >
+          <div className="flex items-center justify-center">
+            <img src="/3d logo.png" alt="Logo" className="h-10 w-auto rounded-lg object-contain" />
+          </div>
+          <div className="flex items-center gap-2.5">
+            <span className="text-foreground text-lg font-bold tracking-tight">MIGSEL</span>
+            <span className="bg-primary/10 text-primary rounded-md px-1.5 py-0.5 text-[10px] font-bold tracking-wider uppercase">
+              Inspector
+            </span>
+          </div>
+        </button>
         {onMobileClose && (
           <button
             onClick={onMobileClose}

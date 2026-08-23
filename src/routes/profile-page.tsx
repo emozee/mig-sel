@@ -22,10 +22,10 @@ export const ProfilePage = () => {
   const { data: profile } = useUserProfile();
   const { data: myReportsResult } = useMyReports(1, 1);
   const { data: myDiamonds } = useMyDiamonds(1, 1);
+  const isOfficial = profile?.role === 'official' || profile?.role === 'super_admin';
 
-  const isOfficial = profile?.role === 'official';
   const isAdmin = profile?.role === 'admin' || profile?.role === 'super_admin';
-  const isInspector = profile?.role === 'inspector';
+  const isInspector = profile?.role === 'inspector' || profile?.role === 'super_admin';
   const updatesCount = myDiamonds?.count ?? 0;
 
   const activities = [
@@ -149,8 +149,8 @@ export const ProfilePage = () => {
           </div>
         </div>
 
-        {/* Official Dashboard */}
-        {isOfficial && (
+        {/* Official Dashboard (hidden for super_admin — they use the admin dashboard) */}
+        {isOfficial && profile?.role !== 'super_admin' && (
           <button
             onClick={() => navigate('/official')}
             className="border-primary/20 text-primary hover:bg-primary/5 mb-3 flex w-full items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-semibold transition-colors"
@@ -160,8 +160,8 @@ export const ProfilePage = () => {
           </button>
         )}
 
-        {/* Inspector Portal */}
-        {isInspector && (
+        {/* Inspector Portal (hidden for super_admin — they use the admin dashboard) */}
+        {isInspector && profile?.role !== 'super_admin' && (
           <button
             onClick={() => navigate('/inspector')}
             className="border-primary/20 text-primary hover:bg-primary/5 mb-3 flex w-full items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-semibold transition-colors"
