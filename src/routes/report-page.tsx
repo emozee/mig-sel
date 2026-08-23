@@ -15,8 +15,6 @@ import { useGeoLocation } from '@/features/auth/grievance/hooks/use-geo-location
 import { uploadGrievanceImage } from '@/features/auth/grievance/components/use-upload-image';
 import { useCreateGrievance } from '@/features/auth/grievance/components/use-create-grievance';
 import { useCurrentUser } from '@/features/auth/api/use-current-user';
-import { checkNearbyGrievances } from '@/features/auth/grievance/api/check-nearby-grievances';
-import type { NearbyGrievance } from '@/features/auth/grievance/api/check-nearby-grievances';
 import { classifyGrievanceImage } from '@/features/auth/grievance/api/classify-grievance-image';
 import type { ClassificationResult } from '@/features/auth/grievance/api/classify-grievance-image';
 import {
@@ -42,8 +40,6 @@ export const ReportPage = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  const [showNearbyDialog, setShowNearbyDialog] = useState(false);
-  const [nearbyGrievances, setNearbyGrievances] = useState<NearbyGrievance[]>([]);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const mutation = useCreateGrievance();
 
@@ -56,11 +52,12 @@ export const ReportPage = () => {
     null,
   );
   const [pendingImageUrl, setPendingImageUrl] = useState<string | null>(null);
-  const [fileHash, setFileHash] = useState<string | null>(null);
+  const [aiWarning, setAiWarning] = useState<string | null>(null);
+  const fileHashRef = useRef<string | null>(null);
   const [showDuplicateImageDialog, setShowDuplicateImageDialog] = useState(false);
   const [duplicateImages, setDuplicateImages] = useState<DuplicateImageResult[]>([]);
 
-  const createGrievance = async (imageUrl: string) => {
+  const createGrievance = async (imageUrl: string, aiLabel?: string) => {
     await mutation.mutateAsync({
       title: title || 'Community Report',
       description: description || '',
@@ -69,7 +66,8 @@ export const ReportPage = () => {
       longitude: gpsCoords!.lng,
       image_url: imageUrl,
       reporter_id: user?.id ?? null,
-      image_hash: fileHash ?? undefined,
+      image_hash: fileHashRef.current ?? undefined,
+      ai_label: aiLabel,
     });
   };
 
@@ -88,21 +86,23 @@ export const ReportPage = () => {
 
     setIsChecking(true);
 
-    try {
-      const nearby = await checkNearbyGrievances(gpsCoords.lat, gpsCoords.lng, 10, category);
-
-      if (nearby.length > 0) {
-        setNearbyGrievances(nearby);
-        setShowNearbyDialog(true);
-        return;
+    // Ensure the hash is ready before any checks (it is computed async on select).
+    if (!fileHashRef.current) {
+      try {
+        fileHashRef.current = await computeFileHash(selectedFile);
+      } catch {
+        fileHashRef.current = null;
       }
-    } catch {
-      // Nearby check failed, proceeding without warning
     }
 
-    if (fileHash) {
+    if (fileHashRef.current) {
       try {
-        const dup = await findDuplicateImage(fileHash, gpsCoords.lat, gpsCoords.lng, 10);
+        const dup = await findDuplicateImage(
+          fileHashRef.current,
+          gpsCoords.lat,
+          gpsCoords.lng,
+          10,
+        );
 
         if (dup.length > 0) {
           setDuplicateImages(dup);
@@ -124,7 +124,7 @@ export const ReportPage = () => {
     try {
       const imageUrl = await uploadGrievanceImage(selectedFile!);
 
-      const result = await classifyGrievanceImage(imageUrl);
+      const result = await classifyGrievanceImage(imageUrl, fileHashRef.current);
 
       const isDefinitelySpam =
         !result.is_grievance &&
@@ -138,6 +138,14 @@ export const ReportPage = () => {
         setPendingImageUrl(imageUrl);
         setShowSpamDialog(true);
         return;
+      }
+
+      if (result.error) {
+        setAiWarning(
+          `AI photo check unavailable (${result.error}) — submitted for admin review.`,
+        );
+      } else {
+        setAiWarning(null);
       }
 
       await createGrievance(imageUrl);
@@ -169,10 +177,13 @@ export const ReportPage = () => {
       return;
     }
     setMessage(null);
+    setAiWarning(null);
     setSelectedFile(files[0]);
-    setFileHash(null);
+    fileHashRef.current = null;
     computeFileHash(files[0])
-      .then(setFileHash)
+      .then((h) => {
+        fileHashRef.current = h;
+      })
       .catch(() => {
         /* hash is best-effort */
       });
@@ -278,6 +289,13 @@ export const ReportPage = () => {
               </div>
             </div>
 
+            {aiWarning && (
+              <div className="flex items-start gap-2 rounded-lg bg-amber-100 p-3 text-sm font-medium text-amber-900">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                {aiWarning}
+              </div>
+            )}
+
             {message && (
               <div
                 className={`flex items-center gap-2 rounded-lg p-3 text-sm font-medium ${
@@ -294,63 +312,6 @@ export const ReportPage = () => {
                 {message.text}
               </div>
             )}
-
-            <DialogRoot open={showNearbyDialog} onOpenChange={setShowNearbyDialog}>
-              <DialogContent className="max-w-sm">
-                <DialogHeader>
-                  <DialogTitle>Nearby reports found</DialogTitle>
-                  <DialogDescription>
-                    {nearbyGrievances.length}{' '}
-                    {nearbyGrievances.length === 1 ? 'report is' : 'reports are'} already submitted
-                    within 10m of your location.
-                  </DialogDescription>
-                </DialogHeader>
-
-                <div className="max-h-48 space-y-2 overflow-y-auto">
-                  {nearbyGrievances.map((g) => (
-                    <div
-                      key={g.id}
-                      className="border-outline-variant flex items-start gap-3 rounded-lg border p-2 text-sm"
-                    >
-                      {g.image_url && (
-                        <ImageLightbox
-                          src={g.image_url}
-                          className="h-10 w-10 shrink-0 rounded object-cover"
-                        />
-                      )}
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate font-medium">{g.title}</p>
-                        <p className="text-muted-foreground text-xs">
-                          {g.distance_meters.toFixed(1)}m away &middot; {g.category}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <DialogFooter className="gap-2 sm:gap-0">
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setShowNearbyDialog(false);
-                      setNearbyGrievances([]);
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    variant="default"
-                    onClick={() => {
-                      setShowNearbyDialog(false);
-                      setNearbyGrievances([]);
-                      doUploadClassifyAndCreate();
-                    }}
-                  >
-                    Submit anyway
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </DialogRoot>
 
             <DialogRoot open={showDuplicateImageDialog} onOpenChange={setShowDuplicateImageDialog}>
               <DialogContent className="max-w-sm">
@@ -459,7 +420,7 @@ export const ReportPage = () => {
                       setShowSpamDialog(false);
                       setIsUploading(true);
                       try {
-                        await createGrievance(pendingImageUrl!);
+                        await createGrievance(pendingImageUrl!, classificationResult?.top_label);
                         setMessage({
                           type: 'success',
                           text: 'Report submitted to GMC successfully!',

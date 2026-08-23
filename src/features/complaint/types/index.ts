@@ -22,4 +22,5 @@ export type Complaint = {
   parent_id: string | null;
   bonus_awarded: number;
   approved: boolean;
+  ai_label: string | null;
 };

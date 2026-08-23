@@ -18,7 +18,7 @@ export const AnnouncementForm = () => {
     return d.toISOString().split('T')[0];
   }, [type]);
 
-  const isOfficialOrAdmin = profile?.role === 'official' || profile?.role === 'admin';
+  const isOfficialOrAdmin = ['official', 'admin', 'super_admin'].includes(profile?.role ?? '');
   if (!isOfficialOrAdmin) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
