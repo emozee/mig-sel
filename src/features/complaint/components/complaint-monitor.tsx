@@ -637,6 +637,14 @@ export const ComplaintMonitor = () => {
                         <span className="text-xs font-medium text-slate-600">
                           {CATEGORY_LABELS[complaint.category] || complaint.category}
                         </span>
+                        {complaint.ai_label && (
+                          <span
+                            className="ml-1 rounded border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-amber-700 uppercase"
+                            title="AI flagged this photo as non-grievance"
+                          >
+                            AI: {complaint.ai_label}
+                          </span>
+                        )}
                       </div>
                     </td>
                     {activeTab !== 'unapproved' && (

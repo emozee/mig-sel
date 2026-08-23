@@ -18,7 +18,7 @@ export const useIsOfficial = () => {
       const metadataRole =
         (session.user?.app_metadata?.role as string | undefined) ??
         (session.user?.user_metadata?.role as string | undefined);
-      return (data?.role ?? metadataRole) === 'official';
+      return ['official', 'super_admin'].includes((data?.role ?? metadataRole) ?? '');
     },
     enabled: !!session?.user?.id,
   });

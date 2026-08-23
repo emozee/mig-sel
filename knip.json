@@ -1,0 +1,8 @@
+{
+  "entry": ["src/main.tsx", "src/test/**/*.{ts,tsx}"],
+  "ignore": [
+    "supabase/functions/**",
+    "scripts/**",
+    "src/types/database.ts"
+  ]
+}

@@ -11,12 +11,12 @@ export const complaintKeys = {
 export const useComplaints = () => {
   return useQuery({
     queryKey: complaintKeys.all,
-    staleTime: 120_000,
+    staleTime: 60_000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('grievances')
         .select(
-          'id, title, description, category, status, urgency, latitude, longitude, image_url, resolved_image_url, created_at, resolved_at, parent_id, reporter_id, approved, bonus_awarded',
+          'id, title, description, category, status, urgency, latitude, longitude, image_url, resolved_image_url, created_at, resolved_at, parent_id, reporter_id, approved, bonus_awarded, ai_label',
         )
         .order('created_at', { ascending: false })
         .limit(500);
