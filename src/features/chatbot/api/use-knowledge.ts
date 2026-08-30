@@ -1,11 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import type { KnowledgeItem } from '../types';
+import type { KnowledgeItem, UnansweredQuestion } from '../types';
 
 export const knowledgeKeys = {
   all: ['knowledge'] as const,
   list: () => [...knowledgeKeys.all, 'list'] as const,
   search: (query: string) => [...knowledgeKeys.all, 'search', query] as const,
+  unanswered: () => [...knowledgeKeys.all, 'unanswered'] as const,
 };
 
 function mapKnowledge(raw: Record<string, unknown>): KnowledgeItem {
@@ -35,13 +36,18 @@ export const useKnowledge = () => {
   });
 };
 
+type SearchResult = {
+  best: KnowledgeItem;
+  alternatives: KnowledgeItem[];
+} | null;
+
 export const useSearchKnowledge = (query: string) => {
   return useQuery({
     queryKey: knowledgeKeys.search(query),
     staleTime: 300_000,
     retry: 1,
     refetchOnWindowFocus: false,
-    queryFn: async (): Promise<KnowledgeItem | null> => {
+    queryFn: async (): Promise<SearchResult> => {
       if (!query.trim()) return null;
 
       const { data, error } = await supabase.rpc('search_chatbot_knowledge', {
@@ -52,15 +58,20 @@ export const useSearchKnowledge = (query: string) => {
 
       if (!data || data.length === 0) return null;
 
-      const best = data[0];
-      return {
-        id: best.id as number,
-        question: best.question as string,
-        answer: best.answer as string,
-        keywords: (best.keywords as string[]) ?? [],
+      const toItem = (row: Record<string, unknown>): KnowledgeItem => ({
+        id: row.id as number,
+        question: row.question as string,
+        answer: row.answer as string,
+        keywords: (row.keywords as string[]) ?? [],
         created_at: '',
         updated_at: undefined,
-        score: (best.similarity_score as number) ?? 0,
+        score: (row.similarity_score as number) ?? 0,
+      });
+
+      const best = toItem(data[0]);
+      return {
+        best,
+        alternatives: data.slice(0, 3).map(toItem),
       };
     },
     enabled: query.trim().length > 0,
@@ -125,5 +136,59 @@ export const useDeleteKnowledge = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: knowledgeKeys.all });
     },
+  });
+};
+
+export const useUnansweredQuestions = () => {
+  return useQuery({
+    queryKey: knowledgeKeys.unanswered(),
+    staleTime: 60_000,
+    queryFn: async (): Promise<UnansweredQuestion[]> => {
+      const { data, error } = await supabase
+        .from('chatbot_unanswered')
+        .select('id, question, matched_question, score, created_at')
+        .order('created_at', { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return (data ?? []) as UnansweredQuestion[];
+    },
+  });
+};
+
+export const useDeleteUnanswered = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const { error } = await supabase.from('chatbot_unanswered').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: knowledgeKeys.unanswered() });
+    },
+  });
+};
+
+type LogUnansweredInput = {
+  question: string;
+  matchedQuestion?: string | null;
+  score?: number | null;
+};
+
+export const useLogUnanswered = () => {
+  return useMutation({
+    mutationFn: async ({ question, matchedQuestion, score }: LogUnansweredInput) => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const { error } = await supabase.from('chatbot_unanswered').insert({
+        question,
+        matched_question: matchedQuestion ?? null,
+        score: score ?? null,
+        user_id: session?.user?.id ?? null,
+      });
+      if (error) throw error;
+    },
+    retry: false,
   });
 };

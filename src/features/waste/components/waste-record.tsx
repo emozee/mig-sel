@@ -41,6 +41,23 @@ import { useRestoreWasteRecord } from '@/features/waste/api/use-restore-waste-re
 import { CATEGORIES, CATEGORY_LABELS } from '@/features/waste/constants';
 import type { WasteRecord as WasteRecordType, WasteCategory } from '@/features/waste/types';
 
+const CATEGORY_DOT_COLORS: Record<string, string> = {
+  'organic-food': 'bg-emerald-500',
+  'paper-cardboard': 'bg-blue-500',
+  'plastic-soft-packaging': 'bg-amber-500',
+  'plastic-pet-hdpe': 'bg-red-500',
+  textile: 'bg-purple-500',
+  glass: 'bg-cyan-500',
+  'metal-aluminum': 'bg-indigo-500',
+  'e-waste': 'bg-orange-500',
+  'infectious-waste': 'bg-rose-500',
+  'leather-rubber': 'bg-stone-500',
+  wood: 'bg-yellow-600',
+  'sanitary-waste': 'bg-slate-500',
+  'green-plant-materials': 'bg-green-600',
+  'construction-demolition': 'bg-amber-700',
+};
+
 export const WasteRecord = () => {
   const { data: records = [], isLoading } = useWasteRecords();
   const { data: archived = [], isLoading: archivedLoading } = useArchivedWasteRecords();
@@ -341,8 +358,8 @@ export const WasteRecord = () => {
 
       {viewMode === 'active' && (
         <div className="overflow-hidden rounded-xl border border-slate-200/60 bg-white shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+          <div className="hidden overflow-x-auto sm:block">
+            <table className="w-full min-w-[640px] text-left text-sm">
               <thead>
                 <tr className="border-b border-slate-200/60">
                   <th className="bg-slate-50/75 px-5 py-3.5 text-xs font-semibold tracking-wider text-slate-500 uppercase">
@@ -381,22 +398,6 @@ export const WasteRecord = () => {
                   </tr>
                 ) : (
                   paginatedRecords.map((record) => {
-                    const dotColor: Record<string, string> = {
-                      'organic-food': 'bg-emerald-500',
-                      'paper-cardboard': 'bg-blue-500',
-                      'plastic-soft-packaging': 'bg-amber-500',
-                      'plastic-pet-hdpe': 'bg-red-500',
-                      textile: 'bg-purple-500',
-                      glass: 'bg-cyan-500',
-                      'metal-aluminum': 'bg-indigo-500',
-                      'e-waste': 'bg-orange-500',
-                      'infectious-waste': 'bg-rose-500',
-                      'leather-rubber': 'bg-stone-500',
-                      wood: 'bg-yellow-600',
-                      'sanitary-waste': 'bg-slate-500',
-                      'green-plant-materials': 'bg-green-600',
-                      'construction-demolition': 'bg-amber-700',
-                    };
                     return (
                       <tr
                         key={record.id}
@@ -494,7 +495,7 @@ export const WasteRecord = () => {
                             <td className="px-5 py-3.5">
                               <div className="flex items-center gap-2.5">
                                 <span
-                                  className={`inline-block h-2 w-2 rounded-full ${dotColor[record.category] || 'bg-slate-400'} ring-1 ring-slate-900/5`}
+                                  className={`inline-block h-2 w-2 rounded-full ${CATEGORY_DOT_COLORS[record.category] || 'bg-slate-400'} ring-1 ring-slate-900/5`}
                                 />
                                 <span className="text-sm font-medium text-slate-900">
                                   {CATEGORY_LABELS[record.category]}
@@ -594,6 +595,185 @@ export const WasteRecord = () => {
             </table>
           </div>
 
+          <div className="divide-y divide-slate-100 sm:hidden">
+            {isLoading ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="animate-pulse space-y-2 p-4">
+                  <div className="h-4 w-1/2 rounded bg-slate-200" />
+                  <div className="h-5 w-1/3 rounded bg-slate-100" />
+                </div>
+              ))
+            ) : paginatedRecords.length === 0 ? (
+              <div className="text-muted-foreground px-4 py-16 text-center text-sm">
+                No waste records found
+              </div>
+            ) : (
+              paginatedRecords.map((record) =>
+                editingId === record.id && editForm ? (
+                  <div key={record.id} className="space-y-3 p-4">
+                    <select
+                      value={editForm.category}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, category: e.target.value as WasteCategory })
+                      }
+                      aria-label="Category"
+                      className="border-input bg-background text-foreground focus-visible:border-ring focus-visible:ring-ring/30 h-10 w-full rounded-lg border px-2 text-sm outline-none focus-visible:ring-2"
+                    >
+                      {CATEGORIES.map((c) => (
+                        <option key={c.value} value={c.value}>
+                          {c.label}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="flex gap-2">
+                      <Input
+                        type="text"
+                        inputMode="decimal"
+                        value={editQuantityStr}
+                        onChange={(e) => setEditQuantityStr(e.target.value)}
+                        aria-label="Quantity"
+                        className="h-10 flex-1"
+                      />
+                      <select
+                        value={editForm.unit}
+                        onChange={(e) => setEditForm({ ...editForm, unit: e.target.value })}
+                        aria-label="Unit"
+                        className="border-input bg-background text-foreground focus-visible:border-ring focus-visible:ring-ring/30 h-10 w-24 rounded-lg border px-2 text-sm outline-none focus-visible:ring-2"
+                      >
+                        <option value="kg">kg</option>
+                        <option value="ton">ton</option>
+                        <option value="liter">L</option>
+                        <option value="cubic meter">m³</option>
+                      </select>
+                    </div>
+                    <Input
+                      type="date"
+                      value={editForm.reportedAt}
+                      onChange={(e) => setEditForm({ ...editForm, reportedAt: e.target.value })}
+                      max={new Date().toISOString().split('T')[0]}
+                      aria-label="Date"
+                      className="h-10"
+                    />
+                    <textarea
+                      value={editForm.notes || ''}
+                      onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
+                      placeholder="Remarks..."
+                      aria-label="Remarks"
+                      className="border-input bg-background text-foreground placeholder:text-muted-foreground/50 min-h-[60px] w-full resize-none rounded-lg border px-2 py-1.5 text-sm outline-none"
+                    />
+                    <div className="flex items-center justify-end gap-2 pt-1">
+                      <button
+                        onClick={() => {
+                          setEditingId(null);
+                          setEditForm(null);
+                          setEditQuantityStr('');
+                        }}
+                        className="text-muted-foreground hover:bg-accent hover:text-foreground rounded-lg px-3 py-1.5 text-sm font-medium transition-all"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={() => handleUpdate(editForm)}
+                        disabled={updateRecord.isPending}
+                        className="bg-primary hover:bg-primary/90 text-primary-foreground inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold transition-all disabled:opacity-40"
+                      >
+                        <Check className="h-4 w-4" />
+                        Save
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div key={record.id} className="p-4">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex min-w-0 items-center gap-2.5">
+                        <span
+                          className={`inline-block h-2 w-2 shrink-0 rounded-full ${CATEGORY_DOT_COLORS[record.category] || 'bg-slate-400'} ring-1 ring-slate-900/5`}
+                        />
+                        <span className="truncate text-sm font-semibold text-slate-900">
+                          {CATEGORY_LABELS[record.category]}
+                        </span>
+                      </div>
+                      <div className="relative shrink-0">
+                        <button
+                          onClick={() =>
+                            setDropdownOpenId(dropdownOpenId === record.id ? null : record.id)
+                          }
+                          aria-label={`Actions for ${CATEGORY_LABELS[record.category]}`}
+                          className="rounded-lg p-1.5 text-slate-400 transition-all hover:bg-slate-100 hover:text-slate-700"
+                        >
+                          <MoreVertical className="h-4 w-4" />
+                        </button>
+                        {dropdownOpenId === record.id && (
+                          <div
+                            ref={dropdownRef}
+                            className="bg-card border-border absolute top-full right-0 z-50 mt-1 w-36 rounded-lg border py-1 shadow-lg"
+                          >
+                            <button
+                              onClick={() => {
+                                setDropdownOpenId(null);
+                                const remaining = 2 - (record.editCount ?? 0);
+                                if (remaining <= 0) {
+                                  setEditLimitDialog({ record });
+                                  return;
+                                }
+                                setEditConfirmDialog({ record });
+                              }}
+                              className="text-foreground hover:bg-accent flex w-full items-center gap-2 px-3 py-2 text-sm transition-colors"
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                              <span className="flex items-center gap-1.5">
+                                Edit
+                                {(record.editCount ?? 0) > 0 && (
+                                  <span className="text-muted-foreground/60 text-xs">
+                                    ({record.editCount}/2)
+                                  </span>
+                                )}
+                              </span>
+                            </button>
+                            <button
+                              onClick={() => {
+                                setDropdownOpenId(null);
+                                setDeleteConfirm({ record });
+                              }}
+                              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-600 transition-colors hover:bg-red-50"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                              Delete
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="mt-2 flex flex-wrap items-baseline justify-between gap-x-3">
+                      <span className="font-semibold whitespace-nowrap text-slate-900 tabular-nums">
+                        {Number(record.quantity).toLocaleString(undefined, {
+                          maximumFractionDigits: 2,
+                        })}
+                        <span className="ml-1 text-xs font-normal text-slate-400">
+                          {record.unit}
+                        </span>
+                      </span>
+                      <span className="font-mono text-sm text-slate-600 tabular-nums">
+                        {record.reportedAt}
+                      </span>
+                    </div>
+                    {(record.notes || record.editCount > 0 || editedIds.has(record.id)) && (
+                      <p
+                        className="mt-1.5 line-clamp-3 text-xs break-words text-slate-500 italic"
+                        title={record.notes || undefined}
+                      >
+                        {record.notes || ''}
+                        {(record.editCount > 0 || editedIds.has(record.id)) && (
+                          <span className="text-muted-foreground/40 ml-1 not-italic">(edited)</span>
+                        )}
+                      </p>
+                    )}
+                  </div>
+                ),
+              )
+            )}
+          </div>
+
           <div className="border-t border-slate-100 px-5 py-3.5">
             <Pagination
               currentPage={currentPage}
@@ -612,8 +792,8 @@ export const WasteRecord = () => {
 
       {viewMode === 'archived' && (
         <div className="overflow-hidden rounded-xl border border-slate-200/60 bg-white shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+          <div className="hidden overflow-x-auto sm:block">
+            <table className="w-full min-w-[640px] text-left text-sm">
               <thead>
                 <tr className="border-b border-slate-200/60">
                   <th className="bg-slate-50/75 px-5 py-3.5 text-xs font-semibold tracking-wider text-slate-500 uppercase">
@@ -709,6 +889,68 @@ export const WasteRecord = () => {
                 )}
               </tbody>
             </table>
+          </div>
+
+          <div className="divide-y divide-slate-100 sm:hidden">
+            {archivedLoading ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="animate-pulse space-y-2 p-4">
+                  <div className="h-4 w-1/2 rounded bg-slate-200" />
+                  <div className="h-5 w-1/3 rounded bg-slate-100" />
+                </div>
+              ))
+            ) : archived.length === 0 ? (
+              <div className="text-muted-foreground px-4 py-16 text-center text-sm">
+                No archived records
+              </div>
+            ) : (
+              archived.map((record) => (
+                <div key={record.id} className="p-4">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex min-w-0 items-center gap-2.5">
+                      <span
+                        className={`inline-block h-2 w-2 shrink-0 rounded-full ${CATEGORY_DOT_COLORS[record.category] || 'bg-slate-400'} ring-1 ring-slate-900/5`}
+                      />
+                      <span className="text-foreground truncate text-sm font-semibold">
+                        {CATEGORY_LABELS[record.category]}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => restoreRecord.mutate(record.id)}
+                      disabled={restoreRecord.isPending}
+                      className="text-muted-foreground flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-all duration-150 hover:bg-blue-50 hover:text-blue-600 disabled:opacity-40"
+                      title="Restore"
+                    >
+                      <RotateCcw className="h-4 w-4" />
+                      Restore
+                    </button>
+                  </div>
+                  <div className="mt-2 flex flex-wrap items-baseline justify-between gap-x-3">
+                    <span className="text-foreground font-semibold tabular-nums">
+                      {Number(record.quantity).toLocaleString(undefined, {
+                        maximumFractionDigits: 2,
+                      })}
+                      <span className="text-muted-foreground/50 ml-1 text-xs font-normal">
+                        {record.unit}
+                      </span>
+                    </span>
+                    <span className="text-muted-foreground font-mono text-sm tabular-nums">
+                      {record.reportedAt}
+                    </span>
+                  </div>
+                  {record.deletedAt && (
+                    <p className="text-muted-foreground mt-1.5 text-xs">
+                      Archived on {new Date(record.deletedAt).toLocaleDateString()}
+                    </p>
+                  )}
+                  {record.deletionReason && (
+                    <p className="text-muted-foreground mt-1 text-sm break-words whitespace-pre-wrap">
+                      {record.deletionReason}
+                    </p>
+                  )}
+                </div>
+              ))
+            )}
           </div>
         </div>
       )}

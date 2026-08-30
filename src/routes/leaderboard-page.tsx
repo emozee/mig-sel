@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Leaderboard } from '@/features/gamification/components/leaderboard';
 import { MapDock } from '@/components/layout/map-dock';
+import { FloatingChat } from '@/features/chatbot/components/floating-chat';
 
 export const LeaderboardPage = () => {
   const navigate = useNavigate();
@@ -32,6 +33,10 @@ export const LeaderboardPage = () => {
         <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
           <Leaderboard />
         </div>
+      </div>
+
+      <div className="fixed right-4 bottom-24 z-40">
+        <FloatingChat />
       </div>
 
       <MapDock />
