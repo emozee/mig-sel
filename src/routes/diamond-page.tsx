@@ -5,6 +5,7 @@ import { DiamondCreator } from '@/features/diamonds/components/diamond-creator';
 import { DiamondFeed } from '@/features/diamonds/components/diamond-feed';
 import { AnnouncementsBanner } from '@/features/announcements/components/announcements-banner';
 import { MapDock } from '@/components/layout/map-dock';
+import { FloatingChat } from '@/features/chatbot/components/floating-chat';
 
 export const DiamondPage = () => {
   const navigate = useNavigate();
@@ -64,6 +65,10 @@ export const DiamondPage = () => {
         )}
 
         <DiamondFeed />
+      </div>
+
+      <div className="fixed right-4 bottom-24 z-40">
+        <FloatingChat />
       </div>
 
       <MapDock />

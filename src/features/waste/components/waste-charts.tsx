@@ -159,55 +159,6 @@ function CustomTooltip({
   );
 }
 
-function wrapLabel(label: string, maxChars: number): string[] {
-  const lines: string[] = [];
-  let remaining = label;
-  while (remaining.length > maxChars) {
-    const breakAt = remaining.lastIndexOf(' ', maxChars);
-    const breakAtAlt = remaining.lastIndexOf('/', maxChars);
-    const breakAtAmp = remaining.lastIndexOf('&', maxChars);
-    const bestBreak = Math.max(breakAt, breakAtAlt, breakAtAmp);
-    if (bestBreak <= 0) {
-      lines.push(remaining.slice(0, maxChars));
-      remaining = remaining.slice(maxChars);
-    } else {
-      lines.push(remaining.slice(0, bestBreak));
-      remaining = remaining.slice(bestBreak + 1);
-    }
-  }
-  if (remaining) lines.push(remaining);
-  return lines;
-}
-
-function CustomXAxisTick({
-  x,
-  y,
-  payload,
-}: {
-  x?: number;
-  y?: number;
-  payload?: { value: string };
-}) {
-  if (!payload) return null;
-  const lines = wrapLabel(payload.value, 11);
-  return (
-    <text
-      x={x}
-      y={(y ?? 0) + 4}
-      fill="hsl(var(--muted-foreground))"
-      fontSize={11}
-      fontWeight={500}
-      textAnchor="middle"
-    >
-      {lines.map((line, i) => (
-        <tspan key={i} x={x} dy={i === 0 ? 0 : 13}>
-          {line}
-        </tspan>
-      ))}
-    </text>
-  );
-}
-
 function WasteBarChart({
   data,
   title,
@@ -227,7 +178,7 @@ function WasteBarChart({
       )}
     >
       <CardHeader className="pb-2">
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-4">
           <CardTitle className="text-foreground text-base font-semibold">{title}</CardTitle>
           {controls}
         </div>
@@ -243,7 +194,7 @@ function WasteBarChart({
           <ResponsiveContainer width="100%" height={320}>
             <BarChart
               data={data}
-              margin={{ left: 0, right: 16, top: 12, bottom: 100 }}
+              margin={{ left: 0, right: 16, top: 12, bottom: 8 }}
               barCategoryGap="25%"
             >
               <CartesianGrid
@@ -255,12 +206,9 @@ function WasteBarChart({
               <XAxis
                 type="category"
                 dataKey="category"
-                tick={<CustomXAxisTick />}
+                tick={false}
                 axisLine={false}
                 tickLine={false}
-                tickMargin={8}
-                interval={0}
-                height={100}
               />
               <YAxis
                 type="number"
@@ -293,6 +241,20 @@ function WasteBarChart({
               </Bar>
             </BarChart>
           </ResponsiveContainer>
+          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1.5">
+            {data.map((entry, index) => (
+              <span
+                key={index}
+                className="text-muted-foreground inline-flex min-w-0 items-center gap-1.5 text-xs"
+              >
+                <span
+                  className="h-2.5 w-2.5 shrink-0 rounded-full ring-1 ring-black/5"
+                  style={{ backgroundColor: entry.color }}
+                />
+                <span className="truncate">{entry.category}</span>
+              </span>
+            ))}
+          </div>
         </CardContent>
       )}
     </Card>
@@ -367,14 +329,14 @@ export const WasteCharts = () => {
 
   return (
     <div className="animate-fade-in space-y-6">
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
         <div>
           <h2 className="text-foreground text-lg font-semibold">Waste Management</h2>
           <p className="text-muted-foreground text-sm">
             Waste quantity by category across different periods
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 sm:self-start">
           <label htmlFor="year-select" className="text-muted-foreground text-sm whitespace-nowrap">
             Year
           </label>
@@ -400,7 +362,7 @@ export const WasteCharts = () => {
           let controls: React.ReactNode = null;
           if (p === 'weekly') {
             controls = (
-              <div className="flex items-center gap-2">
+              <div className="flex min-w-0 basis-full items-center gap-2 sm:basis-auto">
                 <select
                   value={weeklyMonth}
                   onChange={(e) => {
@@ -409,7 +371,7 @@ export const WasteCharts = () => {
                       getWeeksInMonth(Number(selectedYear), Number(e.target.value))[0],
                     );
                   }}
-                  className="border-input bg-background text-foreground focus:border-ring focus:ring-ring/30 h-8 rounded-md border px-2 text-sm outline-none focus:ring-2"
+                  className="border-input bg-background text-foreground focus:border-ring focus:ring-ring/30 h-8 w-full min-w-0 flex-1 rounded-md border px-2 text-sm outline-none focus:ring-2 sm:w-auto sm:flex-none"
                 >
                   {MONTH_LABELS.map((label, i) => (
                     <option key={i} value={i}>
@@ -420,7 +382,7 @@ export const WasteCharts = () => {
                 <select
                   value={selectedWeek}
                   onChange={(e) => setSelectedWeek(Number(e.target.value))}
-                  className="border-input bg-background text-foreground focus:border-ring focus:ring-ring/30 h-8 rounded-md border px-2 text-sm outline-none focus:ring-2"
+                  className="border-input bg-background text-foreground focus:border-ring focus:ring-ring/30 h-8 w-full min-w-0 flex-1 rounded-md border px-2 text-sm outline-none focus:ring-2 sm:w-auto sm:flex-none"
                 >
                   {weeksInWeeklyMonth.map((w, i) => (
                     <option key={w} value={w}>
@@ -438,7 +400,7 @@ export const WasteCharts = () => {
                   setSelectedMonth(Number(e.target.value));
                   setSelectedWeek(getWeeksInMonth(Number(selectedYear), Number(e.target.value))[0]);
                 }}
-                className="border-input bg-background text-foreground focus:border-ring focus:ring-ring/30 h-8 rounded-md border px-2 text-sm outline-none focus:ring-2"
+                className="border-input bg-background text-foreground focus:border-ring focus:ring-ring/30 h-8 w-full min-w-0 basis-full rounded-md border px-2 text-sm outline-none focus:ring-2 sm:w-auto sm:basis-auto"
               >
                 {MONTH_LABELS.map((label, i) => (
                   <option key={i} value={i}>
@@ -452,7 +414,7 @@ export const WasteCharts = () => {
               <select
                 value={selectedQuarter}
                 onChange={(e) => setSelectedQuarter(Number(e.target.value))}
-                className="border-input bg-background text-foreground focus:border-ring focus:ring-ring/30 h-8 rounded-md border px-2 text-sm outline-none focus:ring-2"
+                className="border-input bg-background text-foreground focus:border-ring focus:ring-ring/30 h-8 w-full min-w-0 basis-full rounded-md border px-2 text-sm outline-none focus:ring-2 sm:w-auto sm:basis-auto"
               >
                 {QUARTER_LABELS.map((label, i) => (
                   <option key={i} value={i}>

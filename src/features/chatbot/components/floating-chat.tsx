@@ -1,12 +1,13 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { X, Send, Bot, User, Loader2 } from 'lucide-react';
-import { useSearchKnowledge } from '../api/use-knowledge';
+import { useSearchKnowledge, useLogUnanswered } from '../api/use-knowledge';
 import { Linkify } from '@/components/ui/linkify';
 import { DEFAULT_RESPONSE, SUGGESTED_QUESTIONS } from '../utils/constants';
 
 interface Message {
   role: 'bot' | 'user';
   text: string;
+  chips?: string[];
 }
 
 export const FloatingChat = () => {
@@ -21,10 +22,22 @@ export const FloatingChat = () => {
   const [pendingQuery, setPendingQuery] = useState('');
   const submitCountRef = useRef(0);
   const lastProcessedRef = useRef(0);
+  const loggedQuestionsRef = useRef<Set<string>>(new Set());
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const { data: knowledgeResult, isFetching, isError } = useSearchKnowledge(pendingQuery);
+  const logUnanswered = useLogUnanswered();
+
+  const logIfNew = useCallback(
+    (question: string, matchedQuestion: string | null, score: number | null) => {
+      const key = question.trim().toLowerCase();
+      if (loggedQuestionsRef.current.has(key)) return;
+      loggedQuestionsRef.current.add(key);
+      logUnanswered.mutate({ question: question.trim(), matchedQuestion, score });
+    },
+    [logUnanswered],
+  );
 
   const addBotResponse = useCallback((text: string) => {
     setMessages((prev) => [...prev, { role: 'bot', text }]);
@@ -51,21 +64,32 @@ export const FloatingChat = () => {
     }
 
     if (!knowledgeResult) {
-      addBotResponse(DEFAULT_RESPONSE);
+      logIfNew(pendingQuery, null, null);
+      addBotResponse(`${DEFAULT_RESPONSE}\n\nYou can also ask neighbors in the Reports Feed.`);
       setPendingQuery('');
       return;
     }
 
-    const score = knowledgeResult.score ?? 0;
-    let text = knowledgeResult.answer;
+    const { best, alternatives } = knowledgeResult;
+    const score = best.score ?? 0;
 
     if (score < 0.35) {
-      text = `Did you mean: "${knowledgeResult.question}"?\n\n${text}`;
+      logIfNew(pendingQuery, best.question, score);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'bot',
+          text: 'Did you mean one of these?',
+          chips: alternatives.map((a) => a.question),
+        },
+      ]);
+      setPendingQuery('');
+      return;
     }
 
-    addBotResponse(text);
+    addBotResponse(best.answer);
     setPendingQuery('');
-  }, [pendingQuery, isFetching, isError, knowledgeResult, addBotResponse]);
+  }, [pendingQuery, isFetching, isError, knowledgeResult, addBotResponse, logIfNew]);
 
   useEffect(() => {
     if (open) inputRef.current?.focus();
@@ -122,14 +146,30 @@ export const FloatingChat = () => {
                 >
                   {msg.role === 'bot' ? <Bot className="h-3 w-3" /> : <User className="h-3 w-3" />}
                 </div>
-                <div
-                  className={`max-w-[85%] rounded-2xl px-2.5 py-1.5 text-[11px] leading-relaxed ${
-                    msg.role === 'bot'
-                      ? 'rounded-tl-sm bg-gray-50 text-gray-700'
-                      : 'bg-primary rounded-tr-sm text-white'
-                  }`}
-                >
-                  {msg.role === 'bot' ? <Linkify>{msg.text}</Linkify> : msg.text}
+                <div className="flex max-w-[85%] flex-col items-start gap-1.5">
+                  <div
+                    className={`w-fit rounded-2xl px-2.5 py-1.5 text-[11px] leading-relaxed ${
+                      msg.role === 'bot'
+                        ? 'rounded-tl-sm bg-gray-50 text-gray-700'
+                        : 'bg-primary rounded-tr-sm text-white'
+                    }`}
+                  >
+                    {msg.role === 'bot' ? <Linkify>{msg.text}</Linkify> : msg.text}
+                  </div>
+                  {msg.chips && msg.chips.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {msg.chips.map((chip) => (
+                        <button
+                          key={chip}
+                          type="button"
+                          onClick={() => handleSuggestion(chip)}
+                          className="hover:border-primary hover:text-primary rounded-full border border-gray-200 bg-white px-2 py-1 text-left text-[10px] text-gray-600 transition-colors"
+                        >
+                          {chip}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

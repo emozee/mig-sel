@@ -7,3 +7,11 @@ export interface KnowledgeItem {
   updated_at?: string;
   score?: number;
 }
+
+export interface UnansweredQuestion {
+  id: number;
+  question: string;
+  matched_question: string | null;
+  score: number | null;
+  created_at: string;
+}

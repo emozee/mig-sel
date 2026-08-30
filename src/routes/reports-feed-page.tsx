@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router';
 import { ArrowLeft } from 'lucide-react';
 import { ActivityFeed } from '@/features/reports-feed/components/activity-feed';
 import { MapDock } from '@/components/layout/map-dock';
+import { FloatingChat } from '@/features/chatbot/components/floating-chat';
 
 export const ReportsFeedPage = () => {
   const navigate = useNavigate();
@@ -22,6 +23,10 @@ export const ReportsFeedPage = () => {
 
       <div className="mx-auto max-w-lg px-3 pt-3 pb-24">
         <ActivityFeed />
+      </div>
+
+      <div className="fixed right-4 bottom-24 z-40">
+        <FloatingChat />
       </div>
 
       <MapDock />

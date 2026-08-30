@@ -130,7 +130,10 @@ export const AdminPage = () => {
         </header>
 
         <main className="flex-1 overflow-auto">
-          <div className="mx-auto px-4 py-8 sm:px-6 lg:px-8" style={{ maxWidth: '1200px' }}>
+          <div
+            className="mx-auto px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8"
+            style={{ maxWidth: '1200px' }}
+          >
             {activeView !== 'complaint' && activeView !== 'inspector' && activeView !== 'role' && (
               <div className="animate-in fade-in-0 slide-in-from-top-2 mb-8 hidden duration-500 [animation-delay:100ms] md:block">
                 <div className="flex items-center gap-4">
@@ -170,7 +173,7 @@ export const AdminPage = () => {
                       type="button"
                       onClick={() => setAnalyticsTab('waste')}
                       className={cn(
-                        'flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-all',
+                        'flex flex-1 items-center justify-center gap-2 rounded-lg px-2 py-2.5 text-xs font-semibold transition-all sm:px-4 sm:text-sm',
                         analyticsTab === 'waste'
                           ? 'bg-primary text-primary-foreground shadow-xs'
                           : 'text-muted-foreground hover:text-foreground hover:bg-accent/60',
@@ -183,7 +186,7 @@ export const AdminPage = () => {
                       type="button"
                       onClick={() => setAnalyticsTab('complaint')}
                       className={cn(
-                        'flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-all',
+                        'flex flex-1 items-center justify-center gap-2 rounded-lg px-2 py-2.5 text-xs font-semibold transition-all sm:px-4 sm:text-sm',
                         analyticsTab === 'complaint'
                           ? 'bg-primary text-primary-foreground shadow-xs'
                           : 'text-muted-foreground hover:text-foreground hover:bg-accent/60',

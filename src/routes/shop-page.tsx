@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Pagination } from '@/components/ui/pagination';
 import { useUserProfile } from '@/features/gamification/api/use-user-profile';
 import { MapDock } from '@/components/layout/map-dock';
+import { FloatingChat } from '@/features/chatbot/components/floating-chat';
 
 const ITEMS = [
   {
@@ -195,6 +196,10 @@ export const ShopPage = () => {
             </Button>
           </div>
         )}
+      </div>
+
+      <div className="fixed right-4 bottom-24 z-40">
+        <FloatingChat />
       </div>
 
       <MapDock />

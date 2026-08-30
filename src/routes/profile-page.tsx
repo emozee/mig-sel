@@ -16,6 +16,7 @@ import { useMyReports } from '@/features/complaint/api/use-my-reports';
 import { useMyDiamonds } from '@/features/diamonds/api/use-my-diamonds';
 import { EditProfileDialog } from '@/features/gamification/components/edit-profile-dialog';
 import { MapDock } from '@/components/layout/map-dock';
+import { FloatingChat } from '@/features/chatbot/components/floating-chat';
 
 export const ProfilePage = () => {
   const navigate = useNavigate();
@@ -181,6 +182,10 @@ export const ProfilePage = () => {
             {profile?.role === 'super_admin' ? 'Super Admin Dashboard' : 'Admin Dashboard'}
           </button>
         )}
+      </div>
+
+      <div className="fixed right-4 bottom-24 z-40">
+        <FloatingChat />
       </div>
 
       <MapDock />
