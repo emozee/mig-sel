@@ -12,6 +12,7 @@ interface Message {
   id: number;
   role: 'bot' | 'user';
   text: string;
+  chips?: string[];
 }
 
 let msgCounter = 0;
@@ -58,19 +59,29 @@ export const ChatPage = () => {
     }
 
     if (!knowledgeResult) {
-      addBotResponse(DEFAULT_RESPONSE);
+      addBotResponse(`${DEFAULT_RESPONSE}\n\nYou can also ask neighbors in the Reports Feed.`);
       setPendingQuery('');
       return;
     }
 
-    const score = knowledgeResult.score ?? 0;
-    let text = knowledgeResult.answer;
+    const { best, alternatives } = knowledgeResult;
+    const score = best.score ?? 0;
 
     if (score < 0.35) {
-      text = `Did you mean: "${knowledgeResult.question}"?\n\n${text}`;
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: ++msgCounter,
+          role: 'bot',
+          text: 'Did you mean one of these?',
+          chips: alternatives.map((a) => a.question),
+        },
+      ]);
+      setPendingQuery('');
+      return;
     }
 
-    addBotResponse(text);
+    addBotResponse(best.answer);
     setPendingQuery('');
   }, [pendingQuery, isFetching, isError, knowledgeResult, addBotResponse]);
 
@@ -125,14 +136,30 @@ export const ChatPage = () => {
               >
                 {msg.role === 'bot' ? <Bot className="h-4 w-4" /> : <User className="h-4 w-4" />}
               </div>
-              <div
-                className={`max-w-[80%] rounded-2xl px-3.5 py-2 text-sm leading-relaxed ${
-                  msg.role === 'bot'
-                    ? 'rounded-tl-sm bg-white text-gray-700 shadow-[0_1px_3px_rgba(0,0,0,0.06)]'
-                    : 'bg-primary rounded-tr-sm text-white'
-                }`}
-              >
-                {msg.role === 'bot' ? <Linkify>{msg.text}</Linkify> : msg.text}
+              <div className="flex max-w-[80%] flex-col items-start gap-2">
+                <div
+                  className={`w-fit rounded-2xl px-3.5 py-2 text-sm leading-relaxed ${
+                    msg.role === 'bot'
+                      ? 'rounded-tl-sm bg-white text-gray-700 shadow-[0_1px_3px_rgba(0,0,0,0.06)]'
+                      : 'bg-primary rounded-tr-sm text-white'
+                  }`}
+                >
+                  {msg.role === 'bot' ? <Linkify>{msg.text}</Linkify> : msg.text}
+                </div>
+                {msg.chips && msg.chips.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {msg.chips.map((chip) => (
+                      <button
+                        key={chip}
+                        type="button"
+                        onClick={() => handleSuggestion(chip)}
+                        className="hover:border-primary hover:text-primary rounded-full border border-gray-200 bg-white px-3 py-1.5 text-left text-xs text-gray-600 shadow-sm transition-colors"
+                      >
+                        {chip}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           ))}

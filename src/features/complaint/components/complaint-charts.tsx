@@ -149,7 +149,7 @@ export const ComplaintCharts = () => {
       ) : (
         <>
           {/* Summary stats */}
-          <div className="grid grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
             <Card
               size="sm"
               className="!p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
@@ -218,14 +218,14 @@ export const ComplaintCharts = () => {
 
           {/* Unified category analytics card: bar chart (75%) + compact distribution (25%) */}
           <Card className="overflow-hidden">
-            <div className="flex">
+            <div className="flex flex-col lg:flex-row">
               {/* Bar chart — 75% */}
-              <div className="flex-[3] border-r">
-                <div className="flex items-baseline gap-3 px-8 pt-6 pb-1">
+              <div className="flex-[3] border-b pb-2 lg:border-r lg:border-b-0 lg:pb-0">
+                <div className="flex items-baseline gap-3 px-4 pt-6 pb-1 sm:px-8">
                   <p className="text-muted-foreground text-sm font-bold tracking-wide uppercase">
                     Complaints by Category
                   </p>
-                  <p className="text-muted-foreground/40 text-[11px] font-medium">
+                  <p className="text-muted-foreground/40 text-[11px] font-medium max-sm:hidden">
                     Count per category
                   </p>
                 </div>
@@ -344,13 +344,13 @@ export const ComplaintCharts = () => {
               </div>
 
               {/* Distribution list — 25% */}
-              <div className="min-w-0 flex-[1]">
+              <div className="min-w-0 flex-[1] lg:pl-2">
                 <div className="px-4 pt-5 pb-2">
                   <p className="text-muted-foreground text-[10px] font-bold tracking-wide uppercase">
                     Distribution
                   </p>
                 </div>
-                <div className="space-y-0.5 px-2 pb-5">
+                <div className="grid gap-0.5 px-4 pb-5 sm:grid-cols-2 sm:px-2 lg:grid-cols-1">
                   {categoryData.map((entry) => {
                     const pct =
                       summary.total > 0 ? ((entry.count / summary.total) * 100).toFixed(0) : '0';
@@ -392,10 +392,10 @@ export const ComplaintCharts = () => {
           {/* Unified status analytics card: pie chart (75%) + compact distribution (25%) */}
           {statusData.length > 0 && (
             <Card className="overflow-hidden">
-              <div className="flex">
+              <div className="flex flex-col lg:flex-row">
                 {/* Pie chart — 75% */}
-                <div className="flex-[3] border-r">
-                  <div className="flex items-center justify-between px-8 pt-6 pb-1">
+                <div className="flex-[3] border-b pb-2 lg:border-r lg:border-b-0 lg:pb-0">
+                  <div className="flex items-center justify-between px-4 pt-6 pb-1 sm:px-8">
                     <p className="text-muted-foreground text-sm font-bold tracking-wide uppercase">
                       Complaints by Status
                     </p>
@@ -407,16 +407,32 @@ export const ComplaintCharts = () => {
                           data={statusData}
                           cx="50%"
                           cy="50%"
-                          innerRadius={85}
-                          outerRadius={135}
+                          innerRadius={64}
+                          outerRadius={104}
                           paddingAngle={4}
                           dataKey="value"
                           cornerRadius={8}
                           stroke="hsl(var(--background))"
                           strokeWidth={3}
-                          label={({ name, percent }) =>
-                            `${name ?? ''} ${((percent ?? 0) * 100).toFixed(0)}%`
-                          }
+                          label={(props: {
+                            name?: string;
+                            percent?: number;
+                            x?: number;
+                            y?: number;
+                            textAnchor?: 'start' | 'middle' | 'end' | 'inherit';
+                          }) => (
+                            <text
+                              x={props.x}
+                              y={props.y}
+                              textAnchor={props.textAnchor}
+                              dominantBaseline="middle"
+                              fontSize={11}
+                              fontWeight={600}
+                              fill="hsl(var(--foreground))"
+                            >
+                              {`${props.name ?? ''} ${((props.percent ?? 0) * 100).toFixed(0)}%`}
+                            </text>
+                          )}
                           labelLine={{
                             stroke: 'hsl(var(--muted-foreground))',
                             strokeWidth: 1.5,
@@ -460,13 +476,13 @@ export const ComplaintCharts = () => {
                 </div>
 
                 {/* Distribution list — 25% */}
-                <div className="min-w-0 flex-[1]">
+                <div className="min-w-0 flex-[1] lg:pl-2">
                   <div className="px-4 pt-5 pb-2">
                     <p className="text-muted-foreground text-[10px] font-bold tracking-wide uppercase">
                       Distribution
                     </p>
                   </div>
-                  <div className="space-y-0.5 px-2 pb-5">
+                  <div className="grid gap-0.5 px-4 pb-5 sm:grid-cols-3 sm:px-2 lg:grid-cols-1">
                     {statusData.map((entry) => {
                       const pct =
                         summary.total > 0 ? ((entry.value / summary.total) * 100).toFixed(0) : '0';
