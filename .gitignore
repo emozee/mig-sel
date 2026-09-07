@@ -21,3 +21,6 @@ npm-debug.log*
 
 # Personal investor/pitching materials (repos are public)
 Pitching course/
+
+# AI handoff doc — local context only, never commit
+AGENTS.md
