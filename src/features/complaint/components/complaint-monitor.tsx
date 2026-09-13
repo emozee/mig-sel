@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef, startTransition } from 'react';
+import { useNavigate } from 'react-router';
 import {
   ChevronDown,
   Clock,
@@ -36,6 +37,7 @@ import { awardPointsForStatus } from '@/features/complaint/utils/award-points';
 type ActiveTab = 'total' | 'unapproved' | ComplaintStatus;
 
 export const ComplaintMonitor = () => {
+  const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [activeTab, setActiveTab] = useState<ActiveTab>('total');
@@ -1183,9 +1185,25 @@ export const ComplaintMonitor = () => {
                 style={{ borderColor: '#e5e2e1' }}
               >
                 <div className="mb-4 flex items-start justify-between">
-                  <h3 className="text-sm font-bold" style={{ color: '#1c1b1b' }}>
-                    Complaint Details
-                  </h3>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <h3 className="text-sm font-bold" style={{ color: '#1c1b1b' }}>
+                      Complaint Details
+                    </h3>
+                    {previewComplaint.latitude != null && previewComplaint.longitude != null && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          navigate(
+                            `/map?lat=${previewComplaint.latitude}&lng=${previewComplaint.longitude}`,
+                          )
+                        }
+                        className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-600 transition-colors hover:text-emerald-700"
+                      >
+                        <MapPin className="h-3.5 w-3.5" />
+                        Find on Map
+                      </button>
+                    )}
+                  </div>
                   <button
                     type="button"
                     onClick={() => setPreviewComplaint(null)}
