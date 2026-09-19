@@ -11,3 +11,7 @@ declare namespace Deno {
 
 declare module 'https://deno.land/*';
 declare module 'https://esm.sh/*';
+
+declare const EdgeRuntime: {
+  waitUntil(promise: Promise<unknown>): void;
+};
