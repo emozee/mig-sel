@@ -1,6 +1,7 @@
 import { Navigate, Outlet } from 'react-router';
 import { useSession } from '@/features/auth/api/use-session';
 import { Loader2 } from 'lucide-react';
+import { NotificationBell } from '@/features/notifications/components/notification-bell';
 
 export const ProtectedRoute = () => {
   const { data: session, isLoading } = useSession();
@@ -15,5 +16,10 @@ export const ProtectedRoute = () => {
 
   if (!session) return <Navigate to="/" replace />;
 
-  return <Outlet />;
+  return (
+    <>
+      <Outlet />
+      <NotificationBell />
+    </>
+  );
 };

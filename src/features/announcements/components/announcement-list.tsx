@@ -12,6 +12,7 @@ import {
   Megaphone,
   AlertTriangle,
   Timer,
+  MapPin,
 } from 'lucide-react';
 
 export const AnnouncementList = () => {
@@ -99,7 +100,7 @@ export const AnnouncementList = () => {
                 <p className="mt-2 text-sm leading-relaxed whitespace-pre-wrap text-gray-600">
                   <Linkify>{a.body}</Linkify>
                 </p>
-                <div className="mt-3 flex items-center gap-3 text-[11px] text-gray-400">
+                <div className="mt-3 flex flex-wrap items-center gap-3 text-[11px] text-gray-400">
                   <span className="flex items-center gap-1">
                     <Calendar className="h-3 w-3" />
                     {new Date(a.created_at).toLocaleDateString('en-US', {
@@ -116,6 +117,10 @@ export const AnnouncementList = () => {
                         : `Expires ${new Date(a.expires_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`}
                     </span>
                   )}
+                  <span className="flex items-center gap-1 font-medium text-gray-500">
+                    <MapPin className="h-3 w-3" />
+                    {a.target_location ?? 'All locations'}
+                  </span>
                   <span className="font-medium text-gray-500">— Official</span>
                 </div>
               </div>

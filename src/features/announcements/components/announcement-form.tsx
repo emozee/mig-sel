@@ -1,8 +1,9 @@
 import { useState, useMemo } from 'react';
 import { useUserProfile } from '@/features/gamification/api/use-user-profile';
 import { useCreateAnnouncement } from '@/features/announcements/api/use-create-announcement';
-import { Megaphone, AlertTriangle, Loader2, Calendar } from 'lucide-react';
+import { Megaphone, AlertTriangle, Loader2, Calendar, MapPin } from 'lucide-react';
 import type { AnnouncementType } from '@/features/announcements/types';
+import { BHUTAN_DZONGKHAGS } from '@/lib/bhutan-locations';
 
 export const AnnouncementForm = () => {
   const { data: profile } = useUserProfile();
@@ -11,6 +12,7 @@ export const AnnouncementForm = () => {
   const [body, setBody] = useState('');
   const [type, setType] = useState<AnnouncementType>('announcement');
   const [customExpiry, setCustomExpiry] = useState('');
+  const [targetLocation, setTargetLocation] = useState('');
 
   const defaultExpiryDate = useMemo(() => {
     const d = new Date();
@@ -28,13 +30,20 @@ export const AnnouncementForm = () => {
     const expiresAt = customExpiry ? new Date(customExpiry + 'T23:59:59').toISOString() : undefined;
 
     mutation.mutate(
-      { title: title.trim(), body: body.trim(), type, expiresAt },
+      {
+        title: title.trim(),
+        body: body.trim(),
+        type,
+        expiresAt,
+        targetLocation: targetLocation || null,
+      },
       {
         onSuccess: () => {
           setTitle('');
           setBody('');
           setType('announcement');
           setCustomExpiry('');
+          setTargetLocation('');
         },
       },
     );
@@ -95,6 +104,28 @@ export const AnnouncementForm = () => {
           rows={4}
           className="w-full resize-none rounded-lg border border-gray-200 px-3 py-2 text-sm transition-colors outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-200"
         />
+        <label
+          className="block text-xs font-semibold text-gray-600"
+          htmlFor="announcement-location"
+        >
+          <span className="mb-1.5 flex items-center gap-1.5">
+            <MapPin className="h-3.5 w-3.5 text-gray-400" />
+            Notify residents in
+          </span>
+          <select
+            id="announcement-location"
+            value={targetLocation}
+            onChange={(e) => setTargetLocation(e.target.value)}
+            className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-normal text-gray-700 transition-colors outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-200"
+          >
+            <option value="">All locations</option>
+            {BHUTAN_DZONGKHAGS.map((location) => (
+              <option key={location} value={location}>
+                {location}
+              </option>
+            ))}
+          </select>
+        </label>
         <div className="flex items-center gap-2">
           <Calendar className="h-3.5 w-3.5 text-gray-400" />
           <input

@@ -1260,7 +1260,7 @@ export const GrievanceMap = ({
 
           <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-black/[0.03]" />
 
-          <div className="absolute top-4 right-4 z-[1000] flex items-center gap-1.5 md:gap-2">
+          <div className="absolute top-4 right-16 z-[1000] flex items-center gap-1.5 md:gap-2">
             <div className="hidden items-center gap-1.5 rounded-xl bg-white/90 px-2 py-1.5 text-[10px] font-bold tracking-wide text-gray-700 shadow-sm ring-1 ring-gray-200/50 backdrop-blur-md sm:flex md:gap-2 md:px-3 md:py-2 md:text-xs">
               <span className="relative flex h-1.5 w-1.5 md:h-2 md:w-2">
                 <span className="bg-primary/60 absolute inline-flex h-full w-full animate-ping rounded-full opacity-75" />

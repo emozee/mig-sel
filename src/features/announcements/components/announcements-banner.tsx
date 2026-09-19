@@ -9,6 +9,7 @@ import {
   ChevronRight,
   Loader2,
   ArrowRight,
+  MapPin,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Linkify } from '@/components/ui/linkify';
@@ -69,6 +70,12 @@ export const AnnouncementsBanner = () => {
                     </span>
                     <p className="text-foreground truncate text-sm font-bold">{a.title}</p>
                   </div>
+                  {a.target_location && (
+                    <span className="text-muted-foreground mt-1 flex items-center gap-1 text-[10px] font-semibold">
+                      <MapPin className="h-3 w-3" />
+                      {a.target_location}
+                    </span>
+                  )}
                   <Linkify className="text-muted-foreground mt-1 text-xs leading-relaxed">
                     {a.body}
                   </Linkify>
@@ -130,6 +137,12 @@ export const AnnouncementsBanner = () => {
                         )}
                         <p className="text-foreground truncate text-sm font-bold">{a.title}</p>
                       </div>
+                      {a.target_location && (
+                        <span className="text-muted-foreground mt-1 flex items-center gap-1 text-[10px] font-semibold">
+                          <MapPin className="h-3 w-3" />
+                          {a.target_location}
+                        </span>
+                      )}
                       <Linkify className="text-muted-foreground mt-1 text-xs leading-relaxed">
                         {a.body}
                       </Linkify>
