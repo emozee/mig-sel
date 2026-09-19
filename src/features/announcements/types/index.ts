@@ -10,6 +10,7 @@ export type Announcement = {
   created_at: string;
   updated_at: string;
   expires_at: string | null;
+  target_location: string | null;
 };
 
 export type AnnouncementWithAuthor = Announcement & {

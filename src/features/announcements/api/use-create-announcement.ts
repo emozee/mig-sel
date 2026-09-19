@@ -12,11 +12,13 @@ export const useCreateAnnouncement = () => {
       body,
       type,
       expiresAt,
+      targetLocation,
     }: {
       title: string;
       body: string;
       type?: AnnouncementType;
       expiresAt?: string | null;
+      targetLocation?: string | null;
     }) => {
       const {
         data: { user },
@@ -40,8 +42,11 @@ export const useCreateAnnouncement = () => {
           type: type ?? 'announcement',
           author_id: user.id,
           expires_at: defaultExpiry,
+          target_location: targetLocation || null,
         })
-        .select('id, title, body, type, author_id, is_pinned, expires_at, created_at, updated_at')
+        .select(
+          'id, title, body, type, author_id, is_pinned, expires_at, target_location, created_at, updated_at',
+        )
         .single();
 
       if (error) throw error;

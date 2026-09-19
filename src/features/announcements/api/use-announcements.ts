@@ -12,7 +12,9 @@ export const useAnnouncements = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('announcements')
-        .select('id, title, body, type, author_id, is_pinned, expires_at, created_at, updated_at')
+        .select(
+          'id, title, body, type, author_id, is_pinned, expires_at, target_location, created_at, updated_at',
+        )
         .order('is_pinned', { ascending: false })
         .order('created_at', { ascending: false })
         .limit(50);

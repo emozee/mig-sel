@@ -15,8 +15,7 @@ import { useGeoLocation } from '@/features/auth/grievance/hooks/use-geo-location
 import { uploadGrievanceImage } from '@/features/auth/grievance/components/use-upload-image';
 import { useCreateGrievance } from '@/features/auth/grievance/components/use-create-grievance';
 import { useCurrentUser } from '@/features/auth/api/use-current-user';
-import { classifyGrievanceImage } from '@/features/auth/grievance/api/classify-grievance-image';
-import type { ClassificationResult } from '@/features/auth/grievance/api/classify-grievance-image';
+import { queueGrievanceImageClassification } from '@/features/auth/grievance/api/classify-grievance-image';
 import {
   findDuplicateImage,
   computeFileHash,
@@ -35,7 +34,13 @@ const CATEGORIES = [
 
 export const ReportPage = () => {
   const navigate = useNavigate();
-  const { coords: gpsCoords, error: geoError, loading: geoLoading } = useGeoLocation();
+  const {
+    coords: gpsCoords,
+    error: geoError,
+    loading: geoLoading,
+    requestLocation,
+    supported: geoSupported,
+  } = useGeoLocation();
   const { user } = useCurrentUser();
   const [isUploading, setIsUploading] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
@@ -47,18 +52,12 @@ export const ReportPage = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('other');
-  const [showSpamDialog, setShowSpamDialog] = useState(false);
-  const [classificationResult, setClassificationResult] = useState<ClassificationResult | null>(
-    null,
-  );
-  const [pendingImageUrl, setPendingImageUrl] = useState<string | null>(null);
-  const [aiWarning, setAiWarning] = useState<string | null>(null);
   const fileHashRef = useRef<string | null>(null);
   const [showDuplicateImageDialog, setShowDuplicateImageDialog] = useState(false);
   const [duplicateImages, setDuplicateImages] = useState<DuplicateImageResult[]>([]);
 
-  const createGrievance = async (imageUrl: string, aiLabel?: string) => {
-    await mutation.mutateAsync({
+  const createGrievance = async (imageUrl: string) => {
+    return mutation.mutateAsync({
       title: title || 'Community Report',
       description: description || '',
       category: category || 'other',
@@ -67,7 +66,6 @@ export const ReportPage = () => {
       image_url: imageUrl,
       reporter_id: user?.id ?? null,
       image_hash: fileHashRef.current ?? undefined,
-      ai_label: aiLabel,
     });
   };
 
@@ -80,7 +78,12 @@ export const ReportPage = () => {
     }
 
     if (!gpsCoords) {
-      setMessage({ type: 'error', text: 'Location not available. Please wait for GPS detection.' });
+      setMessage({
+        type: 'error',
+        text: geoLoading
+          ? 'Please wait while we detect your location.'
+          : 'Turn on device location, then tap Try again. Your photo and details will stay here.',
+      });
       return;
     }
 
@@ -97,14 +100,10 @@ export const ReportPage = () => {
 
     if (fileHashRef.current) {
       try {
-        const dup = await findDuplicateImage(
-          fileHashRef.current,
-          gpsCoords.lat,
-          gpsCoords.lng,
-          10,
-        );
+        const dup = await findDuplicateImage(fileHashRef.current, gpsCoords.lat, gpsCoords.lng, 10);
 
         if (dup.length > 0) {
+          setIsChecking(false);
           setDuplicateImages(dup);
           setShowDuplicateImageDialog(true);
           return;
@@ -115,40 +114,21 @@ export const ReportPage = () => {
     }
 
     setIsChecking(false);
-    await doUploadClassifyAndCreate();
+    await doUploadAndCreate();
   };
 
-  const doUploadClassifyAndCreate = async () => {
+  const doUploadAndCreate = async () => {
     setIsUploading(true);
 
     try {
       const imageUrl = await uploadGrievanceImage(selectedFile!);
+      const grievance = await createGrievance(imageUrl);
 
-      const result = await classifyGrievanceImage(imageUrl, fileHashRef.current);
-
-      const isDefinitelySpam =
-        !result.is_grievance &&
-        result.top_label !== 'unknown' &&
-        result.top_label !== 'error' &&
-        result.top_label !== 'loading' &&
-        !result.error;
-
-      if (isDefinitelySpam) {
-        setClassificationResult(result);
-        setPendingImageUrl(imageUrl);
-        setShowSpamDialog(true);
-        return;
-      }
-
-      if (result.error) {
-        setAiWarning(
-          `AI photo check unavailable (${result.error}) — submitted for admin review.`,
-        );
-      } else {
-        setAiWarning(null);
-      }
-
-      await createGrievance(imageUrl);
+      // Moderation must never hold up a civic report. The Edge Function returns
+      // immediately and completes classification in the background.
+      void queueGrievanceImageClassification(grievance.id).catch((error) => {
+        console.error('Failed to queue AI photo moderation:', error);
+      });
 
       setMessage({ type: 'success', text: 'Report submitted to GMC successfully!' });
       setTimeout(() => navigate('/map'), 1500);
@@ -177,7 +157,6 @@ export const ReportPage = () => {
       return;
     }
     setMessage(null);
-    setAiWarning(null);
     setSelectedFile(files[0]);
     fileHashRef.current = null;
     computeFileHash(files[0])
@@ -209,7 +188,7 @@ export const ReportPage = () => {
           >
             <div className="bg-surface-container border-outline-variant flex items-center gap-3 rounded-lg border p-3">
               <MapPin className="text-primary h-5 w-5 shrink-0" />
-              <div className="text-body-sm">
+              <div className="text-body-sm min-w-0 flex-1">
                 <p className="font-bold">Your Location</p>
                 <p className="text-muted-foreground">
                   {geoError
@@ -220,7 +199,27 @@ export const ReportPage = () => {
                         ? 'Detecting your location...'
                         : 'Location unavailable'}
                 </p>
+                {geoError && geoSupported && (
+                  <p className="mt-1 text-xs text-amber-700">
+                    Turn on location, then try again. Your report will not be cleared.
+                  </p>
+                )}
               </div>
+              {!gpsCoords && geoSupported && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={geoLoading}
+                  onClick={() => {
+                    setMessage(null);
+                    requestLocation();
+                  }}
+                  className="shrink-0"
+                >
+                  {geoLoading ? 'Locating...' : 'Try again'}
+                </Button>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -289,13 +288,6 @@ export const ReportPage = () => {
               </div>
             </div>
 
-            {aiWarning && (
-              <div className="flex items-start gap-2 rounded-lg bg-amber-100 p-3 text-sm font-medium text-amber-900">
-                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                {aiWarning}
-              </div>
-            )}
-
             {message && (
               <div
                 className={`flex items-center gap-2 rounded-lg p-3 text-sm font-medium ${
@@ -363,81 +355,7 @@ export const ReportPage = () => {
                     onClick={async () => {
                       setShowDuplicateImageDialog(false);
                       setDuplicateImages([]);
-                      await doUploadClassifyAndCreate();
-                    }}
-                  >
-                    Submit anyway
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </DialogRoot>
-
-            <DialogRoot open={showSpamDialog} onOpenChange={setShowSpamDialog}>
-              <DialogContent className="max-w-sm">
-                <DialogHeader>
-                  <DialogTitle>Photo may not show an issue</DialogTitle>
-                  <DialogDescription>
-                    Our AI analysis suggests this photo may not show a valid civic issue
-                    {classificationResult ? (
-                      <>
-                        {' '}
-                        (detected as: <strong>{classificationResult.top_label}</strong>)
-                      </>
-                    ) : null}
-                    . You can still submit — an admin will review it.
-                  </DialogDescription>
-                </DialogHeader>
-
-                <div className="text-muted-foreground space-y-1 text-xs">
-                  {classificationResult?.scores &&
-                    Object.entries(classificationResult.scores)
-                      .sort(([, a], [, b]) => b - a)
-                      .slice(0, 3)
-                      .map(([label, score]) => (
-                        <div key={label} className="flex items-center justify-between">
-                          <span className="truncate">{label}</span>
-                          <span className="ml-2 shrink-0 font-mono">
-                            {(score * 100).toFixed(0)}%
-                          </span>
-                        </div>
-                      ))}
-                </div>
-
-                <DialogFooter className="gap-2 sm:gap-0">
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setShowSpamDialog(false);
-                      setClassificationResult(null);
-                      setPendingImageUrl(null);
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    variant="default"
-                    onClick={async () => {
-                      setShowSpamDialog(false);
-                      setIsUploading(true);
-                      try {
-                        await createGrievance(pendingImageUrl!, classificationResult?.top_label);
-                        setMessage({
-                          type: 'success',
-                          text: 'Report submitted to GMC successfully!',
-                        });
-                        setTimeout(() => navigate('/map'), 1500);
-                      } catch (error) {
-                        const messageText =
-                          error && typeof error === 'object' && 'message' in error
-                            ? String((error as { message: string }).message)
-                            : 'Failed to submit. Please try again.';
-                        toast.error(messageText);
-                        setMessage({ type: 'error', text: messageText });
-                      } finally {
-                        setIsUploading(false);
-                        setPendingImageUrl(null);
-                        setClassificationResult(null);
-                      }
+                      await doUploadAndCreate();
                     }}
                   >
                     Submit anyway

@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { normalizeBhutanLocation } from './bhutan-locations';
 
 const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/reverse';
 
@@ -18,7 +19,8 @@ async function reverseGeocode(lat: number, lng: number): Promise<string | null> 
     });
     if (!res.ok) return null;
     const data = (await res.json()) as NominatimResult;
-    return data.address?.state ?? data.address?.county ?? null;
+    const location = data.address?.state ?? data.address?.county;
+    return location ? normalizeBhutanLocation(location) : null;
   } catch {
     return null;
   }

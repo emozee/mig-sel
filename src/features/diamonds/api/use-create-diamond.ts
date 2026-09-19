@@ -23,32 +23,14 @@ export const useCreateDiamond = () => {
         imageUrls = await uploadDiamondImages(files);
       }
 
-      const payload: Record<string, unknown> = {
-        user_id: user.id,
-        body,
-        image_urls: imageUrls,
-      };
-
-      if (linkedGrievanceId) {
-        payload.linked_grievance_id = linkedGrievanceId;
-      }
-
-      const { data, error } = await supabase.from('diamonds').insert(payload).select('id').single();
+      const { error } = await supabase.rpc('create_diamond_with_collaborators', {
+        p_body: body,
+        p_image_urls: imageUrls,
+        p_linked_grievance_id: linkedGrievanceId ?? null,
+        p_collaborator_ids: collaboratorIds ?? [],
+      });
 
       if (error) throw error;
-
-      const diamondId = data.id as number;
-
-      if (collaboratorIds && collaboratorIds.length > 0) {
-        const { error: collabError } = await supabase.from('diamond_collaborators').insert(
-          collaboratorIds.map((cid) => ({
-            diamond_id: diamondId,
-            user_id: cid,
-          })),
-        );
-
-        if (collabError) throw collabError;
-      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: diamondKeys.all });
