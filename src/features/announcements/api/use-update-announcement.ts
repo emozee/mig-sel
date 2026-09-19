@@ -13,24 +13,29 @@ export const useUpdateAnnouncement = () => {
       body,
       type,
       is_pinned,
+      target_location,
     }: {
       id: number;
       title?: string;
       body?: string;
       type?: AnnouncementType;
       is_pinned?: boolean;
+      target_location?: string | null;
     }) => {
-      const updates: Record<string, string | boolean> = {};
+      const updates: Record<string, string | boolean | null> = {};
       if (title !== undefined) updates.title = title;
       if (body !== undefined) updates.body = body;
       if (type !== undefined) updates.type = type;
       if (is_pinned !== undefined) updates.is_pinned = is_pinned;
+      if (target_location !== undefined) updates.target_location = target_location;
 
       const { data, error } = await supabase
         .from('announcements')
         .update(updates)
         .eq('id', id)
-        .select('id, title, body, type, author_id, is_pinned, expires_at, created_at, updated_at')
+        .select(
+          'id, title, body, type, author_id, is_pinned, expires_at, target_location, created_at, updated_at',
+        )
         .single();
 
       if (error) throw error;

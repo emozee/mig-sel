@@ -5,6 +5,7 @@
 // hosting entirely, so a VLM chat-completions approach is used instead.
 // Features:
 //  - Structured reply parsing with confidence score (synonym fallback if model is chatty)
+//  - Queued moderation so report submission never waits for model inference
 //  - Retry with backoff on transient provider errors (429/5xx/network)
 //  - Result cache keyed by image SHA-256 so repeat uploads never pay for AI twice
 // Requires HUGGINGFACE_API_KEY secret. Uses auto-injected SUPABASE_URL +
@@ -67,7 +68,10 @@ const CORS_HEADERS = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
-function jsonResponse(body: ClassificationResult | Record<string, unknown>, status = 200): Response {
+function jsonResponse(
+  body: ClassificationResult | Record<string, unknown>,
+  status = 200,
+): Response {
   return new Response(JSON.stringify(body), {
     status,
     headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
@@ -151,14 +155,16 @@ async function fetchWithRetry(url: string, init: RequestInit, attempts = 3): Pro
       if (!resp.ok && [429, 500, 502, 503, 504].includes(resp.status)) {
         lastError = new Error(`HTTP ${resp.status}`);
         console.warn(`Transient HF error ${resp.status}, attempt ${attempt}/${attempts}`);
-        await sleep(1000 * attempt);
-        continue;
+        if (attempt < attempts) {
+          await sleep(1000 * attempt);
+          continue;
+        }
       }
       return resp;
     } catch (err) {
       lastError = err;
       console.warn(`Network error calling HF, attempt ${attempt}/${attempts}:`, err);
-      await sleep(1000 * attempt);
+      if (attempt < attempts) await sleep(1000 * attempt);
     }
   }
   throw lastError instanceof Error ? lastError : new Error('HF request failed');
@@ -226,41 +232,95 @@ async function writeCache(
   }
 }
 
-serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: CORS_HEADERS });
-  }
+interface GrievanceForModeration {
+  id: string;
+  reporter_id: string | null;
+  image_url: string | null;
+  image_hash: string | null;
+}
 
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function getJwtSubject(req: Request): string | null {
+  try {
+    const authorization = req.headers.get('Authorization');
+    const token = authorization?.match(/^Bearer\s+(.+)$/i)?.[1];
+    const encodedPayload = token?.split('.')[1];
+    if (!encodedPayload) return null;
+
+    const base64 = encodedPayload.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, '=');
+    const payload = JSON.parse(atob(padded)) as { sub?: unknown };
+    return typeof payload.sub === 'string' ? payload.sub : null;
+  } catch {
+    return null;
+  }
+}
+
+async function getGrievance(grievanceId: string): Promise<GrievanceForModeration | null> {
+  if (!SUPABASE_URL || !SERVICE_ROLE_KEY) throw new Error('Supabase service credentials missing');
+
+  const url =
+    `${SUPABASE_URL}/rest/v1/grievances` +
+    `?select=id,reporter_id,image_url,image_hash&id=eq.${encodeURIComponent(grievanceId)}&limit=1`;
+  const resp = await fetch(url, {
+    headers: {
+      apikey: SERVICE_ROLE_KEY,
+      Authorization: `Bearer ${SERVICE_ROLE_KEY}`,
+    },
+  });
+  if (!resp.ok) throw new Error(`Failed to load grievance (${resp.status})`);
+
+  const rows = (await resp.json()) as GrievanceForModeration[];
+  return rows[0] ?? null;
+}
+
+async function storeAiLabel(grievanceId: string, label: string): Promise<void> {
+  if (!SUPABASE_URL || !SERVICE_ROLE_KEY) throw new Error('Supabase service credentials missing');
+
+  const resp = await fetch(
+    `${SUPABASE_URL}/rest/v1/grievances?id=eq.${encodeURIComponent(grievanceId)}`,
+    {
+      method: 'PATCH',
+      headers: {
+        apikey: SERVICE_ROLE_KEY,
+        Authorization: `Bearer ${SERVICE_ROLE_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ ai_label: label }),
+    },
+  );
+  if (!resp.ok) throw new Error(`Failed to store AI label (${resp.status})`);
+}
+
+async function classifyImage(imageUrl: string, hash: string | null): Promise<ClassificationResult> {
   if (!HF_TOKEN) {
-    return jsonResponse({
+    return {
       is_grievance: true,
       scores: {},
       top_label: 'unknown',
       top_score: 0,
       error: 'Hugging Face API key not configured. Image moderation is disabled.',
-    });
+    };
   }
 
   try {
-    const { image_url: imageUrl, hash } = (await req.json()) as {
-      image_url?: string;
-      hash?: string;
-    };
-
-    if (!imageUrl || typeof imageUrl !== 'string') {
-      return jsonResponse({ error: 'image_url is required' }, 400);
-    }
-
     // 1. Cache lookup — identical images are never classified twice.
-    if (typeof hash === 'string' && /^[a-f0-9]{64}$/i.test(hash)) {
+    if (hash && /^[a-f0-9]{64}$/i.test(hash)) {
       const cached = await readCache(hash);
-      if (cached) return jsonResponse(cached);
+      if (cached) return cached;
     }
 
     // 2. Fetch the image bytes.
     const imageResp = await fetch(imageUrl);
     if (!imageResp.ok) {
-      return jsonResponse({ error: 'Failed to fetch image' }, 400);
+      return {
+        is_grievance: true,
+        scores: {},
+        top_label: 'error',
+        top_score: 0,
+        error: `Failed to fetch image (${imageResp.status})`,
+      };
     }
     const imageBytes = new Uint8Array(await imageResp.arrayBuffer());
 
@@ -290,7 +350,7 @@ serve(async (req) => {
     if (!hfResp.ok) {
       const hfError = await hfResp.text();
       console.error('Hugging Face API error after retries:', hfResp.status, hfError);
-      return jsonResponse({
+      return {
         is_grievance: true,
         scores: {},
         top_label: hfResp.status === 503 ? 'loading' : 'error',
@@ -299,7 +359,7 @@ serve(async (req) => {
           hfResp.status === 503
             ? 'Model is loading. Please try again.'
             : `Hugging Face API error: ${hfResp.status} ${hfError.slice(0, 500)}`,
-      });
+      };
     }
 
     const result: unknown = await hfResp.json();
@@ -307,36 +367,36 @@ serve(async (req) => {
       ?.choices?.[0]?.message?.content;
 
     if (!content) {
-      return jsonResponse({
+      return {
         is_grievance: true,
         scores: {},
         top_label: 'unknown',
         top_score: 0,
         error: 'Unexpected response format from Hugging Face API',
-      });
+      };
     }
 
     const parsed = parseModelReply(content);
     if (!parsed) {
-      return jsonResponse({
+      return {
         is_grievance: true,
         scores: {},
         top_label: 'unknown',
         top_score: 0,
         error: `Unrecognized classification reply: ${content.slice(0, 120)}`,
-      });
+      };
     }
 
     const knownCategory = (ALL_CATEGORIES as readonly string[]).includes(parsed.category);
     const category = knownCategory ? parsed.category : extractCategory(parsed.category);
     if (!category) {
-      return jsonResponse({
+      return {
         is_grievance: true,
         scores: {},
         top_label: 'unknown',
         top_score: 0,
         error: `Unrecognized category: ${parsed.category.slice(0, 80)}`,
-      });
+      };
     }
 
     const isGrievance = (GRIEVANCE_CATEGORIES as readonly string[]).includes(category);
@@ -348,22 +408,71 @@ serve(async (req) => {
     };
 
     // 4. Persist to cache for future uploads of the same photo.
-    if (typeof hash === 'string' && /^[a-f0-9]{64}$/i.test(hash)) {
+    if (hash && /^[a-f0-9]{64}$/i.test(hash)) {
       await writeCache(hash, isGrievance, category, parsed.confidence);
     }
 
     console.log(
       `Classified ${hash ? hash.slice(0, 12) + '…' : '(no hash)'} → ${category} (${parsed.confidence})`,
     );
-    return jsonResponse(finalResult);
+    return finalResult;
   } catch (error) {
     console.error('Classification error:', error);
-    return jsonResponse({
+    return {
       is_grievance: true,
       scores: {},
       top_label: 'error',
       top_score: 0,
       error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+}
+
+async function moderateGrievance(grievance: GrievanceForModeration): Promise<void> {
+  if (!grievance.image_url) return;
+
+  const result = await classifyImage(grievance.image_url, grievance.image_hash);
+  if (result.error) {
+    console.warn(`Moderation skipped for grievance ${grievance.id}: ${result.error}`);
+    return;
+  }
+
+  if (!result.is_grievance) {
+    await storeAiLabel(grievance.id, result.top_label);
+    console.log(`Flagged grievance ${grievance.id} as ${result.top_label}`);
+  }
+}
+
+serve(async (req: Request) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers: CORS_HEADERS });
+  }
+  if (req.method !== 'POST') return jsonResponse({ error: 'Method not allowed' }, 405);
+
+  try {
+    const { grievance_id: grievanceId } = (await req.json()) as { grievance_id?: unknown };
+    if (typeof grievanceId !== 'string' || !UUID_PATTERN.test(grievanceId)) {
+      return jsonResponse({ error: 'A valid grievance_id is required' }, 400);
+    }
+
+    // The gateway verifies the JWT. Matching its subject to reporter_id prevents
+    // users from spending moderation quota on reports they do not own.
+    const requesterId = getJwtSubject(req);
+    if (!requesterId) return jsonResponse({ error: 'Authentication required' }, 401);
+
+    const grievance = await getGrievance(grievanceId);
+    if (!grievance) return jsonResponse({ error: 'Report not found' }, 404);
+    if (grievance.reporter_id !== requesterId) return jsonResponse({ error: 'Forbidden' }, 403);
+    if (!grievance.image_url) return jsonResponse({ error: 'Report has no image' }, 409);
+
+    const moderationTask = moderateGrievance(grievance).catch((error) => {
+      console.error(`Background moderation failed for grievance ${grievance.id}:`, error);
     });
+    EdgeRuntime.waitUntil(moderationTask);
+
+    return jsonResponse({ queued: true }, 202);
+  } catch (error) {
+    console.error('Failed to queue classification:', error);
+    return jsonResponse({ error: error instanceof Error ? error.message : 'Unknown error' }, 500);
   }
 });

@@ -155,5 +155,10 @@ export const useGeoLocation = () => {
     );
   }, [geoAvailable]);
 
-  return { ...state, requestLocation, permissionDenied: state.errorType === 'permission_denied' };
+  return {
+    ...state,
+    requestLocation,
+    supported: geoAvailable,
+    permissionDenied: state.errorType === 'permission_denied',
+  };
 };

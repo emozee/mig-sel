@@ -11,7 +11,6 @@ interface GrievanceInput {
   image_url: string;
   reporter_id: string | null;
   image_hash?: string;
-  ai_label?: string;
 }
 
 export const useCreateGrievance = () => {
