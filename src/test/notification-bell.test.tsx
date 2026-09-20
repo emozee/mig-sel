@@ -24,7 +24,7 @@ const unreadNotification: AppNotification = {
   body: 'Your road report is now resolved.',
   href: null,
   entityType: 'grievance',
-  entityId: 'report-1',
+  entityId: null,
   metadata: { status: 'resolved' },
   readAt: null,
   createdAt: new Date().toISOString(),
