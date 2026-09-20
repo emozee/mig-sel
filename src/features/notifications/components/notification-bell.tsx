@@ -24,6 +24,7 @@ import {
   useMarkNotificationRead,
   useNotifications,
 } from '../api/use-notifications';
+import { getNotificationDestination } from '../utils/get-notification-destination';
 import type { AppNotification, NotificationType } from '../types';
 
 const iconByType: Record<NotificationType, LucideIcon> = {
@@ -128,7 +129,8 @@ export const NotificationBell = () => {
       void queryClient.invalidateQueries({ queryKey: announcementsKeys.all() });
     }
     setOpen(false);
-    if (notification.href) navigate(notification.href);
+    const destination = getNotificationDestination(notification);
+    if (destination) navigate(destination);
   };
 
   return (
