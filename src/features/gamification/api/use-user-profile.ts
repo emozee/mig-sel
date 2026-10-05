@@ -11,7 +11,7 @@ export const useUserProfile = () => {
   const { data: session } = useSession();
 
   return useQuery({
-    queryKey: profileKeys.current(),
+    queryKey: [...profileKeys.current(), session?.user.id],
     queryFn: async () => {
       if (!session?.user?.id) return null;
 
