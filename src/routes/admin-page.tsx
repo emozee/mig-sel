@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useSearchParams } from 'react-router';
 import {
   ClipboardList,
   ChartPie,
@@ -11,6 +12,8 @@ import {
   Gem,
   Megaphone,
   Users,
+  BookOpenCheck,
+  ShoppingBag,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DashboardSidebar, type NavView } from '@/components/layout/dashboard-sidebar';
@@ -25,6 +28,8 @@ import { DiamondReview } from '@/features/diamonds/components/diamond-review';
 import { AnnouncementForm } from '@/features/announcements/components/announcement-form';
 import { AnnouncementList } from '@/features/announcements/components/announcement-list';
 import { UserAnalytics } from '@/features/admin/components/user-analytics';
+import { ServiceDirectory } from '@/features/admin/components/service-directory';
+import { ShopManagement } from '@/features/shop/components/shop-management';
 
 const iconMap: Record<NavView, typeof ClipboardList> = {
   complaint: ClipboardList,
@@ -36,10 +41,15 @@ const iconMap: Record<NavView, typeof ClipboardList> = {
   role: Shield,
   charts: ChartPie,
   knowledge: Brain,
+  directory: BookOpenCheck,
+  shop: ShoppingBag,
 };
 
 export const AdminPage = () => {
-  const [activeView, setActiveView] = useState<NavView>('complaint');
+  const [searchParams] = useSearchParams();
+  const [activeView, setActiveView] = useState<NavView>(() =>
+    searchParams.get('view') === 'shop' ? 'shop' : 'complaint',
+  );
   const [analyticsTab, setAnalyticsTab] = useState<'waste' | 'complaint'>('complaint');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -59,6 +69,14 @@ export const AdminPage = () => {
     role: { title: 'Role Assignment', description: 'Search and update user roles' },
     charts: { title: 'Analytics', description: 'Oversight panel for GMC waste management' },
     knowledge: { title: 'Knowledge Base', description: 'Manage chatbot Q&A pairs' },
+    directory: {
+      title: 'Ask MIGSEL Services',
+      description: 'Maintain verified providers, services, sources, keywords, and questions',
+    },
+    shop: {
+      title: 'Shop & Promotion',
+      description: 'Manage reward pricing, promotion dates, and recharge delivery',
+    },
   };
 
   const { title: pageTitle } = pageMeta[activeView];
@@ -188,9 +206,15 @@ export const AdminPage = () => {
               {activeView === 'complaint' && <ComplaintMonitor />}
             </div>
             {activeView === 'users' && <UserAnalytics />}
+            {activeView === 'shop' && <ShopManagement />}
             {activeView === 'knowledge' && (
               <div className="animate-in fade-in-0 slide-in-from-top-2 duration-500 [animation-delay:200ms]">
                 <KnowledgeBase />
+              </div>
+            )}
+            {activeView === 'directory' && (
+              <div className="animate-in fade-in-0 slide-in-from-top-2 duration-500 [animation-delay:200ms]">
+                <ServiceDirectory />
               </div>
             )}
             {activeView === 'diamond' && (

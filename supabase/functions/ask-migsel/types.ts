@@ -1,21 +1,3 @@
-export interface KnowledgeItem {
-  id: number;
-  question: string;
-  answer: string;
-  keywords: string[];
-  created_at: string;
-  updated_at?: string;
-  score?: number;
-}
-
-export interface UnansweredQuestion {
-  id: number;
-  question: string;
-  matched_question: string | null;
-  score: number | null;
-  created_at: string;
-}
-
 export type MigselIntent =
   | 'grievance'
   | 'government_service'
@@ -62,20 +44,36 @@ export interface AskMigselResponse {
   actions: AskMigselAction[];
 }
 
-export interface AskMigselHistoryMessage {
+export interface HistoryMessage {
   role: 'user' | 'assistant';
   content: string;
 }
 
-export interface AskMigselChatMessage {
-  id: string;
-  role: 'user' | 'assistant';
-  text: string;
-  response?: AskMigselResponse;
+export interface Classification {
+  intent: MigselIntent;
+  confidence: number;
+  normalizedQuery: string;
+  possibleServiceCategory: string | null;
+  possibleGrievanceCategory: string | null;
+  needsClarification: boolean;
+  clarificationQuestion: string | null;
+  serviceSearchQuery?: string;
+  questionKey?: string;
 }
 
-export interface AskMigselHandoff {
-  source: 'ask-migsel';
-  category?: string;
-  description: string;
+export interface ServiceSearchRow {
+  id: string;
+  name: string;
+  provider_name: string;
+  service_category: string;
+  description: string | null;
+  official_url: string | null;
+  requirements: string | null;
+  fees: string | null;
+  processing_time: string | null;
+  verified: boolean;
+  last_verified_at: string | null;
+  source_name: string | null;
+  source_url: string | null;
+  match_score: number;
 }

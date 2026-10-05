@@ -11,6 +11,7 @@ import {
   Loader2,
   Megaphone,
   MessageCircle,
+  ShoppingBag,
   X,
   type LucideIcon,
 } from 'lucide-react';
@@ -36,6 +37,8 @@ const iconByType: Record<NotificationType, LucideIcon> = {
   diamond_comment: MessageCircle,
   diamond_status: Gem,
   announcement: Megaphone,
+  shop_request: ShoppingBag,
+  shop_status: ShoppingBag,
 };
 
 function timeAgo(value: string): string {
@@ -127,6 +130,8 @@ export const NotificationBell = () => {
       void queryClient.invalidateQueries({ queryKey: diamondKeys.all });
     } else if (notification.type === 'announcement') {
       void queryClient.invalidateQueries({ queryKey: announcementsKeys.all() });
+    } else if (notification.type.startsWith('shop_')) {
+      void queryClient.invalidateQueries({ queryKey: ['shop'] });
     }
     setOpen(false);
     const destination = getNotificationDestination(notification);
