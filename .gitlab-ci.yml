@@ -6,8 +6,11 @@ stages:
 test:
   stage: test
   script:
-    - echo "Running tests..."
-    - npm install
+    - npm ci
+    - npm run lint
+    - npm run test
+    - npx --yes deno check supabase/functions/ask-migsel/index.ts
+    - npx --yes deno test supabase/functions/ask-migsel/classification_test.ts supabase/functions/ask-migsel/retrieval_test.ts
     - npm run build
   cache:
     key: $CI_COMMIT_REF_SLUG

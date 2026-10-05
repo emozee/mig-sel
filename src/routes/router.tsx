@@ -14,6 +14,7 @@ import { ReportsFeedPage } from './reports-feed-page';
 import { DiamondPage } from './diamond-page';
 import { ChatPage } from './chat-page';
 import { ShopPage } from './shop-page';
+import { ShopDetailPage } from './shop-detail-page';
 import { ProfilePage } from './profile-page';
 import { ProfileReportsPage } from './profile-reports-page';
 import { ProfileReportDetailPage } from './profile-report-detail-page';
@@ -79,8 +80,11 @@ export const router = createBrowserRouter([
   },
   {
     path: '/shop',
-    element: <ProtectedRoute />,
-    children: [{ index: true, element: <ShopPage /> }],
+    element: <ShopPage />,
+  },
+  {
+    path: '/shop/:slug',
+    element: <ShopDetailPage />,
   },
   {
     path: '/profile',

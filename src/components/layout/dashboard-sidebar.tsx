@@ -10,12 +10,15 @@ import {
   Gem,
   Megaphone,
   Users,
+  BookOpenCheck,
+  ShoppingBag,
   X,
 } from 'lucide-react';
 import { useNavigate } from 'react-router';
 
 import { cn } from '@/lib/utils';
 import { useSignOut } from '@/features/auth/api/use-sign-out';
+import { useUserProfile } from '@/features/gamification/api/use-user-profile';
 
 export type NavView =
   | 'complaint'
@@ -26,7 +29,9 @@ export type NavView =
   | 'charts'
   | 'knowledge'
   | 'diamond'
-  | 'users';
+  | 'users'
+  | 'directory'
+  | 'shop';
 
 const navItems = [
   { id: 'complaint' as const, label: 'Complaint Monitoring', icon: ClipboardList },
@@ -38,6 +43,8 @@ const navItems = [
   { id: 'role' as const, label: 'Role Assignment', icon: Shield },
   { id: 'charts' as const, label: 'Analytics', icon: ChartLine },
   { id: 'knowledge' as const, label: 'Knowledge Base', icon: Brain },
+  { id: 'directory' as const, label: 'Service Directory', icon: BookOpenCheck },
+  { id: 'shop' as const, label: 'Shop & Promotion', icon: ShoppingBag },
 ];
 
 export function DashboardSidebar({
@@ -53,6 +60,7 @@ export function DashboardSidebar({
 }) {
   const navigate = useNavigate();
   const signOut = useSignOut();
+  const { data: profile } = useUserProfile();
 
   return (
     <>
@@ -66,11 +74,15 @@ export function DashboardSidebar({
         <div className="flex h-16 shrink-0 items-center gap-3 border-b px-5">
           <button
             onClick={() => navigate('/map')}
-            className="flex cursor-pointer items-center gap-3 rounded-lg outline-none transition-transform duration-200 ease-out hover:scale-[1.04] active:scale-95 focus-visible:ring-2"
+            className="flex cursor-pointer items-center gap-3 rounded-lg transition-transform duration-200 ease-out outline-none hover:scale-[1.04] focus-visible:ring-2 active:scale-95"
             title="Go to map"
           >
             <div className="flex items-center justify-center">
-              <img src="/3d logo.png" alt="Logo" className="h-10 w-auto rounded-lg object-contain" />
+              <img
+                src="/3d logo.png"
+                alt="Logo"
+                className="h-10 w-auto rounded-lg object-contain"
+              />
             </div>
             <div className="flex items-center gap-2.5">
               <span className="text-foreground text-lg font-bold tracking-tight">MIGSEL</span>
@@ -95,6 +107,7 @@ export function DashboardSidebar({
               Main Menu
             </span>
             {navItems.map((item) => {
+              if (item.id === 'shop' && profile?.role !== 'super_admin') return null;
               const isActive = activeView === item.id;
               return (
                 <button

@@ -59,4 +59,13 @@ describe('getNotificationDestination', () => {
       ),
     ).toBe('/diamond');
   });
+
+  it('opens the exact recharge request for the user or superadmin', () => {
+    expect(
+      getNotificationDestination(createNotification('shop_status', { entityId: 'id/1' })),
+    ).toBe('/shop/mobile-recharge?request=id%2F1');
+    expect(
+      getNotificationDestination(createNotification('shop_request', { entityId: 'id/1' })),
+    ).toBe('/dashboard?view=shop&request=id%2F1');
+  });
 });

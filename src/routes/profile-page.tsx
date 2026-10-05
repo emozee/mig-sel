@@ -17,10 +17,12 @@ import { useMyDiamonds } from '@/features/diamonds/api/use-my-diamonds';
 import { EditProfileDialog } from '@/features/gamification/components/edit-profile-dialog';
 import { MapDock } from '@/components/layout/map-dock';
 import { FloatingChat } from '@/features/chatbot/components/floating-chat';
+import { useWallet } from '@/features/shop/api';
 
 export const ProfilePage = () => {
   const navigate = useNavigate();
   const { data: profile } = useUserProfile();
+  const wallet = useWallet();
   const { data: myReportsResult } = useMyReports(1, 1);
   const { data: myDiamonds } = useMyDiamonds(1, 1);
   const isOfficial = profile?.role === 'official' || profile?.role === 'super_admin';
@@ -112,8 +114,11 @@ export const ProfilePage = () => {
                 </div>
                 <div className="mt-1 flex items-baseline gap-1.5">
                   <span className="text-foreground text-2xl font-bold">{profile?.points ?? 0}</span>
-                  <span className="text-muted-foreground text-xs font-medium">points</span>
+                  <span className="text-muted-foreground text-xs font-medium">total earned</span>
                 </div>
+                <p className="mt-1 text-xs text-green-700">
+                  {wallet.data === undefined ? '—' : Math.max(0, wallet.data)} redeemable points
+                </p>
               </div>
             </div>
           </div>

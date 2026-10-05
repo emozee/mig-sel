@@ -38,39 +38,11 @@ export async function awardPointsForSubmission(
   reporterId: string | null | undefined,
   grievanceId?: string,
 ): Promise<void> {
-  if (!reporterId) return;
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('points')
-    .eq('id', reporterId)
-    .maybeSingle();
-
-  const currentPoints = profile?.points ?? 0;
-
-  const { data: updated, error: updateError } = await supabase
-    .from('profiles')
-    .update({ points: currentPoints + 1 })
-    .eq('id', reporterId)
-    .select('id');
-
-  if (updateError) throw updateError;
-
-  if (!updated || updated.length === 0) {
-    const { error: insertError } = await supabase
-      .from('profiles')
-      .insert({ id: reporterId, points: 1 });
-
-    if (insertError) throw insertError;
-  }
-
-  if (grievanceId) {
-    const { error: bonusError } = await supabase
-      .from('grievances')
-      .update({ bonus_awarded: 1 })
-      .eq('id', grievanceId);
-    if (bonusError) throw bonusError;
-  }
+  if (!reporterId || !grievanceId) return;
+  const { error } = await supabase.rpc('award_shop_submission_points', {
+    p_grievance_id: grievanceId,
+  });
+  if (error) throw error;
 }
 
 export async function revokeChildPoints(

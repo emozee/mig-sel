@@ -1,0 +1,14 @@
+begin;
+select plan(10);
+select ok((select relrowsecurity from pg_class where oid='public.point_wallets'::regclass), 'wallet RLS enabled');
+select ok((select relrowsecurity from pg_class where oid='public.shop_redemptions'::regclass), 'redemption RLS enabled');
+select ok(not has_table_privilege('anon','public.shop_redemptions','SELECT'), 'anonymous users cannot read raw phone records');
+select ok(not has_table_privilege('authenticated','public.point_wallets','UPDATE'), 'users cannot edit wallets');
+select ok(not has_table_privilege('authenticated','public.point_transactions','INSERT'), 'users cannot forge point transactions');
+select ok(not has_table_privilege('authenticated','public.shop_redemptions','UPDATE'), 'users cannot mark delivery or refund directly');
+select ok(has_function_privilege('anon','public.shop_recent_deliveries()','EXECUTE'), 'public masked announcements available');
+select ok(not has_function_privilege('anon','public.process_shop_recharge(uuid,text,text,text)','EXECUTE'), 'anonymous fulfilment forbidden');
+select ok(not has_function_privilege('authenticated','public.sync_redeemable_points()','EXECUTE'), 'wallet trigger cannot be invoked directly');
+select ok(has_function_privilege('authenticated','public.request_shop_recharge(uuid,uuid,integer,text,boolean,timestamptz,timestamptz)','EXECUTE'), 'signed-in users can request checked redemptions');
+select * from finish();
+rollback;
