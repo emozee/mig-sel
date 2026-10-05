@@ -20,7 +20,13 @@ import { useEditComment } from '../api/use-edit-comment';
 import { useDeleteComment } from '../api/use-delete-comment';
 import { useIsAdmin } from '@/features/auth/api/use-is-admin';
 import { CommentSection } from './comment-section';
-import { DialogRoot, DialogContent, DialogClose } from '@/components/ui/dialog';
+import {
+  DialogRoot,
+  DialogContent,
+  DialogClose,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ClickableImage } from '@/components/ui/image-viewer';
@@ -289,13 +295,16 @@ export const FeedItem = ({ item }: FeedItemProps) => {
           <DialogContent className="!inset-0 !top-0 !left-0 flex h-dvh w-full max-w-full !translate-x-0 !translate-y-0 !flex-col !rounded-none !border-0 !p-0 sm:max-w-full">
             <div className="mx-auto flex w-full max-w-lg flex-1 flex-col bg-white">
               <div className="flex items-center justify-between border-b border-gray-100 px-3 py-2">
-                <span className="text-sm font-semibold text-gray-900">Post</span>
+                <DialogTitle className="text-sm font-semibold text-gray-900">Post</DialogTitle>
                 <DialogClose asChild>
                   <button className="flex h-8 w-8 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600">
                     <X className="h-5 w-5" />
                   </button>
                 </DialogClose>
               </div>
+              <DialogDescription className="sr-only">
+                View the report and its comments.
+              </DialogDescription>
               <div className="flex-1 overflow-y-auto">{cardContent(true)}</div>
             </div>
           </DialogContent>
@@ -305,6 +314,10 @@ export const FeedItem = ({ item }: FeedItemProps) => {
       {/* Image viewer – image + like + comments (Facebook-style) */}
       <DialogRoot open={imageViewerOpen} onOpenChange={setImageViewerOpen}>
         <DialogContent className="!bg-primary/95 !inset-0 !top-0 !left-0 flex h-dvh w-full max-w-full !translate-x-0 !translate-y-0 !flex-col !rounded-none !border-0 !p-0 sm:max-w-full">
+          <DialogTitle className="sr-only">Report image and comments</DialogTitle>
+          <DialogDescription className="sr-only">
+            View the report image and manage comments.
+          </DialogDescription>
           {/* Close button */}
           <button
             onClick={(e) => {
@@ -397,18 +410,22 @@ export const FeedItem = ({ item }: FeedItemProps) => {
                               <span className="text-[10px] text-gray-400 italic">Edited</span>
                             )}
                             <div className="ml-auto flex items-center gap-1">
-                              {isAdmin && isCommentOwner && !isEditing && (
+                              {!isEditing && (isCommentOwner || isAdmin) && (
                                 <>
+                                  {isCommentOwner && (
+                                    <button
+                                      aria-label="Edit comment"
+                                      onClick={() => {
+                                        setEditingCommentId(comment.id);
+                                        setEditingBody(comment.body);
+                                      }}
+                                      className="text-gray-300 hover:text-gray-600"
+                                    >
+                                      <Edit3 className="h-3 w-3" />
+                                    </button>
+                                  )}
                                   <button
-                                    onClick={() => {
-                                      setEditingCommentId(comment.id);
-                                      setEditingBody(comment.body);
-                                    }}
-                                    className="text-gray-300 hover:text-gray-600"
-                                  >
-                                    <Edit3 className="h-3 w-3" />
-                                  </button>
-                                  <button
+                                    aria-label="Delete comment"
                                     onClick={() => {
                                       if (confirm('Delete this comment?')) {
                                         deleteComment({ commentId: comment.id, feedId: item.id });
@@ -483,8 +500,8 @@ export const FeedItem = ({ item }: FeedItemProps) => {
                 )}
               </div>
 
-              {/* Comment input – admin only */}
-              {user && isAdmin ? (
+              {/* Comment input */}
+              {user ? (
                 <form
                   onSubmit={handleIvSubmit}
                   className="flex flex-col gap-2 border-t border-gray-100 py-2"
@@ -542,10 +559,6 @@ export const FeedItem = ({ item }: FeedItemProps) => {
                     </Button>
                   </div>
                 </form>
-              ) : user ? (
-                <p className="border-t border-gray-100 py-2 text-center text-[11px] text-gray-400">
-                  Only admins can comment.
-                </p>
               ) : null}
             </div>
           </div>

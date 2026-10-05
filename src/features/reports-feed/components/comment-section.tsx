@@ -20,6 +20,7 @@ import {
   DialogContent,
   DialogClose,
   DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -78,11 +79,17 @@ export const CommentSection = ({ item }: CommentSectionProps) => {
             Comments ({comments?.length ?? 0})
           </DialogTitle>
           <DialogClose asChild>
-            <button className="flex h-7 w-7 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600">
+            <button
+              aria-label="Close comments"
+              className="flex h-7 w-7 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+            >
               <X className="h-4 w-4" />
             </button>
           </DialogClose>
         </div>
+        <DialogDescription className="sr-only">
+          Read comments and manage the comments you are allowed to change.
+        </DialogDescription>
 
         <div className="flex max-h-80 flex-col gap-3 overflow-y-auto pr-1">
           {isLoading ? (
@@ -105,7 +112,7 @@ export const CommentSection = ({ item }: CommentSectionProps) => {
           )}
         </div>
 
-        {user && isAdmin ? (
+        {user ? (
           <form
             onSubmit={handleSubmit}
             className="flex flex-col gap-2 border-t border-gray-100 pt-3"
@@ -163,10 +170,6 @@ export const CommentSection = ({ item }: CommentSectionProps) => {
               </Button>
             </div>
           </form>
-        ) : user ? (
-          <p className="border-t border-gray-100 pt-3 text-center text-xs text-gray-400">
-            Only admins can comment.
-          </p>
         ) : (
           <p className="border-t border-gray-100 pt-3 text-center text-xs text-gray-400">
             Sign in to add a comment.
@@ -292,8 +295,9 @@ function CommentRow({
               })}
             </span>
             {wasEdited && <span className="text-[11px] text-gray-400 italic">Edited</span>}
-            {isAdmin && isOwner && (
+            {isOwner && (
               <button
+                aria-label="Edit comment"
                 onClick={(e) => {
                   e.stopPropagation();
                   setEditing(true);
@@ -306,9 +310,10 @@ function CommentRow({
               </button>
             )}
           </div>
-          {isAdmin && isOwner && (
+          {(isOwner || isAdmin) && (
             <div className="relative" ref={menuRef}>
               <button
+                aria-label="Comment actions"
                 onClick={(e) => {
                   e.stopPropagation();
                   setMenuOpen((v) => !v);

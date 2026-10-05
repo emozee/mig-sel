@@ -6,7 +6,9 @@ export type NotificationType =
   | 'report_removed'
   | 'diamond_comment'
   | 'diamond_status'
-  | 'announcement';
+  | 'announcement'
+  | 'shop_request'
+  | 'shop_status';
 
 export interface AppNotification {
   id: number;

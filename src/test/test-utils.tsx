@@ -1,6 +1,6 @@
 import { type ReactNode } from 'react';
 import { render, type RenderOptions } from '@testing-library/react';
-import { createMemoryRouter, RouterProvider } from 'react-router';
+import { createMemoryRouter, RouterProvider, type InitialEntry } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 function createTestQueryClient() {
@@ -12,7 +12,7 @@ function createTestQueryClient() {
 }
 
 interface WrapperOptions {
-  initialEntries?: string[];
+  initialEntries?: InitialEntry[];
 }
 
 export function renderWithProviders(ui: ReactNode, options?: RenderOptions & WrapperOptions) {
@@ -22,7 +22,7 @@ export function renderWithProviders(ui: ReactNode, options?: RenderOptions & Wra
   const router = createMemoryRouter(
     [
       {
-        path: '/',
+        path: '*',
         element: <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
       },
     ],

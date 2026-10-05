@@ -9,3 +9,10 @@ export const SUGGESTED_QUESTIONS = [
   'What is the leaderboard?',
   'How do I view my profile?',
 ] as const;
+
+export const ASK_MIGSEL_QUICK_PROMPTS = [
+  'I lost my driving licence',
+  'I need to register my newborn',
+  'How do I transfer my land?',
+  'There is a pothole near my house',
+] as const;

@@ -12,5 +12,13 @@ export function getNotificationDestination(notification: AppNotification): strin
     }
   }
 
+  if (notification.type === 'shop_status' && notification.entityId) {
+    return `/shop/mobile-recharge?request=${encodeURIComponent(notification.entityId)}`;
+  }
+
+  if (notification.type === 'shop_request' && notification.entityId) {
+    return `/dashboard?view=shop&request=${encodeURIComponent(notification.entityId)}`;
+  }
+
   return notification.href;
 }

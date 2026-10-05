@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import { ArrowLeft, MapPin, Camera, CheckCircle, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -23,6 +23,7 @@ import {
 import type { DuplicateImageResult } from '@/features/auth/grievance/api/find-duplicate-image';
 import { ImageLightbox } from '@/features/auth/grievance/components/image-lightbox';
 import { MapDock } from '@/components/layout/map-dock';
+import type { AskMigselHandoff } from '@/features/chatbot/types';
 
 const CATEGORIES = [
   { value: 'road', label: 'Road Damage' },
@@ -34,6 +35,8 @@ const CATEGORIES = [
 
 export const ReportPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const handoff = (location.state as { askMigsel?: AskMigselHandoff } | null)?.askMigsel;
   const {
     coords: gpsCoords,
     error: geoError,
@@ -49,9 +52,13 @@ export const ReportPage = () => {
   const mutation = useCreateGrievance();
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [category, setCategory] = useState('other');
+  const [title, setTitle] = useState(() =>
+    handoff ? 'Civic issue reported through Ask MIGSEL' : '',
+  );
+  const [description, setDescription] = useState(() => handoff?.description ?? '');
+  const [category, setCategory] = useState(() =>
+    CATEGORIES.some((item) => item.value === handoff?.category) ? handoff!.category! : 'other',
+  );
   const fileHashRef = useRef<string | null>(null);
   const [showDuplicateImageDialog, setShowDuplicateImageDialog] = useState(false);
   const [duplicateImages, setDuplicateImages] = useState<DuplicateImageResult[]>([]);
@@ -186,6 +193,12 @@ export const ReportPage = () => {
               doSubmit();
             }}
           >
+            {handoff?.source === 'ask-migsel' && (
+              <div className="border-primary/20 bg-primary/5 text-primary rounded-lg border p-3 text-sm">
+                Ask MIGSEL pre-filled the category and description. Review everything, add the
+                required photo and location, then submit when you are ready.
+              </div>
+            )}
             <div className="bg-surface-container border-outline-variant flex items-center gap-3 rounded-lg border p-3">
               <MapPin className="text-primary h-5 w-5 shrink-0" />
               <div className="text-body-sm min-w-0 flex-1">

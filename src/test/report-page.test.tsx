@@ -99,4 +99,26 @@ describe('ReportPage', () => {
     expect(await screen.findByText('Report submitted to GMC successfully!')).toBeInTheDocument();
     expect(mocks.queueModeration).toHaveBeenCalledWith('123e4567-e89b-12d3-a456-426614174000');
   });
+
+  it('prefills but does not submit a grievance handed off by Ask MIGSEL', () => {
+    renderWithProviders(<ReportPage />, {
+      initialEntries: [
+        {
+          pathname: '/report',
+          state: {
+            askMigsel: {
+              source: 'ask-migsel',
+              category: 'road',
+              description: 'There is a pothole outside my house.',
+            },
+          },
+        },
+      ],
+    });
+
+    expect(screen.getByText(/Ask MIGSEL pre-filled/i)).toBeInTheDocument();
+    expect(screen.getByDisplayValue('There is a pothole outside my house.')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('Road Damage')).toBeInTheDocument();
+    expect(mocks.createGrievance).not.toHaveBeenCalled();
+  });
 });
