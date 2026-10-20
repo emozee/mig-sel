@@ -81,6 +81,32 @@ describe('ReportPage', () => {
     expect(screen.getByText('road.jpg')).toBeInTheDocument();
   });
 
+  it('submits the same photo after location recovers without a refresh', async () => {
+    renderWithProviders(<ReportPage />);
+    const input = document.querySelector<HTMLInputElement>('input[type="file"]');
+    const photo = new File(['photo'], 'drain.jpg', { type: 'image/jpeg' });
+
+    fireEvent.change(input!, { target: { files: [photo] } });
+    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+
+    Object.assign(mocks.geo, {
+      coords: { lat: 27.47, lng: 89.64 },
+      error: null,
+      errorType: null,
+    });
+    fireEvent.change(screen.getByPlaceholderText('Brief title for the report'), {
+      target: { value: 'Blocked drain' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Submit Report' }));
+
+    expect(await screen.findByText('Report submitted to GMC successfully!')).toBeInTheDocument();
+    expect(mocks.uploadImage).toHaveBeenCalledWith(photo);
+    expect(mocks.findDuplicateImage).toHaveBeenCalledWith('a'.repeat(64), 27.47, 89.64, 10);
+    expect(mocks.createGrievance).toHaveBeenCalledWith(
+      expect.objectContaining({ latitude: 27.47, longitude: 89.64 }),
+    );
+  });
+
   it('finishes submission without waiting for AI moderation', async () => {
     Object.assign(mocks.geo, {
       coords: { lat: 26.87, lng: 90.49 },

@@ -31,11 +31,20 @@ function setCachedPosition(lat: number, lng: number) {
 }
 
 function getErrorType(code: number): GeoLocationErrorType {
-  if (code === GeolocationPositionError.PERMISSION_DENIED) return 'permission_denied';
-  if (code === GeolocationPositionError.POSITION_UNAVAILABLE) return 'position_unavailable';
-  if (code === GeolocationPositionError.TIMEOUT) return 'timeout';
+  if (code === 1) return 'permission_denied';
+  if (code === 2) return 'position_unavailable';
+  if (code === 3) return 'timeout';
   return null;
 }
+
+function getErrorMessage(code: number) {
+  if (code === 1)
+    return 'Location permission denied. Enable location access in your browser settings.';
+  if (code === 2) return 'Location unavailable. Make sure GPS/location is turned on.';
+  if (code === 3) return 'Location request timed out. Try again.';
+  return 'Failed to detect location';
+}
+
 export const useGeoLocation = () => {
   const geoAvailable = typeof navigator !== 'undefined' && !!navigator.geolocation;
 
@@ -51,14 +60,21 @@ export const useGeoLocation = () => {
 
   const watchIdRef = useRef<number | null>(null);
   const mountedRef = useRef(true);
+  const requestIdRef = useRef(0);
+  const stateRef = useRef(state);
+
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
 
   useEffect(() => {
     if (!geoAvailable) return;
 
     mountedRef.current = true;
+    const requestId = ++requestIdRef.current;
 
     const loadingTimeout = setTimeout(() => {
-      if (!mountedRef.current) return;
+      if (!mountedRef.current || requestId !== requestIdRef.current) return;
       setState((prev) => {
         if (prev.loading) {
           return {
@@ -74,8 +90,12 @@ export const useGeoLocation = () => {
     }, LOADING_TIMEOUT_MS);
 
     const success = (position: GeolocationPosition) => {
-      if (!mountedRef.current) return;
+      if (!mountedRef.current || requestId !== requestIdRef.current) return;
       clearTimeout(loadingTimeout);
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+        watchIdRef.current = null;
+      }
       const coords = { lat: position.coords.latitude, lng: position.coords.longitude };
       setCachedPosition(coords.lat, coords.lng);
       setState({
@@ -88,18 +108,20 @@ export const useGeoLocation = () => {
     };
 
     const error = (err: GeolocationPositionError) => {
-      if (!mountedRef.current) return;
+      if (!mountedRef.current || requestId !== requestIdRef.current) return;
       clearTimeout(loadingTimeout);
       const errorType = getErrorType(err.code);
-      let message = 'Failed to detect location';
-      if (err.code === GeolocationPositionError.PERMISSION_DENIED) {
-        message = 'Location permission denied. Enable location access in your browser settings.';
-      } else if (err.code === GeolocationPositionError.POSITION_UNAVAILABLE) {
-        message = 'Location unavailable. Make sure GPS/location is turned on.';
-      } else if (err.code === GeolocationPositionError.TIMEOUT) {
-        message = 'Location request timed out. Try again.';
-      }
-      setState({ coords: null, accuracy: null, error: message, errorType, loading: false });
+      setState((prev) =>
+        prev.coords
+          ? { ...prev, loading: false }
+          : {
+              coords: null,
+              accuracy: null,
+              error: getErrorMessage(err.code),
+              errorType,
+              loading: false,
+            },
+      );
     };
 
     const watchId = navigator.geolocation.watchPosition(success, error, {
@@ -123,11 +145,16 @@ export const useGeoLocation = () => {
   const requestLocation = useCallback(() => {
     if (!geoAvailable) return;
 
+    if (watchIdRef.current !== null) {
+      navigator.geolocation.clearWatch(watchIdRef.current);
+      watchIdRef.current = null;
+    }
+    const requestId = ++requestIdRef.current;
     setState({ coords: null, accuracy: null, error: null, errorType: null, loading: true });
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        if (!mountedRef.current) return;
+        if (!mountedRef.current || requestId !== requestIdRef.current) return;
         const coords = { lat: position.coords.latitude, lng: position.coords.longitude };
         setCachedPosition(coords.lat, coords.lng);
         setState({
@@ -139,21 +166,40 @@ export const useGeoLocation = () => {
         });
       },
       (err) => {
-        if (!mountedRef.current) return;
+        if (!mountedRef.current || requestId !== requestIdRef.current) return;
         const errorType = getErrorType(err.code);
-        let message = 'Failed to detect location';
-        if (err.code === GeolocationPositionError.PERMISSION_DENIED) {
-          message = 'Location permission denied. Enable location access in your browser settings.';
-        } else if (err.code === GeolocationPositionError.POSITION_UNAVAILABLE) {
-          message = 'Location unavailable. Make sure GPS/location is turned on.';
-        } else if (err.code === GeolocationPositionError.TIMEOUT) {
-          message = 'Location request timed out. Try again.';
-        }
-        setState({ coords: null, accuracy: null, error: message, errorType, loading: false });
+        setState({
+          coords: null,
+          accuracy: null,
+          error: getErrorMessage(err.code),
+          errorType,
+          loading: false,
+        });
       },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 30000 },
     );
   }, [geoAvailable]);
+
+  useEffect(() => {
+    if (!geoAvailable) return;
+
+    const retryWhenActive = () => {
+      if (
+        document.visibilityState === 'visible' &&
+        !stateRef.current.coords &&
+        !stateRef.current.loading
+      ) {
+        requestLocation();
+      }
+    };
+
+    window.addEventListener('focus', retryWhenActive);
+    document.addEventListener('visibilitychange', retryWhenActive);
+    return () => {
+      window.removeEventListener('focus', retryWhenActive);
+      document.removeEventListener('visibilitychange', retryWhenActive);
+    };
+  }, [geoAvailable, requestLocation]);
 
   return {
     ...state,

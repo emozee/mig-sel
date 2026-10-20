@@ -11,12 +11,13 @@ export function AskMigselChat({ compact = false }: { compact?: boolean }) {
   const navigate = useNavigate();
   const { messages, isLoading, error, sendMessage, retry, sendFeedback } = useAskMigsel();
   const [input, setInput] = useState('');
-  const endRef = useRef<HTMLDivElement>(null);
+  const messageListRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const showPrompts = messages.length === 1 && !isLoading;
 
   useEffect(() => {
-    endRef.current?.scrollIntoView?.({ behavior: 'smooth' });
+    const messageList = messageListRef.current;
+    messageList?.scrollTo?.({ top: messageList.scrollHeight, behavior: 'smooth' });
   }, [messages, isLoading, error]);
 
   const submit = (value: string) => {
@@ -46,7 +47,10 @@ export function AskMigselChat({ compact = false }: { compact?: boolean }) {
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div
-        className={`flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto ${compact ? 'px-3 py-2' : 'px-3 py-4 sm:px-4'}`}
+        ref={messageListRef}
+        role="log"
+        aria-label="Conversation history"
+        className={`flex min-h-0 flex-1 touch-pan-y [scrollbar-gutter:stable] flex-col gap-3 overflow-y-auto overscroll-contain ${compact ? 'px-3 py-2' : 'px-3 py-4 sm:px-4'}`}
         aria-live="polite"
         aria-busy={isLoading}
       >
@@ -96,7 +100,6 @@ export function AskMigselChat({ compact = false }: { compact?: boolean }) {
             </Button>
           </div>
         )}
-        <div ref={endRef} />
       </div>
 
       <form
