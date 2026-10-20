@@ -33,6 +33,12 @@ const CATEGORIES = [
   { value: 'other', label: 'Other' },
 ] as const;
 
+type PendingSubmission = {
+  file: File;
+  coords: { lat: number; lng: number };
+  imageHash?: string;
+};
+
 export const ReportPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -60,19 +66,20 @@ export const ReportPage = () => {
     CATEGORIES.some((item) => item.value === handoff?.category) ? handoff!.category! : 'other',
   );
   const fileHashRef = useRef<string | null>(null);
+  const pendingSubmissionRef = useRef<PendingSubmission | null>(null);
   const [showDuplicateImageDialog, setShowDuplicateImageDialog] = useState(false);
   const [duplicateImages, setDuplicateImages] = useState<DuplicateImageResult[]>([]);
 
-  const createGrievance = async (imageUrl: string) => {
+  const createGrievance = async (imageUrl: string, submission: PendingSubmission) => {
     return mutation.mutateAsync({
       title: title || 'Community Report',
       description: description || '',
       category: category || 'other',
-      latitude: gpsCoords!.lat,
-      longitude: gpsCoords!.lng,
+      latitude: submission.coords.lat,
+      longitude: submission.coords.lng,
       image_url: imageUrl,
       reporter_id: user?.id ?? null,
-      image_hash: fileHashRef.current ?? undefined,
+      image_hash: submission.imageHash,
     });
   };
 
@@ -96,18 +103,33 @@ export const ReportPage = () => {
 
     setIsChecking(true);
 
+    let imageHash = fileHashRef.current;
+
     // Ensure the hash is ready before any checks (it is computed async on select).
-    if (!fileHashRef.current) {
+    if (!imageHash) {
       try {
-        fileHashRef.current = await computeFileHash(selectedFile);
+        imageHash = await computeFileHash(selectedFile);
+        fileHashRef.current = imageHash;
       } catch {
         fileHashRef.current = null;
       }
     }
 
-    if (fileHashRef.current) {
+    const submission: PendingSubmission = {
+      file: selectedFile,
+      coords: gpsCoords,
+      imageHash: imageHash ?? undefined,
+    };
+    pendingSubmissionRef.current = submission;
+
+    if (imageHash) {
       try {
-        const dup = await findDuplicateImage(fileHashRef.current, gpsCoords.lat, gpsCoords.lng, 10);
+        const dup = await findDuplicateImage(
+          imageHash,
+          submission.coords.lat,
+          submission.coords.lng,
+          10,
+        );
 
         if (dup.length > 0) {
           setIsChecking(false);
@@ -121,15 +143,15 @@ export const ReportPage = () => {
     }
 
     setIsChecking(false);
-    await doUploadAndCreate();
+    await doUploadAndCreate(submission);
   };
 
-  const doUploadAndCreate = async () => {
+  const doUploadAndCreate = async (submission: PendingSubmission) => {
     setIsUploading(true);
 
     try {
-      const imageUrl = await uploadGrievanceImage(selectedFile!);
-      const grievance = await createGrievance(imageUrl);
+      const imageUrl = await uploadGrievanceImage(submission.file);
+      const grievance = await createGrievance(imageUrl, submission);
 
       // Moderation must never hold up a civic report. The Edge Function returns
       // immediately and completes classification in the background.
@@ -151,6 +173,7 @@ export const ReportPage = () => {
         setMessage({ type: 'error', text: 'Failed to submit. Please try again.' });
       }
     } finally {
+      pendingSubmissionRef.current = null;
       setIsUploading(false);
     }
   };
@@ -357,6 +380,7 @@ export const ReportPage = () => {
                   <Button
                     variant="outline"
                     onClick={() => {
+                      pendingSubmissionRef.current = null;
                       setShowDuplicateImageDialog(false);
                       setDuplicateImages([]);
                     }}
@@ -366,9 +390,11 @@ export const ReportPage = () => {
                   <Button
                     variant="default"
                     onClick={async () => {
+                      const submission = pendingSubmissionRef.current;
+                      if (!submission) return;
                       setShowDuplicateImageDialog(false);
                       setDuplicateImages([]);
-                      await doUploadAndCreate();
+                      await doUploadAndCreate(submission);
                     }}
                   >
                     Submit anyway

@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import type { Complaint } from '@/features/complaint/types';
 import { complaintKeys } from './use-complaints';
 import { awardPointsForStatus } from '@/features/complaint/utils/award-points';
+import { grievanceKeys } from '@/features/auth/grievance/api/use-grievances';
 
 export const useUpdateComplaint = () => {
   const queryClient = useQueryClient();
@@ -49,6 +50,7 @@ export const useUpdateComplaint = () => {
     onSuccess: async () => {
       toast.success('Complaint updated.');
       await queryClient.invalidateQueries({ queryKey: complaintKeys.all });
+      await queryClient.invalidateQueries({ queryKey: grievanceKeys.all });
       await queryClient.invalidateQueries({ queryKey: ['my-reports'] });
     },
     onError: (error) => {
