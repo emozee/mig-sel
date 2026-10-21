@@ -90,6 +90,32 @@ Deno.test('classifies agency questions as information', () => {
   assert(result?.intent === 'information', 'Agency question should be information');
 });
 
+Deno.test('does not reuse a previous service for a new topic', () => {
+  const result = classifyDeterministically('What can MIGSEL Coin do?', [
+    { role: 'user', content: 'How do I transfer my land?' },
+    {
+      role: 'assistant',
+      content: 'I found a possible service, Land Transaction.',
+    },
+  ]);
+
+  assert(result?.intent === 'information', 'MIGSEL Coin should be product information');
+  assert(result.normalizedQuery === 'use points', 'MIGSEL Coin should search points knowledge');
+  assert(result.serviceSearchQuery !== 'land transfer', 'Previous land context must not be reused');
+});
+
+Deno.test('uses context only for an immediate clarification reply', () => {
+  const result = classifyDeterministically('lost_or_damaged', [
+    { role: 'user', content: 'I need help with my driving licence.' },
+    { role: 'assistant', content: 'What happened to your driving licence?' },
+  ]);
+
+  assert(
+    result?.serviceSearchQuery === 'lost driving licence',
+    'A clarification answer should retain its immediate context',
+  );
+});
+
 Deno.test('accepts valid structured model output', () => {
   const result = parseClassificationOutput(
     '{"intent":"information","confidence":0.72,"normalizedQuery":"land transfer","possibleServiceCategory":"land","possibleGrievanceCategory":null,"needsClarification":false,"clarificationQuestion":null}',

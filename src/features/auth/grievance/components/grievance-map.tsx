@@ -230,14 +230,18 @@ function ClusterPopup({
                     ? 'bg-red-100 text-red-700'
                     : g.mapStatus === 'in-progress'
                       ? 'bg-amber-100 text-amber-700'
-                      : 'bg-green-100 text-green-700'
+                      : g.mapStatus === 'public'
+                        ? 'bg-violet-100 text-violet-700'
+                        : 'bg-green-100 text-green-700'
                 }`}
               >
                 {g.mapStatus === 'in-progress'
                   ? 'In Progress'
                   : g.mapStatus === 'pending'
                     ? 'Pending'
-                    : 'Resolved'}
+                    : g.mapStatus === 'public'
+                      ? 'Public'
+                      : 'Resolved'}
               </span>
             </div>
 
@@ -274,8 +278,10 @@ function ClusterPopup({
 
 function mapStatus(status: string): string {
   if (status === 'submitted' || status === 'in_review') return 'pending';
-  if (status === 'assigned' || status === 'in_progress') return 'in-progress';
+  if (status === 'assigned' || status === 'in_progress' || status === 'in-progress')
+    return 'in-progress';
   if (status === 'resolved' || status === 'closed') return 'resolved';
+  if (status === 'public') return 'public';
   return 'pending';
 }
 
@@ -894,14 +900,18 @@ function GrievanceMarkers({
                       ? 'bg-red-100 text-red-700'
                       : g.mapStatus === 'in-progress'
                         ? 'bg-amber-100 text-amber-700'
-                        : 'bg-green-100 text-green-700'
+                        : g.mapStatus === 'public'
+                          ? 'bg-violet-100 text-violet-700'
+                          : 'bg-green-100 text-green-700'
                   }`}
                 >
                   {g.mapStatus === 'in-progress'
                     ? 'In Progress'
                     : g.mapStatus === 'pending'
                       ? 'Pending'
-                      : 'Resolved'}
+                      : g.mapStatus === 'public'
+                        ? 'Public'
+                        : 'Resolved'}
                 </span>
               </div>
 
