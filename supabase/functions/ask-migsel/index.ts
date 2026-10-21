@@ -263,6 +263,19 @@ async function buildResponse(
   if (classification.intent === 'grievance') {
     return grievanceResponse(conversationId, classification, message);
   }
+  if (classification.intent === 'unknown') {
+    const productKnowledge = await retrieveMigselKnowledge(db, classification.normalizedQuery);
+    if (productKnowledge) {
+      return {
+        conversationId,
+        message: productKnowledge.answer,
+        intent: 'information',
+        confidence: productKnowledge.score,
+        needsClarification: false,
+        actions: [],
+      };
+    }
+  }
   if (classification.needsClarification) {
     const response = clarificationResponse(conversationId, classification);
     if (classification.questionKey) {

@@ -2,6 +2,15 @@ import { useEffect, useRef, useState } from 'react';
 import { Bot, X } from 'lucide-react';
 import { AskMigselChat } from './ask-migsel-chat';
 
+const MAP_GESTURE_EVENTS = [
+  'wheel',
+  'mousedown',
+  'pointerdown',
+  'touchstart',
+  'touchmove',
+  'dblclick',
+] as const;
+
 export const FloatingChat = () => {
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -15,36 +24,49 @@ export const FloatingChat = () => {
     return () => window.removeEventListener('keydown', handleEscape);
   }, [open]);
 
+  useEffect(() => {
+    const panel = panelRef.current;
+    if (!open || !panel) return;
+
+    const stopMapGesture = (event: Event) => event.stopPropagation();
+    MAP_GESTURE_EVENTS.forEach((eventName) =>
+      panel.addEventListener(eventName, stopMapGesture, { passive: true }),
+    );
+
+    return () => {
+      MAP_GESTURE_EVENTS.forEach((eventName) =>
+        panel.removeEventListener(eventName, stopMapGesture),
+      );
+    };
+  }, [open]);
+
   return (
     <div className="flex flex-col items-end gap-2">
-      {open && (
-        <section
-          ref={panelRef}
-          aria-label="Ask MIGSEL"
-          className="animate-fade-in flex h-[min(32rem,70dvh)] w-[min(22rem,calc(100vw-1.5rem))] flex-col overflow-hidden rounded-2xl bg-slate-50 shadow-xl ring-1 ring-black/10"
-        >
-          <header className="border-border flex shrink-0 items-center justify-between border-b bg-white px-3 py-2.5">
-            <div className="flex min-w-0 items-center gap-2">
-              <Bot className="text-primary h-4 w-4 shrink-0" aria-hidden="true" />
-              <div className="min-w-0">
-                <h2 className="truncate text-xs font-bold text-slate-900">Ask MIGSEL</h2>
-                <p className="truncate text-[10px] text-slate-500">
-                  Not sure where to go? Just ask.
-                </p>
-              </div>
+      <section
+        ref={panelRef}
+        aria-label="Ask MIGSEL"
+        hidden={!open}
+        className="animate-fade-in flex h-[min(32rem,70dvh)] w-[min(22rem,calc(100vw-1.5rem))] flex-col overflow-hidden rounded-2xl bg-slate-50 shadow-xl ring-1 ring-black/10"
+      >
+        <header className="border-border flex shrink-0 items-center justify-between border-b bg-white px-3 py-2.5">
+          <div className="flex min-w-0 items-center gap-2">
+            <Bot className="text-primary h-4 w-4 shrink-0" aria-hidden="true" />
+            <div className="min-w-0">
+              <h2 className="truncate text-xs font-bold text-slate-900">Ask MIGSEL</h2>
+              <p className="truncate text-[10px] text-slate-500">Not sure where to go? Just ask.</p>
             </div>
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              aria-label="Close Ask MIGSEL"
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 focus-visible:ring-2"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </header>
-          <AskMigselChat compact />
-        </section>
-      )}
+          </div>
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            aria-label="Close Ask MIGSEL"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 focus-visible:ring-2"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </header>
+        <AskMigselChat compact />
+      </section>
 
       <button
         type="button"

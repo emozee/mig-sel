@@ -20,7 +20,7 @@ export function ChatMessage({
   const showFeedback = !isUser && Boolean(message.response?.service);
 
   return (
-    <div className={`flex items-start gap-2 ${isUser ? 'flex-row-reverse' : ''}`}>
+    <div className={`flex shrink-0 items-start gap-2 ${isUser ? 'flex-row-reverse' : ''}`}>
       <div
         className={`flex shrink-0 items-center justify-center rounded-full ${
           compact ? 'h-6 w-6' : 'h-8 w-8'
