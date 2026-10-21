@@ -46,6 +46,24 @@ describe('AskMigselChat', () => {
     expect(mocks.sendMessage).toHaveBeenCalledWith('I lost my driving licence');
   });
 
+  it('renders conversation history in its own scrollable region', () => {
+    mocks.messages = [
+      welcome,
+      ...Array.from({ length: 12 }, (_, index) => ({
+        id: `message-${index}`,
+        role: index % 2 === 0 ? ('user' as const) : ('assistant' as const),
+        text: `Earlier message ${index + 1}`,
+      })),
+    ];
+
+    renderWithProviders(<AskMigselChat compact />);
+
+    const history = screen.getByRole('log', { name: 'Conversation history' });
+    expect(history).toHaveClass('overflow-y-auto', 'overscroll-contain', 'touch-pan-y');
+    expect(screen.getByText('Earlier message 1')).toBeInTheDocument();
+    expect(screen.getByText('Earlier message 12')).toBeInTheDocument();
+  });
+
   it('announces the loading state', () => {
     mocks.isLoading = true;
     renderWithProviders(<AskMigselChat />);

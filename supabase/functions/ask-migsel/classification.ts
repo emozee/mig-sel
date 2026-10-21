@@ -105,12 +105,20 @@ export function classifyDeterministically(
   history: HistoryMessage[],
 ): Classification | null {
   const query = normalized(message);
+  const lastMessage = history[history.length - 1];
+  const lastAssistantMessage = lastMessage?.role === 'assistant' ? lastMessage.content : '';
+  const isClarificationReply =
+    /what service or complaint|which area is affected|what happened to your driving li[cs]en[cs]e|which of these best matches/i.test(
+      lastAssistantMessage,
+    );
   const recentUserContext = history
     .filter((item) => item.role === 'user')
     .slice(-2)
     .map((item) => item.content)
     .join(' ');
-  const contextualQuery = normalized(`${recentUserContext} ${message}`);
+  const contextualQuery = isClarificationReply
+    ? normalized(`${recentUserContext} ${message}`)
+    : query;
 
   if (EMERGENCY_PATTERN.test(query)) {
     return {
@@ -124,10 +132,24 @@ export function classifyDeterministically(
     };
   }
 
+  if (
+    /\bmig[- ]?sel\s+coins?\b|\b(?:what can (?:i )?(?:do with|use)|how (?:do|can) i (?:use|spend|redeem)).*\b(?:coins?|points?)\b/i.test(
+      query,
+    )
+  ) {
+    return {
+      intent: 'information',
+      confidence: 0.95,
+      normalizedQuery: 'use points',
+      possibleServiceCategory: null,
+      possibleGrievanceCategory: null,
+      needsClarification: false,
+      clarificationQuestion: null,
+    };
+  }
+
   if (FOLLOWUP_PATTERN.test(contextualQuery)) {
-    const alreadyAsked = history.some(
-      (item) => item.role === 'assistant' && /what service or complaint/i.test(item.content),
-    );
+    const alreadyAsked = /what service or complaint/i.test(lastAssistantMessage);
     return {
       intent: 'application_followup',
       confidence: 0.9,
@@ -140,9 +162,7 @@ export function classifyDeterministically(
   }
 
   if (WATER_PATTERN.test(contextualQuery)) {
-    const locationWasRequested = history.some(
-      (item) => item.role === 'assistant' && /which area is affected/i.test(item.content),
-    );
+    const locationWasRequested = /which area is affected/i.test(lastAssistantMessage);
     return {
       intent: 'grievance',
       confidence: 0.86,
