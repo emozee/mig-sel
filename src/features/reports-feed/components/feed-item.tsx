@@ -66,6 +66,9 @@ export const FeedItem = ({ item }: FeedItemProps) => {
   const [imageViewerOpen, setImageViewerOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const isOwner = user?.id === item.userId;
+  const resolvedImageUrl = item.status === 'resolved' ? item.resolved_image_url : undefined;
+  const hasImage = !!(item.image_url || resolvedImageUrl);
+  const hasBeforeAndAfter = !!(item.image_url && resolvedImageUrl);
 
   const handleDelete = () => {
     if (!confirm('Delete this post?')) return;
@@ -199,18 +202,52 @@ export const FeedItem = ({ item }: FeedItemProps) => {
         {item.action}
       </p>
 
-      {item.image_url && (
+      {hasImage && (
         <div className={fullView ? '' : 'flex-1 overflow-hidden'}>
-          <img
-            src={item.image_url}
-            alt="Activity photo"
-            loading="lazy"
-            className={`w-full ${fullView ? '' : 'h-full object-cover'}`}
-          />
+          {hasBeforeAndAfter ? (
+            <div className={`grid grid-cols-2 ${fullView ? '' : 'h-full'}`}>
+              <div className="relative min-w-0 overflow-hidden bg-gray-100">
+                <img
+                  src={item.image_url}
+                  alt="Before resolution"
+                  loading="lazy"
+                  className={`w-full ${fullView ? '' : 'h-full object-cover'}`}
+                />
+                <span className="absolute top-2 left-2 rounded-full bg-black/65 px-2 py-0.5 text-[10px] font-bold tracking-wide text-white uppercase">
+                  Before
+                </span>
+              </div>
+              <div className="relative min-w-0 overflow-hidden bg-emerald-50">
+                <img
+                  src={resolvedImageUrl}
+                  alt="After resolution"
+                  loading="lazy"
+                  className={`w-full ${fullView ? '' : 'h-full object-cover'}`}
+                />
+                <span className="absolute top-2 left-2 rounded-full bg-emerald-700/90 px-2 py-0.5 text-[10px] font-bold tracking-wide text-white uppercase">
+                  After
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div className="relative h-full">
+              <img
+                src={item.image_url ?? resolvedImageUrl}
+                alt="Activity photo"
+                loading="lazy"
+                className={`w-full ${fullView ? '' : 'h-full object-cover'}`}
+              />
+              {!item.image_url && resolvedImageUrl && (
+                <span className="absolute top-2 left-2 rounded-full bg-emerald-700/90 px-2 py-0.5 text-[10px] font-bold tracking-wide text-white uppercase">
+                  After
+                </span>
+              )}
+            </div>
+          )}
         </div>
       )}
 
-      {!fullView && !item.image_url && <div className="flex-1" />}
+      {!fullView && !hasImage && <div className="flex-1" />}
 
       <div className="flex items-center gap-4 px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
         <button
@@ -279,7 +316,7 @@ export const FeedItem = ({ item }: FeedItemProps) => {
         className="flex cursor-pointer flex-col overflow-hidden rounded-xl bg-white shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
         style={{ height: fullViewHeight }}
         onClick={() => {
-          if (item.image_url) {
+          if (hasImage) {
             setImageViewerOpen(true);
           } else {
             setExpanded(true);
@@ -290,7 +327,7 @@ export const FeedItem = ({ item }: FeedItemProps) => {
       </div>
 
       {/* Expanded dialog – for posts without images */}
-      {!item.image_url && (
+      {!hasImage && (
         <DialogRoot open={expanded} onOpenChange={setExpanded}>
           <DialogContent className="!inset-0 !top-0 !left-0 flex h-dvh w-full max-w-full !translate-x-0 !translate-y-0 !flex-col !rounded-none !border-0 !p-0 sm:max-w-full">
             <div className="mx-auto flex w-full max-w-lg flex-1 flex-col bg-white">
@@ -332,13 +369,47 @@ export const FeedItem = ({ item }: FeedItemProps) => {
           <div className="mx-auto flex w-full max-w-lg flex-1 flex-col">
             {/* Image area */}
             <div className="bg-primary/95 flex min-h-0 flex-1 items-center justify-center px-2">
-              {item.image_url && (
-                <img
-                  src={item.image_url}
-                  alt="Activity photo"
-                  loading="lazy"
-                  className="max-h-full max-w-full rounded-lg object-contain"
-                />
+              {hasBeforeAndAfter ? (
+                <div className="grid h-full min-h-0 w-full grid-cols-2 gap-2 py-2">
+                  <div className="relative flex min-h-0 items-center justify-center overflow-hidden rounded-lg bg-black/15">
+                    <img
+                      src={item.image_url}
+                      alt="Before resolution"
+                      loading="lazy"
+                      className="max-h-full max-w-full object-contain"
+                    />
+                    <span className="absolute top-2 left-2 rounded-full bg-black/65 px-2 py-0.5 text-[10px] font-bold tracking-wide text-white uppercase">
+                      Before
+                    </span>
+                  </div>
+                  <div className="relative flex min-h-0 items-center justify-center overflow-hidden rounded-lg bg-black/15">
+                    <img
+                      src={resolvedImageUrl}
+                      alt="After resolution"
+                      loading="lazy"
+                      className="max-h-full max-w-full object-contain"
+                    />
+                    <span className="absolute top-2 left-2 rounded-full bg-emerald-700/90 px-2 py-0.5 text-[10px] font-bold tracking-wide text-white uppercase">
+                      After
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                hasImage && (
+                  <div className="relative flex max-h-full max-w-full items-center justify-center">
+                    <img
+                      src={item.image_url ?? resolvedImageUrl}
+                      alt="Activity photo"
+                      loading="lazy"
+                      className="max-h-full max-w-full rounded-lg object-contain"
+                    />
+                    {!item.image_url && resolvedImageUrl && (
+                      <span className="absolute top-2 left-2 rounded-full bg-emerald-700/90 px-2 py-0.5 text-[10px] font-bold tracking-wide text-white uppercase">
+                        After
+                      </span>
+                    )}
+                  </div>
+                )
               )}
             </div>
 

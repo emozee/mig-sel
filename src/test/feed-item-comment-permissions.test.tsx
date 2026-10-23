@@ -118,4 +118,24 @@ describe('image viewer comment permissions', () => {
     expect(screen.queryByRole('button', { name: 'Edit comment' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Delete comment' })).not.toBeInTheDocument();
   });
+
+  it('shows labeled before and after photos in the card and image viewer', async () => {
+    renderWithProviders(
+      <FeedItem
+        item={{
+          ...item,
+          status: 'resolved',
+          resolved_image_url: 'https://example.com/resolved.jpg',
+        }}
+      />,
+    );
+
+    expect(screen.getByAltText('Before resolution')).toBeInTheDocument();
+    expect(screen.getByAltText('After resolution')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByAltText('Before resolution'));
+
+    expect(await screen.findAllByAltText('Before resolution')).toHaveLength(2);
+    expect(screen.getAllByAltText('After resolution')).toHaveLength(2);
+  });
 });

@@ -18,6 +18,20 @@ export const useUpdateComplaint = () => {
 
       const { id, ...fields } = updates;
 
+      if (fields.status === 'resolved') {
+        if (!fields.resolved_image_url?.trim()) {
+          throw new Error('An after photo is required to resolve a report.');
+        }
+
+        const { error } = await supabase.rpc('resolve_grievance', {
+          p_grievance_id: id,
+          p_resolved_image_url: fields.resolved_image_url,
+        });
+
+        if (error) throw error;
+        return;
+      }
+
       const { data: current, error: fetchError } = await supabase
         .from('grievances')
         .select('status, reporter_id')
@@ -25,12 +39,6 @@ export const useUpdateComplaint = () => {
         .single();
 
       if (fetchError) throw new Error('Grievance not found');
-
-      if (fields.status && fields.status !== current?.status) {
-        if (fields.status === 'resolved') {
-          fields.resolved_at = new Date().toISOString();
-        }
-      }
 
       const { data, error } = await supabase
         .from('grievances')
@@ -52,6 +60,8 @@ export const useUpdateComplaint = () => {
       await queryClient.invalidateQueries({ queryKey: complaintKeys.all });
       await queryClient.invalidateQueries({ queryKey: grievanceKeys.all });
       await queryClient.invalidateQueries({ queryKey: ['my-reports'] });
+      await queryClient.invalidateQueries({ queryKey: ['reports-feed'] });
+      await queryClient.invalidateQueries({ queryKey: ['resolution-queue'] });
     },
     onError: (error) => {
       toast.error(error instanceof Error ? error.message : 'Failed to update complaint.');
