@@ -35,7 +35,7 @@ export const LandingPage = () => {
         <div className="mb-8 text-center">
           <button
             onClick={() => navigate('/map')}
-            className="inline-flex cursor-pointer flex-col items-center rounded-xl px-4 py-2 outline-none transition-transform duration-200 ease-out hover:scale-[1.04] active:scale-95 focus-visible:ring-2"
+            className="inline-flex cursor-pointer flex-col items-center rounded-xl px-4 py-2 transition-transform duration-200 ease-out outline-none hover:scale-[1.04] focus-visible:ring-2 active:scale-95"
             title="Go to map"
           >
             <span className="mb-4 inline-flex items-center justify-center">
@@ -43,7 +43,9 @@ export const LandingPage = () => {
             </span>
             <h1 className="text-foreground text-2xl font-semibold tracking-tight">MIGSEL</h1>
           </button>
-          <p className="mt-1.5 text-xs tracking-wide text-black uppercase">GMC Resonance</p>
+          <p className="mt-1.5 text-xs tracking-wide text-white uppercase">
+            Unifying citizen and government for a better communiity digitally.
+          </p>
         </div>
 
         <Card className="border-white/20 bg-white/20 shadow-xl backdrop-blur-xl">

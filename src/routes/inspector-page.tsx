@@ -6,6 +6,7 @@ import { InspectorSidebar, type InspectorNavView } from '@/components/layout/ins
 import { WasteReportingForm } from '@/features/waste/components/waste-reporting-form';
 import { useMyReports } from '@/features/complaint/api/use-my-reports';
 import { Button } from '@/components/ui/button';
+import { ResolutionQueue } from '@/features/complaint/components/resolution-queue';
 
 const statusIcon = {
   submitted: Clock,
@@ -21,6 +22,7 @@ const statusColors = {
 
 const iconMap: Record<InspectorNavView, typeof FileText> = {
   reporting: FileText,
+  resolutions: CheckCheck,
   reports: FileText,
 };
 
@@ -35,6 +37,10 @@ export const InspectorPage = () => {
     reporting: {
       title: 'Waste Reporting',
       description: 'Submit waste collection records for inspection',
+    },
+    resolutions: {
+      title: 'Resolution Queue',
+      description: 'Upload completion proof for in-progress reports',
     },
     reports: {
       title: 'My Reports',
@@ -105,6 +111,8 @@ export const InspectorPage = () => {
             </div>
 
             {activeView === 'reporting' && <WasteReportingForm />}
+
+            {activeView === 'resolutions' && <ResolutionQueue />}
 
             {activeView === 'reports' && (
               <div className="space-y-3">

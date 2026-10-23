@@ -12,6 +12,7 @@ export interface ActivityItem {
   commentCount: number;
   isUpvoted: boolean;
   image_url?: string;
+  resolved_image_url?: string;
   userId?: string;
   avatarUrl?: string;
   userRole?: string;
