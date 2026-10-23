@@ -64,3 +64,6 @@ export const URGENCY_LABELS: Record<ComplaintUrgency, string> = {
 export const STATUS_URGENCY_ORDER: ComplaintUrgency[] = ['low', 'medium', 'high'];
 
 export const STATUS_ORDER: ComplaintStatus[] = ['pending', 'public', 'in-progress', 'resolved'];
+
+export const isResolvableStatus = (status: ComplaintStatus) =>
+  status === 'in-progress' || status === 'public';

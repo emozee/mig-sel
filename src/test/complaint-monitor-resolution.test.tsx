@@ -1,11 +1,12 @@
 import { fireEvent, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ComplaintMonitor } from '@/features/complaint/components/complaint-monitor';
 import { renderWithProviders } from './test-utils';
 import type { Complaint } from '@/features/complaint/types';
 
 const mocks = vi.hoisted(() => ({
   resolve: vi.fn(),
+  status: 'in-progress' as Complaint['status'],
 }));
 
 const complaint: Complaint = {
@@ -38,7 +39,11 @@ vi.mock('@/features/complaint/api/use-complaints', async (importOriginal) => {
   const original = await importOriginal<typeof import('@/features/complaint/api/use-complaints')>();
   return {
     ...original,
-    useComplaints: () => ({ data: [complaint], isLoading: false, error: null }),
+    useComplaints: () => ({
+      data: [{ ...complaint, status: mocks.status }],
+      isLoading: false,
+      error: null,
+    }),
   };
 });
 
@@ -60,6 +65,11 @@ vi.mock('@/features/complaint/components/resolution-photo-dialog', () => ({
 }));
 
 describe('ComplaintMonitor resolution workflow', () => {
+  beforeEach(() => {
+    mocks.status = 'in-progress';
+    vi.clearAllMocks();
+  });
+
   it('opens the photo popup instead of directly resolving from the status dropdown', () => {
     renderWithProviders(<ComplaintMonitor />);
 
@@ -70,6 +80,20 @@ describe('ComplaintMonitor resolution workflow', () => {
 
     expect(screen.getByText('Resolution photo popup')).toBeInTheDocument();
     expect(statusSelect).toHaveValue('in-progress');
+    expect(mocks.resolve).not.toHaveBeenCalled();
+  });
+
+  it('allows a public report to enter the required-photo resolution workflow', () => {
+    mocks.status = 'public';
+    renderWithProviders(<ComplaintMonitor />);
+
+    const statusSelect = screen.getByLabelText('Status for Blocked drain');
+    expect(statusSelect).toHaveValue('public');
+
+    fireEvent.change(statusSelect, { target: { value: 'resolved' } });
+
+    expect(screen.getByText('Resolution photo popup')).toBeInTheDocument();
+    expect(statusSelect).toHaveValue('public');
     expect(mocks.resolve).not.toHaveBeenCalled();
   });
 });
