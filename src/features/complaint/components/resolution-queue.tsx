@@ -109,7 +109,7 @@ const ResolutionCard = ({ report }: { report: ResolutionReport }) => {
             )}
           </div>
           <span className="shrink-0 rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-bold text-blue-700 uppercase">
-            In Progress
+            {report.status === 'public' ? 'Public' : 'In Progress'}
           </span>
         </div>
         {report.description && (
@@ -165,7 +165,7 @@ export const ResolutionQueue = () => {
         </div>
         <p className="text-foreground text-sm font-semibold">No reports awaiting resolution</p>
         <p className="text-muted-foreground mt-1 text-xs">
-          Approved in-progress reports will appear here.
+          Approved public and in-progress reports will appear here.
         </p>
       </div>
     );

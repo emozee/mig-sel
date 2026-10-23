@@ -18,6 +18,7 @@ vi.mock('@/features/complaint/api/use-resolution-queue', () => ({
         image_url: 'https://example.com/before.jpg',
         location: 'Main Street',
         created_at: '2026-10-20T00:00:00Z',
+        status: 'public',
       },
     ],
     isLoading: false,
@@ -42,6 +43,8 @@ describe('ResolutionQueue', () => {
 
   it('requires an after photo before an inspector can resolve a report', () => {
     renderWithProviders(<ResolutionQueue />);
+
+    expect(screen.getByText('Public')).toBeInTheDocument();
 
     const resolveButton = screen.getByRole('button', { name: 'Mark Resolved' });
     expect(resolveButton).toBeDisabled();

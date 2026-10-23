@@ -28,6 +28,7 @@ import {
   CATEGORY_COLORS,
   STATUS_LABELS,
   URGENCY_LABELS,
+  isResolvableStatus,
 } from '@/features/complaint/constants';
 import type { Complaint, ComplaintUrgency, ComplaintStatus } from '@/features/complaint/types';
 import { useApproveComplaint } from '@/features/complaint/api/use-approve-complaint';
@@ -140,7 +141,7 @@ export const ComplaintMonitor = () => {
     if (!current || current.status === newStatus) return;
 
     if (newStatus === 'resolved') {
-      if (current.status !== 'in-progress') return;
+      if (!isResolvableStatus(current.status)) return;
       setResolutionTarget(current);
       return;
     }
@@ -735,7 +736,7 @@ export const ComplaintMonitor = () => {
                                   key={key}
                                   value={key}
                                   disabled={
-                                    key === 'resolved' && complaint.status !== 'in-progress'
+                                    key === 'resolved' && !isResolvableStatus(complaint.status)
                                   }
                                   className="bg-white text-slate-800"
                                 >
@@ -1048,7 +1049,9 @@ export const ComplaintMonitor = () => {
                               <option
                                 key={key}
                                 value={key}
-                                disabled={key === 'resolved' && complaint.status !== 'in-progress'}
+                                disabled={
+                                  key === 'resolved' && !isResolvableStatus(complaint.status)
+                                }
                                 className="bg-white text-slate-800"
                               >
                                 {label}
@@ -1347,7 +1350,7 @@ export const ComplaintMonitor = () => {
                             key={key}
                             value={key}
                             disabled={
-                              key === 'resolved' && previewComplaint.status !== 'in-progress'
+                              key === 'resolved' && !isResolvableStatus(previewComplaint.status)
                             }
                           >
                             {label}

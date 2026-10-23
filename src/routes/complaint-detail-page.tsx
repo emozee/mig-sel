@@ -30,6 +30,7 @@ import {
   CATEGORY_LABELS,
   STATUS_URGENCY_ORDER,
   STATUS_ORDER,
+  isResolvableStatus,
 } from '@/features/complaint/constants';
 import { Field } from '@/components/ui/field';
 import { useClickOutside } from '@/hooks/use-click-outside';
@@ -488,7 +489,7 @@ export const ComplaintDetailPage = () => {
                   <div className="mt-2 flex flex-wrap gap-2">
                     {STATUS_ORDER.map((s) => {
                       const resolutionUnavailable =
-                        s === 'resolved' && complaint.status !== 'in-progress';
+                        s === 'resolved' && !isResolvableStatus(complaint.status);
                       const resolvedReportLocked = complaint.status === 'resolved';
                       return (
                         <button
@@ -503,7 +504,7 @@ export const ComplaintDetailPage = () => {
                             resolvedReportLocked
                               ? 'Only a super admin can revert a resolved report'
                               : resolutionUnavailable
-                                ? 'Move the report to In Progress before resolving it'
+                                ? 'Only Public or In Progress reports can be resolved'
                                 : undefined
                           }
                           className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold tracking-wide uppercase shadow-sm transition-all hover:scale-105 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100"
