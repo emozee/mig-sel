@@ -33,6 +33,8 @@ import type { Complaint, ComplaintUrgency, ComplaintStatus } from '@/features/co
 import { useApproveComplaint } from '@/features/complaint/api/use-approve-complaint';
 import { useDisapproveComplaint } from '@/features/complaint/api/use-disapprove-complaint';
 import { awardPointsForStatus } from '@/features/complaint/utils/award-points';
+import { useResolveComplaint } from '@/features/complaint/api/use-resolve-complaint';
+import { ResolutionPhotoDialog } from '@/features/complaint/components/resolution-photo-dialog';
 
 type ActiveTab = 'total' | 'unapproved' | ComplaintStatus;
 
@@ -45,6 +47,7 @@ export const ComplaintMonitor = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [previewComplaint, setPreviewComplaint] = useState<Complaint | null>(null);
+  const [resolutionTarget, setResolutionTarget] = useState<Complaint | null>(null);
   const [disapproveConfirmId, setDisapproveConfirmId] = useState<string | null>(null);
   const [bulkDisapprove, setBulkDisapprove] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -54,6 +57,7 @@ export const ComplaintMonitor = () => {
   const { data: complaints = [], isLoading, error: queryError } = useComplaints();
   const approveComplaint = useApproveComplaint();
   const disapproveComplaint = useDisapproveComplaint();
+  const resolveComplaint = useResolveComplaint();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -66,20 +70,17 @@ export const ComplaintMonitor = () => {
   }, []);
 
   const handleStatusChange = async (id: string, newStatus: ComplaintStatus) => {
+    // Resolved changes must go through the required-photo workflow below.
+    if (newStatus === 'resolved') return;
+
     const current = complaints.find((c) => c.id === id);
     if (!current || current.status === newStatus) return;
 
     const updates: Record<string, unknown> = {
       status: newStatus,
     };
-    if (newStatus === 'resolved') {
-      updates.resolved_at = new Date().toISOString();
-    }
 
     const childUpdates: Record<string, unknown> = { status: newStatus };
-    if (newStatus === 'resolved') {
-      childUpdates.resolved_at = new Date().toISOString();
-    }
 
     // Capture children before optimistic update
     const children = !current.parent_id ? complaints.filter((c) => c.parent_id === id) : [];
@@ -132,6 +133,33 @@ export const ComplaintMonitor = () => {
           : ((err as { message?: string })?.message ?? 'Unknown error');
       alert(`Failed to update status: ${message}`);
     }
+  };
+
+  const handleStatusSelection = (id: string, newStatus: ComplaintStatus) => {
+    const current = complaints.find((complaint) => complaint.id === id);
+    if (!current || current.status === newStatus) return;
+
+    if (newStatus === 'resolved') {
+      if (current.status !== 'in-progress') return;
+      setResolutionTarget(current);
+      return;
+    }
+
+    void handleStatusChange(id, newStatus);
+  };
+
+  const handleResolutionConfirm = (afterPhoto: File) => {
+    if (!resolutionTarget) return;
+
+    resolveComplaint.mutate(
+      { id: resolutionTarget.id, afterPhoto },
+      {
+        onSuccess: () => {
+          if (previewComplaint?.id === resolutionTarget.id) setPreviewComplaint(null);
+          setResolutionTarget(null);
+        },
+      },
+    );
   };
 
   useEffect(() => {
@@ -686,8 +714,12 @@ export const ComplaintMonitor = () => {
                             <select
                               value={complaint.status}
                               onChange={(e) =>
-                                handleStatusChange(complaint.id, e.target.value as ComplaintStatus)
+                                handleStatusSelection(
+                                  complaint.id,
+                                  e.target.value as ComplaintStatus,
+                                )
                               }
+                              disabled={complaint.status === 'resolved'}
                               className={`cursor-pointer appearance-none rounded-lg border px-2 py-1 pr-2 text-xs font-bold tracking-wide uppercase transition-all outline-none ${
                                 complaint.status === 'resolved'
                                   ? 'border-emerald-500 bg-emerald-50 text-emerald-500'
@@ -699,7 +731,14 @@ export const ComplaintMonitor = () => {
                               }`}
                             >
                               {Object.entries(STATUS_LABELS).map(([key, label]) => (
-                                <option key={key} value={key} className="bg-white text-slate-800">
+                                <option
+                                  key={key}
+                                  value={key}
+                                  disabled={
+                                    key === 'resolved' && complaint.status !== 'in-progress'
+                                  }
+                                  className="bg-white text-slate-800"
+                                >
                                   {label}
                                 </option>
                               ))}
@@ -991,8 +1030,9 @@ export const ComplaintMonitor = () => {
                           <select
                             value={complaint.status}
                             onChange={(e) =>
-                              handleStatusChange(complaint.id, e.target.value as ComplaintStatus)
+                              handleStatusSelection(complaint.id, e.target.value as ComplaintStatus)
                             }
+                            disabled={complaint.status === 'resolved'}
                             aria-label={`Status for ${complaint.title}`}
                             className={`min-w-0 flex-1 cursor-pointer appearance-none rounded-lg border px-2 py-1.5 text-[11px] font-bold tracking-wide uppercase outline-none ${
                               complaint.status === 'resolved'
@@ -1005,7 +1045,12 @@ export const ComplaintMonitor = () => {
                             }`}
                           >
                             {Object.entries(STATUS_LABELS).map(([key, label]) => (
-                              <option key={key} value={key} className="bg-white text-slate-800">
+                              <option
+                                key={key}
+                                value={key}
+                                disabled={key === 'resolved' && complaint.status !== 'in-progress'}
+                                className="bg-white text-slate-800"
+                              >
                                 {label}
                               </option>
                             ))}
@@ -1280,15 +1325,13 @@ export const ComplaintMonitor = () => {
                       <select
                         value={previewComplaint.status}
                         onChange={(e) => {
-                          handleStatusChange(
-                            previewComplaint.id,
-                            e.target.value as ComplaintStatus,
-                          );
-                          setPreviewComplaint(
-                            (prev) =>
-                              prev && { ...prev, status: e.target.value as ComplaintStatus },
-                          );
+                          const newStatus = e.target.value as ComplaintStatus;
+                          handleStatusSelection(previewComplaint.id, newStatus);
+                          if (newStatus !== 'resolved') {
+                            setPreviewComplaint((prev) => prev && { ...prev, status: newStatus });
+                          }
                         }}
+                        disabled={previewComplaint.status === 'resolved'}
                         className={`cursor-pointer rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase outline-none ${
                           previewComplaint.status === 'resolved'
                             ? 'bg-emerald-50 text-emerald-500'
@@ -1300,7 +1343,13 @@ export const ComplaintMonitor = () => {
                         }`}
                       >
                         {Object.entries(STATUS_LABELS).map(([key, label]) => (
-                          <option key={key} value={key}>
+                          <option
+                            key={key}
+                            value={key}
+                            disabled={
+                              key === 'resolved' && previewComplaint.status !== 'in-progress'
+                            }
+                          >
                             {label}
                           </option>
                         ))}
@@ -1495,6 +1544,15 @@ export const ComplaintMonitor = () => {
           </div>
         </div>
       )}
+      <ResolutionPhotoDialog
+        key={resolutionTarget?.id ?? 'no-resolution-target'}
+        open={!!resolutionTarget}
+        isSaving={resolveComplaint.isPending}
+        onOpenChange={(open) => {
+          if (!open) setResolutionTarget(null);
+        }}
+        onConfirm={handleResolutionConfirm}
+      />
     </div>
   );
 };

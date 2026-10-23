@@ -6,7 +6,9 @@ import { renderWithProviders } from './test-utils';
 describe('LandingPage', () => {
   it('renders the app name', () => {
     renderWithProviders(<LandingPage />);
-    expect(screen.getByText('GMC Resonance')).toBeInTheDocument();
+    expect(
+      screen.getByText('Unifying citizen and government for a better communiity digitally.'),
+    ).toBeInTheDocument();
   });
 
   it('renders the sign-in button', () => {

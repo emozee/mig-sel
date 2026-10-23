@@ -1,13 +1,14 @@
 import { useNavigate } from 'react-router';
-import { Recycle, FileText, Map, LogOut, X } from 'lucide-react';
+import { Recycle, FileText, Map, LogOut, X, CheckCheck } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { useSignOut } from '@/features/auth/api/use-sign-out';
 
-export type InspectorNavView = 'reporting' | 'reports';
+export type InspectorNavView = 'reporting' | 'resolutions' | 'reports';
 
 const navItems = [
   { id: 'reporting' as const, label: 'Waste Reporting', icon: Recycle },
+  { id: 'resolutions' as const, label: 'Resolution Queue', icon: CheckCheck },
   { id: 'reports' as const, label: 'My Reports', icon: FileText },
 ];
 
@@ -36,7 +37,7 @@ export const InspectorSidebar = ({
       <div className="flex h-16 shrink-0 items-center gap-3 border-b px-5">
         <button
           onClick={() => navigate('/map')}
-          className="flex cursor-pointer items-center gap-3 rounded-lg outline-none transition-transform duration-200 ease-out hover:scale-[1.04] active:scale-95 focus-visible:ring-2"
+          className="flex cursor-pointer items-center gap-3 rounded-lg transition-transform duration-200 ease-out outline-none hover:scale-[1.04] focus-visible:ring-2 active:scale-95"
           title="Go to map"
         >
           <div className="flex items-center justify-center">

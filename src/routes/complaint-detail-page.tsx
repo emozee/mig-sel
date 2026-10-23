@@ -7,7 +7,6 @@ import {
   MoveRight,
   Upload,
   Loader2,
-  X,
   Save,
   Trophy,
   Menu,
@@ -35,6 +34,9 @@ import {
 import { Field } from '@/components/ui/field';
 import { useClickOutside } from '@/hooks/use-click-outside';
 import type { ComplaintStatus, ComplaintUrgency } from '@/features/complaint/types';
+import { toast } from 'sonner';
+import { ResolutionRevertControl } from '@/features/complaint/components/resolution-revert-control';
+import { ResolutionPhotoDialog } from '@/features/complaint/components/resolution-photo-dialog';
 
 export const ComplaintDetailPage = () => {
   const navigate = useNavigate();
@@ -47,8 +49,7 @@ export const ComplaintDetailPage = () => {
   const [urgencyOpen, setUrgencyOpen] = useState(false);
   const [showDisapproveConfirm, setShowDisapproveConfirm] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<ComplaintStatus | null>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [resolutionDialogOpen, setResolutionDialogOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -104,40 +105,35 @@ export const ComplaintDetailPage = () => {
     updateComplaint.mutate({ id: c.id, urgency });
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setSelectedFile(file);
-    const reader = new FileReader();
-    reader.onload = () => setImagePreview(reader.result as string);
-    reader.readAsDataURL(file);
+  const handleStatusSave = () => {
+    if (!selectedStatus || selectedStatus === 'resolved') return;
+    setIsSaving(true);
+    updateComplaint.mutate(
+      { id: c.id, status: selectedStatus },
+      {
+        onSuccess: () => setSelectedStatus(null),
+        onSettled: () => setIsSaving(false),
+      },
+    );
   };
 
-  const clearImage = () => {
-    setSelectedFile(null);
-    setImagePreview(null);
-  };
-
-  const handleStatusSave = async () => {
-    if (!selectedStatus) return;
+  const handleResolutionConfirm = async (file: File) => {
     setIsSaving(true);
     try {
-      let resolvedImageUrl: string | null = null;
-      if (selectedFile) {
-        resolvedImageUrl = await uploadGrievanceImage(selectedFile);
-      }
+      const resolvedImageUrl = await uploadGrievanceImage(file);
       updateComplaint.mutate(
-        { id: c.id, status: selectedStatus, resolved_image_url: resolvedImageUrl },
+        { id: c.id, status: 'resolved', resolved_image_url: resolvedImageUrl },
         {
-          onSettled: () => {
-            setIsSaving(false);
+          onSuccess: () => {
             setSelectedStatus(null);
-            clearImage();
+            setResolutionDialogOpen(false);
           },
+          onSettled: () => setIsSaving(false),
         },
       );
-    } catch {
+    } catch (error) {
       setIsSaving(false);
+      toast.error(error instanceof Error ? error.message : 'Failed to upload the after photo.');
     }
   };
 
@@ -345,6 +341,13 @@ export const ComplaintDetailPage = () => {
                     />
                   </div>
                 )}
+
+                {complaint.status === 'resolved' && (
+                  <ResolutionRevertControl
+                    complaintId={complaint.id}
+                    imageUrl={complaint.resolved_image_url}
+                  />
+                )}
               </CardContent>
             </Card>
 
@@ -478,18 +481,32 @@ export const ComplaintDetailPage = () => {
                   </div>
                 </div>
 
-                <div className="grid gap-6 sm:grid-cols-2">
-                  <div>
-                    <label className="text-muted-foreground/60 text-xs font-bold tracking-wide uppercase">
-                      New Status
-                    </label>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {STATUS_ORDER.map((s) => (
+                <div>
+                  <label className="text-muted-foreground/60 text-xs font-bold tracking-wide uppercase">
+                    New Status
+                  </label>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {STATUS_ORDER.map((s) => {
+                      const resolutionUnavailable =
+                        s === 'resolved' && complaint.status !== 'in-progress';
+                      const resolvedReportLocked = complaint.status === 'resolved';
+                      return (
                         <button
                           key={s}
                           type="button"
-                          onClick={() => setSelectedStatus(s)}
-                          className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold tracking-wide uppercase shadow-sm transition-all hover:scale-105"
+                          onClick={() => {
+                            setSelectedStatus(s);
+                            if (s === 'resolved') setResolutionDialogOpen(true);
+                          }}
+                          disabled={resolutionUnavailable || resolvedReportLocked}
+                          title={
+                            resolvedReportLocked
+                              ? 'Only a super admin can revert a resolved report'
+                              : resolutionUnavailable
+                                ? 'Move the report to In Progress before resolving it'
+                                : undefined
+                          }
+                          className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold tracking-wide uppercase shadow-sm transition-all hover:scale-105 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100"
                           style={{
                             backgroundColor: selectedStatus === s ? STATUS_BADGE[s].bg : '#f3f4f6',
                             color: selectedStatus === s ? STATUS_BADGE[s].text : '#6b7280',
@@ -509,52 +526,16 @@ export const ComplaintDetailPage = () => {
                           )}
                           {STATUS_LABELS[s]}
                         </button>
-                      ))}
-                    </div>
-                    {selectedStatus && selectedStatus !== complaint.status && (
-                      <p className="mt-2 text-xs text-amber-600">
-                        <Trophy className="mr-1 inline h-3 w-3" />
-                        Update to <strong>{STATUS_LABELS[selectedStatus]}</strong> will adjust the
-                        reporter's points accordingly
-                      </p>
-                    )}
+                      );
+                    })}
                   </div>
-
-                  <div>
-                    <label className="text-muted-foreground/60 text-xs font-bold tracking-wide uppercase">
-                      Resolved Image (optional)
-                    </label>
-                    <div className="mt-2">
-                      {imagePreview ? (
-                        <div className="border-border/50 relative overflow-hidden rounded-lg border">
-                          <img
-                            src={imagePreview}
-                            alt="Preview"
-                            loading="lazy"
-                            className="aspect-square w-full rounded-lg object-cover"
-                          />
-                          <button
-                            type="button"
-                            onClick={clearImage}
-                            className="absolute top-1 right-1 rounded-full bg-black/50 p-1 text-white transition-colors hover:bg-black/70"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                        </div>
-                      ) : (
-                        <label className="border-border/50 text-muted-foreground/60 hover:border-muted-foreground/30 hover:text-muted-foreground/80 flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed px-3 py-4 text-xs transition-colors">
-                          <Upload className="h-4 w-4" />
-                          Click to upload image
-                          <input
-                            type="file"
-                            accept="image/jpeg,image/png,image/webp,image/gif"
-                            onChange={handleFileSelect}
-                            className="hidden"
-                          />
-                        </label>
-                      )}
-                    </div>
-                  </div>
+                  {selectedStatus && selectedStatus !== complaint.status && (
+                    <p className="mt-2 text-xs text-amber-600">
+                      <Trophy className="mr-1 inline h-3 w-3" />
+                      Update to <strong>{STATUS_LABELS[selectedStatus]}</strong> will adjust the
+                      reporter's points accordingly
+                    </p>
+                  )}
                 </div>
 
                 <div className="border-border/50 mt-6 flex items-center justify-end gap-2 border-t pt-4">
@@ -562,7 +543,6 @@ export const ComplaintDetailPage = () => {
                     type="button"
                     onClick={() => {
                       setSelectedStatus(null);
-                      clearImage();
                     }}
                     className="text-muted-foreground/60 hover:bg-accent hover:text-foreground rounded-lg px-4 py-2 text-xs font-semibold transition-colors"
                   >
@@ -571,7 +551,12 @@ export const ComplaintDetailPage = () => {
                   <button
                     type="button"
                     onClick={handleStatusSave}
-                    disabled={!selectedStatus || isSaving}
+                    disabled={
+                      !selectedStatus ||
+                      selectedStatus === complaint.status ||
+                      selectedStatus === 'resolved' ||
+                      isSaving
+                    }
                     className="bg-primary text-primary-foreground inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold transition-opacity hover:opacity-90 disabled:opacity-50"
                   >
                     {isSaving && <Loader2 className="h-3 w-3 animate-spin" />}
@@ -581,6 +566,17 @@ export const ComplaintDetailPage = () => {
               </CardContent>
             </Card>
           </div>
+
+          <ResolutionPhotoDialog
+            key={resolutionDialogOpen ? 'resolution-dialog-open' : 'resolution-dialog-closed'}
+            open={resolutionDialogOpen}
+            isSaving={isSaving}
+            onOpenChange={(open) => {
+              setResolutionDialogOpen(open);
+              if (!open) setSelectedStatus(null);
+            }}
+            onConfirm={handleResolutionConfirm}
+          />
 
           {showDisapproveConfirm && (
             <div

@@ -34,7 +34,7 @@ export const useReportsFeed = (page: number = 1, pageSize: number = 5) => {
       const { data, error, count } = await supabase
         .from('community_feed')
         .select(
-          'id, grievance_id, user_name, user_initials, action_text, location, image_url, created_at, upvote_count, comment_count, user_id, status, grievance:grievances!inner(approved, status, latitude, longitude)',
+          'id, grievance_id, user_name, user_initials, action_text, location, image_url, created_at, upvote_count, comment_count, user_id, status, grievance:grievances!inner(approved, status, latitude, longitude, resolved_image_url)',
           { count: 'exact', head: false },
         )
         .eq('grievance.approved', true)
@@ -78,29 +78,35 @@ export const useReportsFeed = (page: number = 1, pageSize: number = 5) => {
         }
       }
 
-      const items = (data || []).map<ActivityItem>((row) => ({
-        id: row.id,
-        grievanceId: row.grievance_id ?? undefined,
-        userName: row.user_name,
-        userInitials: row.user_initials,
-        action: row.action_text,
-        location: row.location ?? '',
-        timestamp: new Date(row.created_at),
-        upvoteCount: row.upvote_count ?? 0,
-        commentCount: row.comment_count ?? 0,
-        isUpvoted: upvotedIds.has(row.id),
-        image_url: row.image_url ?? undefined,
-        userId: row.user_id ?? undefined,
-        avatarUrl: row.user_id ? avatarMap.get(row.user_id) : undefined,
-        userRole: row.user_id ? roleMap.get(row.user_id) : undefined,
-        status:
-          (row.grievance as { status?: FeedStatus; latitude?: number; longitude?: number } | null)
-            ?.status ??
-          (row.status as FeedStatus | null) ??
-          undefined,
-        latitude: (row.grievance as { latitude?: number } | null)?.latitude ?? undefined,
-        longitude: (row.grievance as { longitude?: number } | null)?.longitude ?? undefined,
-      }));
+      const items = (data || []).map<ActivityItem>((row) => {
+        const grievance = row.grievance as {
+          status?: FeedStatus;
+          latitude?: number;
+          longitude?: number;
+          resolved_image_url?: string | null;
+        } | null;
+
+        return {
+          id: row.id,
+          grievanceId: row.grievance_id ?? undefined,
+          userName: row.user_name,
+          userInitials: row.user_initials,
+          action: row.action_text,
+          location: row.location ?? '',
+          timestamp: new Date(row.created_at),
+          upvoteCount: row.upvote_count ?? 0,
+          commentCount: row.comment_count ?? 0,
+          isUpvoted: upvotedIds.has(row.id),
+          image_url: row.image_url ?? undefined,
+          resolved_image_url: grievance?.resolved_image_url ?? undefined,
+          userId: row.user_id ?? undefined,
+          avatarUrl: row.user_id ? avatarMap.get(row.user_id) : undefined,
+          userRole: row.user_id ? roleMap.get(row.user_id) : undefined,
+          status: grievance?.status ?? (row.status as FeedStatus | null) ?? undefined,
+          latitude: grievance?.latitude ?? undefined,
+          longitude: grievance?.longitude ?? undefined,
+        };
+      });
 
       return { items, count: count ?? items.length };
     },
